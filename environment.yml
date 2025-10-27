@@ -1,8 +1,65 @@
 channels:
   - conda-forge
 dependencies:
-  - conda-forge::switch_model=2.0.9
-  - conda-forge::gdown
-  - conda-forge::seaborn
-  - conda-forge::pyyaml
+  - git
+  - python =3.10
+  - switch_model =2.0.9
+  - gdown
+  - seaborn
+  - pyyaml
+  - pip
+  - ipykernel
   - gurobi::gurobi
+  - mosek::mosek
+  - highspy
+  # packages used by various data scripts, e.g., switch/summarize_inputs.py
+  # and process_map_image.py
+  - plotly
+  - ipympl
+  - cmake
+  - pytables
+  - pytesseract
+  - opencv
+  - pillow
+  # probably covered by other packages, but just to be sure
+  - shapely
+  - numpy
+  - scipy
+  - sqlalchemy
+  - typer
+  - fsspec # used by pandas.read_parquet() over http
+  - requests # may be used by fsspec
+
+  # powergenome 0.7.0 dependencies from
+  # https://github.com/PowerGenome/PowerGenome/blob/v0.7.0/pyproject.toml. We
+  # install these via conda to avoid getting x86 versions on arm64 if
+  # pip installs them automatically along with powergenome
+  - catalystcoop.pudl =2022.11.30  # pin at upper end
+  - beautifulsoup4 >=4.8.13
+  - statsmodels >=0.12.2
+  - python-dotenv
+  - flatten-dict
+  - ruamel.yaml
+  - pyyaml
+  - frozendict
+  - openpyxl >=3.0
+  - geopandas >=0.12
+  - pyogrio
+  - xlrd
+  - pyarrow
+  - duckdb
+  # Avoid mid-install conflict between tabulator (used by datapackage <= 1.15.2
+  # and tableschema <= 1.20.7) and dataflows-tabulator (used by datapackage >=
+  # 1.15.4 and tableschema >= 1.20.9). Both of these are brought in by
+  # catalystcoop.pudl=2022.11.30 -> datapackage -> tableschema. Conda doesn't
+  # have datapackage >= 1.15.4, so we use the older versions instead.
+  - tableschema <=1.20.7
+  - datapackage <=1.15.2
+  # pin setuptools to an earlier version to avoid deprecation warning from pudl
+  # 2022.11.30
+  - setuptools=79
+  # powergenome itself
+  # note: for now we manually install a local patched version of 0.7.0 into 
+  # the environment after creation instead of using the offical one
+  # - pip:
+  #   - powergenome==0.7.0
