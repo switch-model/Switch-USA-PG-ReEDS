@@ -1,0 +1,155 @@
+# LOAD GROWTH ASSUMPTIONS
+#
+
+# Normal PG approach is to apply year-to-year growth rates from a particular AEO
+# edition and scenario (specified at the top) to historical hourly load shapes
+# (defined further down). The region_maps are used to map study regions to AEO
+# regions (before/after 2019) for this purpose. If the region maps aren't right
+# (e.g., don't match model_regions defined elsewhere), no growth will be
+# applied, which can be problematic with historical load profiles from well
+# before the start of the study.
+
+
+# User load profiles in regional_load_fn are applied as-is (no growth factor)
+# and supersede any loads defined below. They should have three header rows
+# identifying model year, scenario and region, then one row per historical hour
+# (same number of rows as the renewable resource data). For 2025-2030, we use
+# unchanging 2023 loads based on 2007-2013 weather years, extracted from
+# load_curves_nrel_reeds table in pg_db by make_study_loads.py. Then we apply
+# ICF 2025-35 growth rates to that for 2024-2030 and report this growth as
+# flexible demand (in flexible_load.yml)
+regional_load_fn: reeds_2023_loads.csv.zip
+
+# name of current demand scenario; should match entries in the second row of
+# headers of `regional_load_fn`
+electrification: base
+
+# note: we also add growth in via flexible_load.yml, so it can optionally be
+# made interruptible.
+
+
+# # The ReEDS dataset (load_curves_nrel_reeds table in PG_DB) includes hourly
+# # demand from 2007-2013, shifted to 2020-2050. In this case, since model years
+# # appear in the PG_DB dataset, data for model years will be used as-is, with no
+# # growth applied. If the model year is not included in the dataset (e.g., the
+# # load shapes used for the MIP study), PG will pull all years from the load
+# # source table, then grow them to the future model year. The growth rates from
+# # 2012-2019 can be calculated using historical data (from EIA AEO). Different
+# # growth scenarios can be selected using the same AEO scenarios used for fuel
+# # prices. Examples include HIGHMACRO for high growth and LOWMACRO for low
+# # growth. 
+# regular_load_growth_start_year: 2020
+# growth_scenario: REF2021
+
+# # Historical load profiles from load sources
+# # will use load_aeo_year or 2020 if not specified
+# load_eia_aeo_year: 2021
+
+# # *_load_region_map entries identify model regions that fall in each 
+# # AEO region. `historical_load_region_map` is used prior to 2019 and 
+# # `future_load_region_map` is used after. Annual % growth rates are 
+# # taken from the `growth_scenario` and aeo release specified above.
+
+# # outdated, uses IPM zones instead of ReEDS
+# historical_load_region_map:
+#   TRE: [ERC_PHDL, ERC_REST, ERC_WEST]
+#   FLRC: [FRCC] #FRCC
+#   MWRCE: [MIS_WUMS]
+#   MWRCW: [MIS_MAPP, SPP_WAUE, SPP_NEBR, MIS_MIDA, MIS_IA, MIS_MNWI]
+#   NPCCNE: [NENG_ME, NENG_CT, NENGREST]
+#   NPCCNYWE: [NY_Z_J]
+#   NPCCLI: [NY_Z_K]
+#   NPCCUPNY: [
+#     NY_Z_A,
+#     NY_Z_B,
+#     NY_Z_C&E,
+#     NY_Z_D,
+#     NY_Z_F,
+#     NY_Z_G-I,
+#   ]
+#   RFCET: [PJM_WMAC, PJM_EMAC, PJM_SMAC, PJM_PENE, PJM_Dom]
+#   RFCMI: [MIS_LMI]
+#   RFCWT: [PJM_West, PJM_AP, PJM_ATSI, PJM_COMD]
+#   SERCDLT: [MIS_WOTA, MIS_LA, MIS_AMSO, MIS_AR, MIS_D_MS]
+#   SERCGW: [MIS_MO, S_D_AECI, MIS_IL, MIS_INKY]
+#   SERCSOES: [S_SOU]
+#   SERCCNT: [S_C_TVA, S_C_KY]
+#   SERCVC: [S_VACA]
+#   SWPPNO: [SPP_N]
+#   SWPPSO: [SPP_SPS, SPP_WEST]
+#   WECCSW: [WECC_AZ, WECC_NM, WECC_SNV]
+#   WECCCA: [WEC_CALN, WEC_BANC, WECC_IID, WECC_SCE, WEC_LADW, WEC_SDGE]
+#   WENWPP: [WECC_PNW, WECC_MT, WECC_ID, WECC_WY, WECC_UT, WECC_NNV]
+#   WECCRKS: [WECC_CO]
+
+# future_load_region_map:
+#   TRE: [ERC_PHDL, ERC_REST, ERC_WEST]
+#   FLRC: [FRCC] #FRCC
+#   MCW: [MIS_WUMS, MIS_MNWI, MIS_IA] #MISW
+#   MCE: [MIS_LMI] #MISE
+#   PJMCE: [PJM_COMD] #PJMC
+#   MCC: [MIS_IL, MIS_MO, S_D_AECI, MIS_INKY] #MISC
+#   SWPPNO: [MIS_MAPP, SPP_WAUE, SPP_NEBR, MIS_MIDA] #SPPN
+#   SWPPC: [SPP_N] #SPPC
+#   SWPPSO: [SPP_WEST, SPP_SPS] #SPPS
+#   MCS: [MIS_AMSO, MIS_WOTA, MIS_LA, MIS_AR, MIS_D_MS] #MISS
+#   SERCSOES: [S_SOU] #SRSE
+#   SERCE: [S_VACA] #SRCA
+#   PJMD: [PJM_Dom]
+#   PJMW: [PJM_West, PJM_AP, PJM_ATSI]
+#   PJME: [PJM_WMAC, PJM_EMAC, PJM_SMAC, PJM_PENE]
+#   SERCCNT: [S_C_TVA, S_C_KY] #SRCE
+#   NPCCUPNY: [
+#       NY_Z_A,
+#       NY_Z_B,
+#       NY_Z_C&E,
+#       NY_Z_D,
+#       NY_Z_F,
+#       NY_Z_G-I,
+#   ] #NYUP
+#   NENYCLI: [NY_Z_J, NY_Z_K] #NYCW
+#   NPCCNE: [NENG_ME, NENGREST, NENG_CT] #ISNE
+#   WECCRKS: [WECC_CO] #RMRG
+#   WECCB: [WECC_ID, WECC_WY, WECC_UT, WECC_NNV] #BASN
+#   WENWPP: [WECC_PNW, WECC_MT] #NWPP
+#   WECCCAN: [WEC_CALN, WEC_BANC] #CANO
+#   WECCCAS: [WECC_IID, WECC_SCE, WEC_LADW, WEC_SDGE] #CASO
+#   WECCSW: [WECC_AZ, WECC_NM, WECC_SNV] #SRSG
+
+# # supersedes EIA AEO growth rates for total demand (appears to also 
+# # supersede AEO for historical growth, which could cause trouble when
+# # working with data that is not pre-shifted to the start of the study
+# # period)
+# # Make none (~) if no regions are included here
+# # regions should be in model_regions
+# alt_growth_rate: ~
+#   # non-sectoral:
+#   # WECC_AZ: 0.02
+#   # sectoral:
+#   # WECC_AZ:
+#   #   sector1: 0.02
+#   #   sector2: 0.02
+
+
+######################
+# Historical hourly load profiles
+######################
+
+# PG needs profiles for each fine-scale model region. They will be concatenated
+# from all the tables listed under `load_source_table_name`, which will be read
+# from the pg_db database, and from user-supplied profiles in
+# `regional_load_fn`. Not clear what happens if the same region appears more
+# than once among these sources.
+load_source_table_name: ~
+  # load_source: table_name
+  # reeds: load_curves_nrel_reeds
+
+# regional_load_source should be either a name of a single load_source to use
+# for all regions or a dictionary of `load_source: [model_region1,
+# model_region2]` entries. Profiles will only be constructed for sources and
+# regions identified here. Specify USER as the load_source for regions that
+# should be pulled from regional_load_fn.
+# regional_load_source: reeds
+regional_load_source: USER
+
+

@@ -1,0 +1,332 @@
+# CLUSTER TAGS
+# All of the values will be 0 by default. If non-zero, add here.
+# The names below are matched to technology names in the data ignoring case, whitespace,
+# and underscores, and must only match the start of the technology name. Since e.g.
+# "Natural Gas" will match any "Natural Gas *", more specific terms should be listed
+# after more general terms ("Natural Gas CCS100: 0" should come after "Natural Gas: 1").
+
+model_tag_names:
+- THERM
+- VRE
+- Num_VRE_Bins
+- MUST_RUN
+- STOR
+- FLEX
+- HYDRO
+  # - LDS
+- Commit
+- New_Build
+  # - Hydro_level
+- CapRes_1
+- CapRes_2
+- MaxCapTag_Ban
+- MaxCapTag_WindGrowth
+
+# tags starting with ESR_ or MinCapTag_ are managed by make_emission_policies.py
+- ESR_AZ_rps
+- ESR_CA_ces
+- ESR_CA_rps
+- ESR_CO_ces
+- ESR_CO_rps
+- ESR_CT_ces
+- ESR_CT_rps
+- ESR_DE_rps
+- ESR_DE_rps_solar
+- ESR_IA_rps
+- ESR_IL_ces
+- ESR_IL_rps
+- ESR_IL_rps_solar
+- ESR_IL_rps_wind
+- ESR_MA_ces
+- ESR_MA_rps
+- ESR_MA_rps_solar
+- ESR_MD_rps
+- ESR_MD_rps_solar
+- ESR_MD_rps_wind
+- ESR_ME_ces
+- ESR_ME_rps
+- ESR_MI_ces
+- ESR_MI_rps
+- ESR_MN_ces
+- ESR_MN_rps
+- ESR_MN_rps_solar
+- ESR_MO_rps
+- ESR_MO_rps_solar
+- ESR_NC_ces
+- ESR_NC_rps
+- ESR_NC_rps_solar
+- ESR_NE_ces
+- ESR_NH_rps
+- ESR_NH_rps_solar
+- ESR_NJ_rps
+- ESR_NJ_rps_solar
+- ESR_NM_ces
+- ESR_NM_rps
+- ESR_NV_ces
+- ESR_NV_rps
+- ESR_NY_ces
+- ESR_NY_rps
+- ESR_OH_rps
+- ESR_OR_ces
+- ESR_OR_rps
+- ESR_OR_rps_solar
+- ESR_PA_rps
+- ESR_PA_rps_solar
+- ESR_RI_rps
+- ESR_TX_rps
+- ESR_VA_ces
+- ESR_VA_rps
+- ESR_VT_rps
+- ESR_WA_ces
+- ESR_WA_rps
+- ESR_WI_rps
+- MinCapTag_CA_offshorewind
+- MinCapTag_CT_offshorewind
+- MinCapTag_MA_offshorewind
+- MinCapTag_MD_offshorewind
+- MinCapTag_ME_offshorewind
+- MinCapTag_NJ_offshorewind
+- MinCapTag_NY_offshorewind
+- MinCapTag_RI_offshorewind
+- MinCapTag_VA_offshorewind
+
+
+default_model_tag: 0
+
+model_tag_values:
+  THERM:
+    Coal Integrated Gasification Combined Cycle: 1
+    Conventional Steam Coal: 1
+    CSP: 1
+    Landfill Gas: 1
+    Municipal Solid Waste: 1
+    Natural Gas: 1
+    Natural Gas Fired Combined Cycle: 1
+    Natural Gas Fired Combustion Turbine: 1
+    Natural Gas Internal Combustion Engine: 1
+    Natural Gas Steam Turbine: 1
+    NGCCS100: 1
+    Nuclear: 1
+    Other Gases: 1
+    Other Natural Gas: 1
+    Other Waste Biomass: 1
+    Other_peaker: 1 # Is there any way to do this based on the underlying categories?
+    Petroleum Coke: 1
+    Petroleum Liquids: 1
+    Wood/Wood Waste Biomass: 1
+    NaturalGas_: 1
+  VRE:
+    Distributed_Generation: 1
+    CSP: 1
+    LandbasedWind: 1
+    OffshoreWind: 1
+    Offshore Wind Turbine: 1
+    Onshore Wind: 1
+    Solar Photovoltaic: 1
+    Solar Thermal without Energy Storage: 1
+    UtilityPV: 1
+    Imports: 1
+  Num_VRE_Bins:
+    Distributed_Generation: 1
+    CSP: 1
+    LandbasedWind: 1
+    OffshoreWind: 1
+    Onshore Wind: 1
+    Solar Photovoltaic: 1
+    Solar Thermal without Energy Storage: 1
+    UtilityPV: 1
+    Imports: 1
+    Offshore Wind Turbine: 1
+  STOR:
+    Batteries: 1
+    Battery: 1
+    Hydroelectric Pumped Storage: 1
+  FLEX:
+    load_growth: 1
+    us_exports: 1
+  HYDRO:
+    Conventional Hydroelectric: 1
+    Hydropower: 1
+  Commit:
+    Biomass: 1
+    Biopower: 1
+    Coal Integrated Gasification Combined Cycle: 1
+    Conventional Steam Coal: 1
+    Natural Gas: 1
+    Natural Gas Fired Combined Cycle: 1
+    Natural Gas Fired Combustion Turbine: 1
+    Natural Gas Internal Combustion Engine: 1
+    Natural Gas Steam Turbine: 1
+    NGCCS100: 1
+    Nuclear: 1
+    Other_peaker: 1 # Is there any way to do this based on the underlying categories?
+    Petroleum Coke: 1
+    Petroleum Liquids: 1
+  New_Build:
+    Battery: 1
+    Biomass: -1
+    Biopower: 1
+    Conventional Hydroelectric: -1
+    Geothermal: -1
+    LandbasedWind: 1
+    NaturalGas: 1
+    NGCCS100: 1
+    OffshoreWind: 1
+    Small Hydroelectric: -1
+    UtilityPV: 1
+    Imports: 1
+    Nuclear_Nuclear: 1
+    Nuclear: -1
+    Distributed_Generation: -1
+    load_growth: -1
+    us_exports: -1
+  CapRes_1:
+    Conventional Steam Coal: 0.9
+    Natural Gas Fired Combined Cycle: 0.9
+    Natural Gas Fired Combustion Turbine: 0.9
+    Petroleum Liquids: 0.9
+    Natural Gas Internal Combustion Engine: 0.9
+    Nuclear: 0.9
+    Natural Gas Steam Turbine: 0.9
+    Wood/Wood Waste Biomass: 0.9
+    Petroleum Coke: 0.9
+    Geothermal: 0.9
+    Municipal Solid Waste: 0.9
+    Landfill Gas: 0.9
+    Coal Integrated Gasification Combined Cycle: 0.9
+    Other Waste Biomass: 0.9
+    Other Gases: 0.9
+    Other Natural Gas: 0.9
+    Other_peaker: 0.9 # Is there any way to do this based on the underlying categories?
+    Biomass: 0.9
+    NaturalGas_: 0.9
+    Biopower_: 0.9
+    Nuclear_: 0.9
+    CSP_: 0.9
+    NGCCS100: 0.9
+    OffshoreWind: 0.8
+    LandbasedWind: 0.8
+    UtilityPV: 0.8
+    Imports: 0.8
+    Conventional Hydroelectric: 0.8
+    Onshore Wind: 0.8
+    Small Hydroelectric: 0.8
+    Solar Photovoltaic: 0.8
+    Battery: 0.95
+    Hydroelectric Pumped Storage: 0.95
+  CapRes_2:
+    Conventional Steam Coal: 0.9
+    Natural Gas Fired Combined Cycle: 0.9
+    Natural Gas Fired Combustion Turbine: 0.9
+    Petroleum Liquids: 0.9
+    Natural Gas Internal Combustion Engine: 0.9
+    Nuclear: 0.9
+    Natural Gas Steam Turbine: 0.9
+    Wood/Wood Waste Biomass: 0.9
+    Petroleum Coke: 0.9
+    Geothermal: 0.9
+    Municipal Solid Waste: 0.9
+    Landfill Gas: 0.9
+    Coal Integrated Gasification Combined Cycle: 0.9
+    Other Waste Biomass: 0.9
+    Other Gases: 0.9
+    Other Natural Gas: 0.9
+    Other_peaker: 0.9 # Is there any way to do this based on the underlying categories?
+    Biomass: 0.9
+    NaturalGas_: 0.9
+    Biopower_: 0.9
+    Nuclear_: 0.9
+    CSP_: 0.9
+    NGCCS100: 0.9
+    OffshoreWind: 0.8
+    LandbasedWind: 0.8
+    UtilityPV: 0.8
+    Imports: 0.8
+    Conventional Hydroelectric: 0.8
+    Onshore Wind: 0.8
+    Small Hydroelectric: 0.8
+    Solar Photovoltaic: 0.8
+    Battery: 0.95
+    Hydroelectric Pumped Storage: 0.95
+  MUST_RUN:
+    Small Hydroelectric: 1
+    Geothermal: 1
+    Wood/Wood Waste Biomass: 1
+    Biomass: 1
+    # distributed_gen: 1
+  gen_max_annual_availability:
+    # this is set for passthrough to gen_info.csv in switch.yml
+    # "" will match all technologies; set to 1 by default, but override for the 
+    # demand response virtual generators (see notes in flexible_load.yml)
+    "": 1.0
+    # firm loads (0.0 reduction) by default, but may be adjusted in scenarios
+    load_growth: 0.0
+    us_exports: 0.0
+  gen_can_provide_spinning_reserves:
+    # most gens can provide spinning reserves
+    "": 1
+    # no spinning reserves from the DR generators with limited or no annual 
+    # availability (could revisit this to treat them as interruptible loads
+    # that can be counted toward the reserve margin even if not interrupted)
+    load_growth: 0
+    # no spinning reserves from the dummy generators created for the exports
+    us_exports: 0
+  Can_Retire:
+    # Allow economic retirement of existing thermal plants (may pick up some new
+    # ones, too, but that shouldn't matter, since they can't retire the year
+    # they are built.)
+    Biomass: 1
+    Coal: 1
+    Natural Gas: 1
+    Nuclear: 1
+    peaker: 1
+    Petroleum: 1
+  MaxCapTag_WindGrowth:
+    # all wind technologies are subject to a national growth limit (this could
+    # be moved to sceanrio_settings to turn it off for some cases)
+    Wind: 1
+
+
+
+
+
+# Tags for a technology in a specific region Format should be
+# regional_tag_values: <region>: <tag name>: <technology>: <tag value>
+# Technologies will be matched using str.contains(case=False, regex=False) (with
+# "_" converted to ""), so partial names can be included but they might
+# unintentially map to other techs
+# See "regional_resource_tags.yml" for this (machine-generated for this study).
+# regional_tag_values:
+#   NENG_CT:
+#     New_Build:
+#       Battery: 1
+#       Biomass: -1
+#       Biopower: 1
+#       Conventional Hydroelectric: -1
+#       Geothermal: -1
+#       LandbasedWind: 1
+#       NaturalGas: 1
+#       NGCCS100: 1
+#       OffshoreWind: 1
+#       Small Hydroelectric: -1
+#       UtilityPV: 1
+#       Nuclear_Nuclear: 1
+#       Nuclear: -1
+#     MinCapTag_1:
+#       LandbasedWind: 0
+#   NENGREST:
+#     MinCapTag_2:
+#       OffShoreWind: 1
+#     MinCapTag_3:
+#       UtilityPV: 1
+
+# MinCapReq:
+#   MinCapTag_1:
+#     description: ME_Wind
+#     min_mw: 8000
+#   MinCapTag_2:
+#     description: ME_OSW
+#     min_mw: 5000
+#   MinCapTag_3:
+#     description: MA_Solar
+#     min_mw: 3200

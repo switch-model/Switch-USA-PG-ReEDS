@@ -1,0 +1,24 @@
+﻿pg_tech,reeds_tech
+natural gas,Gas-CC
+naturalgas,Gas-CC
+coal,CoalOldScr
+other_peaker,Gas-CT
+exports,dr_shed_1
+imports,can-imports
+load_growth,dr_shed_1
+battery,battery_li
+batteries,battery_li
+pumped storage,pumped-hydro
+distributed_generation,distpv
+nuclear,Nuclear
+bio,biopower
+conventional hydro,hydD
+small hydro,hydSND
+geothermal,geohydro_allkm_1
+LandbasedWind,wind-ons_1
+onshore wind,wind-ons_1
+OffShoreWind,wind-ofs_1
+offshore wind,wind-ofs_1
+UtilityPV,upv_1
+photovoltaic,upv_1
+ccs,Gas-CC-CCS_mod

@@ -1,0 +1,123 @@
+# Flexible loads associated with increased electrification can be included using data
+# from NREL's EFS study (described below) or using user input files. This case study
+# uses EFS data.
+
+
+# Electrification scenarios are supplied in two files. EFS_STOCK_AGG.parquet has scenarios
+# from the NREL Electrification Futures Study (EFS). SCENARIO_STOCK.parquet has scenarios
+# from the Princeton Net Zero study. The scenario name will depend on which source you
+# use. The NREL EFS scenarios include:
+
+# HIGH ELECTRIFICATION - MODERATE TECHNOLOGY ADVANCEMENT
+# MEDIUM ELECTRIFICATION - MODERATE TECHNOLOGY ADVANCEMENT
+# REFERENCE ELECTRIFICATION - MODERATE TECHNOLOGY ADVANCEMENT
+
+# The Princeton Net Zero scenarios include:
+
+# current_policy
+# stated_policy
+# deep_decarbonization
+# moderate_decarbonization
+
+# The type of flexible loads that can be included as flexible demand resources (with hourly
+# profiles from NREL EFS data) are:
+
+# res_space_heat_cool (residential space heating and cooling)
+# res_water_heat (residential water heating)
+# comm_space_heat_cool (commercial space heating and cooling)
+# comm_water_heat (commercial water heating)
+# trans_light_duty (light duty vehicles)
+# trans_medium_duty (medium duty vehicles)
+# trans_heavy_duty (heavy duty vehicles)
+# trans_bus (transit buses)
+
+
+# electrification_stock_fn: SCENARIO_STOCK.parquet # EFS_STOCK_AGG.parquet
+# electrification_scenario: current_policy # REFERENCE ELECTRIFICATION - MODERATE TECHNOLOGY ADVANCEMENT
+
+##########################
+# Demand Response (flexible load) info
+##########################
+
+# Demand response profiles for the current scenario (identified in
+# `demand_response`) will be added to loads for the specified region and model
+# year if the scenario matches the `demand_response` setting above. They will
+# also be used to define dummy generators for flexible demand based on entries
+# in `flexible_demand_resources` (if `demand_response_fn` is defined,
+# `demand_response` and `flexible_demand_resources` must be too).
+
+# Table 5.1 from the NREL report "Electrification Futures Study: Scenarios of
+# Electric Technology Adoption and Power Consumption for the United States" can
+# serve as a starting point for determining parameter values.
+
+# name of current demand response scenario, read by
+# make_demand_response_profiles
+demand_response: base
+
+
+# csv file with hourly profiles for demand response resources in each
+# region/year/scenario. The top four rows are 
+#   1) the name of the DR resource (matching key values in
+#      `flexible_demand_resources` below), 
+#   2) the model year, 
+#   3) the scenario name (scenarios are selected using the `demand_response`
+#      settings parameter), and
+#   4) the model region from `model_regions`
+# Then the rows contain hourly loads for each of these cases / regions. There should be 
+# one row per load hour, in order, with no explicit index.
+demand_response_fn: load_adjustments.csv.zip
+
+# `flexible_demand_resources` contains name of the flexible resource, fraction of
+# load that can be shifted, and model-specific parameters that will be applied
+# to each resource.
+
+# PowerGenome will create virtual generators (resources) with the following
+# params:
+#   - Existing_Cap_MW: fraction_shiftable (from here) * profile.max()
+#   - New_Build: -1  # always overridden by New_Build tag in resource_tags.yml
+#   - Fuel: "No_fuel"
+#   - cluster: 1
+#   - others as given under `parameter_values` here
+# They will also have max cap factor equal to the normalized load shape, so 
+# effectively they can represent curtailment of fraction_shiftable * profile
+# in any hour (subject to limits imposed by the model based on parameter_values).
+
+# Note: profile for the capacity calculation will come from `demand_response_fn`
+# if defined, otherwise `electrification_stock_fn` (defined elsewhere).
+
+# Note: any resource type defined here must also be set to FLEX = 1 and
+# New_Build = -1 in resource_tags.yml > model_tag_values (if FLEX=1 is only set
+# here, it will be reset to 0 there; PowerGenome always sets New_Build to -1,
+# but then it gets reset to 0 there)
+
+# note: also set resource_tags.yml > model_tag_values:
+# gen_max_annual_availability: 0.0 (or whatever) We could in theory set that
+# under flexible_demand_resources: year: resource: parameter_values:
+# gen_max_annual_availability: but then all the other gens get 0.0 assigned as
+# the default value, which we don't want; on the other hand, if we set a default
+# value in model_tag_values, then that overrides whatever we try to set here.
+
+flexible_demand_resources:
+  # Example:
+  # 2030:
+  #   trans_light_duty:  # same as first row of `demand_response_fn`
+  #     fraction_shiftable: 0.8  # mandatory, numeric
+  #     parameter_values:
+  #       Max_Flexible_Demand_Delay: 5
+  #       Flexible_Demand_Energy_Eff: 1
+  #   res_water_heat:
+  #     fraction_shiftable: 0.1
+  #     parameter_values:
+  #       Max_Flexible_Demand_Delay: 2
+  #       Flexible_Demand_Energy_Eff: 0.98
+  2024:
+    us_exports:
+      # net exports to Canada/Mexico (may be negative)
+      # we disable the virtual generator for this load adjustment both by
+      # setting the shiftable fraction to 0 and by setting annual availability
+      # to 0.
+      fraction_shiftable: 0.0
+  2030:
+    us_exports:
+      # net exports to Canada/Mexico (may be negative)
+      fraction_shiftable: 0.0

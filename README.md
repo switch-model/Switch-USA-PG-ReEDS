@@ -1,17 +1,15 @@
 # Introduction
 
 The sections below show how to use this repository. Note that this will take
-about 20 GB of storage on your computer before you start generating model
-inputs. This is mainly used by the `MIP_results_comparison` sub-repository,
-which holds one copy of all the comparison data (6.2 GB) in the active file
-system and one copy in the underlying git database, and also by the PowerGenome
-input files that will be stored in the `pg_data` directory (9.2 GB).
+about 25 GB of storage on your computer before you start generating model
+inputs. Most of this is used by the PowerGenome input files that will be
+stored in the `pg_data` directory (9.2 GB).
 
 # Install miniconda
-Download from https://docs.conda.io/projects/miniconda/en/latest/
-Install
-or whatever powergenome recommends (mainly to get git)
-if you already have this or miniconda or anaconda, you can skip ahead
+Download and install Miniconda from https://www.anaconda.com/download (you will 
+need to create a login with your email address but don't have to sign up to receive emails.)
+
+if you already have Miniconda or Anaconda, you can skip ahead.
 
 # Install VS Code and Python Extensions
 
@@ -75,22 +73,14 @@ Open a terminal pane: Terminal > New Terminal
 Run these commands in the terminal pane.
 
 ```
-# add `git` to your base environment to use for installing the rest
-# (if you prefer not to alter your base environment, you could add it to a
-# "pre-install" environment and use that for the initial setup)
-conda install -y -c conda-forge git
-
+# Create and activate Switch/PowerGenome Python environment
+conda env create -n switch-pg-reeds --file https://github.com/switch-model/Switch-USA-PG-ReEDS/raw/refs/heads/main/environment.yml
+conda activate switch-pg-reeds
+ 
 # clone this repository and the dependency submodules (PowerGenome and MIP_results_comparison)
 cd <wherever you want the Switch-USA-PG code>
-git clone https://github.com/switch-model/Switch-USA-PG --recurse-submodules --depth=1
-cd Switch-USA-PG
-
-# Create and activate powergenome environment
-# On macOS with Apple silicon, use `CONDA_SUBDIR=osx-arm64 conda create ...`
-conda create -y -c conda-forge -n switch-pg python=3.10 git ipykernel
-conda env update -n switch-pg -f environment.yml
-conda env update -n switch-pg -f PowerGenome/environment.yml
-conda activate switch-pg
+git clone https://github.com/switch-model/Switch-USA-PG-ReEDS --recurse-submodules --depth=1
+cd Switch-USA-PG-ReEDS
 
 # install PowerGenome from local sub-repository
 pip install -e PowerGenome
@@ -100,49 +90,69 @@ Close the current VS Code window. Then choose File > Open, then navigate to the
 Switch-USA-PG folder and choose "Open". You can repeat this step anytime you
 want to work with this repository in the future.
 
-Set VS Code to use the switch-pg Python environment for future work:
-shift-ctrl/cmd-P > `Python: Select Interpreter` > search for `switch-pg` > enter
+Set VS Code to use the switch-pg-reeds Python environment for future work:
+shift-ctrl-P (Windows/Linux) or shift-cmd-P (macOS) > `Python: Select Interpreter` > search for `switch-pg-reeds` > Enter/return
 
-# Download PowerGenome input data and configure PowerGenome to use it
+# Download and patch PowerGenome input data and configure PowerGenome to use it
 
 In VS Code, choose Terminal > New Terminal, then run these commands in the
-terminal pane (inside the Switch-USA-PG directory):
+terminal pane (inside the Switch-USA-PG-ReEDS directory):
 
 ```
-conda activate switch-pg
+conda activate switch-pg-reeds
 
 python download_pg_data.py
+python patch_pg_existing_resource_groups.py
 ```
+
+After this, manually update several .csv data files in `pg_data` as noted in the
+output from the `patch_pg_existing_resource_groups.py` script. This may be
+easiest using a spreadsheet program. (TODO: maybe post the patched versions on
+our own Google Drive and download those directly.)
+
+In the VS Code terminal pane, run the script below to create the custom load profiles used for this study (too large to store on github):
+
+```
+python make_study_loads.py
+```
+
+If you prefer to use the ReEDS standard loads instead, you can skip this script and instead comment out `regional_load_fn` in `pg/settings/demand.yml/` and set `load_source_table_name: load_curves_nrel_reeds` in the same file.
 
 ## Notes about PowerGenome scenario configuration
 
-`MIP_results_comparison/case_settings/26-zone/settings-atb2023` holds the settings
-currently used for all scenarios in this study in a collection of `*.yml` files.
-In addition to these, tabular data is stored in `*.csv` files. The location of
-the .csv files and the specific files to use for the study are identified in
-`extra_inputs.yml`. The location should be a subdirectory (currently
-`CONUS_extra_inputs`) at the same level as the `settings` folder that holds the
-.yml files. One special .csv file, identified by the `scenario_definitions_fn`
-setting (currently
-`MIP_results_comparison/case_settings/26-zone/CONUS_extra_inputs/conus_scenario_inputs.csv`),
-defines all the cases available and identifies named groups of settings to use
-for various aspects of the model for each one. The .yml files in turn provide
-specific values to use in the model, depending which group of settings is
-selected.
+`pg/settings/` holds the settings used for all scenarios in this study in a
+collection of `*.yml` files. In addition to these, tabular data is stored in
+`*.csv` files. The location of the .csv files and the specific files to use for
+the study are identified in `extra_inputs.yml`. The location should be a
+subdirectory (currently `extra_inputs`) at the same level as the `settings`
+folder that holds the .yml files. One special .csv file, identified by the
+`scenario_definitions_fn` setting (currently
+`pg/extra_inputs/scenario_inputs.csv`), defines all the cases available and
+identifies named groups of settings to use for various aspects of the model for
+each one. Each setting defined in the scenario definitions csv turns flags on
+and off in the `settings_management` key (in
+`pg/settings/scenario_management.yml`). These in turn override specific keys in
+all the *.yml files with new values reflecting the flag setting.
+
+Currently, the most useful flag is `time_series`, which can be all 7 years of
+data (case ID `p1`), 4 sample weeks (case ID `s4` and `s4_flat`) or 20x1 sample
+days (case ID `s20_1`, `s20_1_flat` and `s20_1_decarb`). Cases ending with
+`_flat` have no load growth, and cases with `_decarb` have deep decarbonization
+($200 national carbon tax).
 
 # Generate Switch inputs
 
-To setup one model case for one year for testing, you can run this command:
+To setup one model case for one year for testing, you can run this command in the VS Code terminal pane (after running `conda activate switch-pg-reeds` if needed):
 
 ```
 # setup one example case (specify case-id and year)
-python pg_to_switch.py MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --case-id base_short --year 2050
+# (s20_1 uses our standard assumptions and 20x1 day time sampling)
+python pg_to_switch.py pg/settings switch/in/ --case-id s20_1 --year 2030
 ```
 
 The `pg_to_switch.py` script uses settings from the first directory you specify
-(`MIP_results_comparison/case_settings/26-zone/settings-atb2023`) and places
-Switch model input files below the second directory you specify
-(`switch/26-zone/in/`).
+(`pg/settings`) and places Switch model input files below the second directory
+you specify (`switch/in/`).
 
 To generate data for a specific model case, use `--case-id <case_name>`. To
 generate data for multiple cases, use `--case-id <case_1> --case-id <case_2>`,
@@ -158,24 +168,16 @@ when multiple years are requested. In this case, each model will use all
 available years of data. If you'd like to make single-period (myopic) models,
 you can use the `--myopic` flag.
 
-For the MIP project, most cases were setup as myopic models, where one model was
-created for each case for each reference year, then they were solved in
-sequence, from the first to the last, with extra code to carry construction
-plans and retirements forward to later years.
-
-The following commands will generate all model data for the MIP study.
-
-```
-# setup all myopic cases (don't specify case-id)
-python pg_to_switch.py MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --myopic
-# setup foresight cases (only for two main cases)
-python pg_to_switch.py MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --case-id base_20_week --case-id current_policies_20_week
-```
+For the previous MIP project, most cases were setup as myopic models, where one
+model was created for each case for each reference year, then they were solved
+in sequence, from the first to the last, with extra code to carry construction
+plans and retirements forward to later years. That code is available in this
+repository if needed (see `scenarios.txt` files generated by `pg_to_switch.py`
+and `switch/mip_modules/prepare_next_stage.py`).
 
 (Note: for comparison, you can generate GenX inputs by running `mkdir -p
-genx/in`, then `run_powergenome_multiple -sf
-MIP_results_comparison/case_settings/26-zone -rf genx/in -c base_short`. They
-will stored in `genx/in`.)
+genx/in`, then `run_powergenome_multiple -sf pg/settings -rf genx/in -c s20_1`.
+They will stored in `genx/in`.)
 
 ## Generate Switch inputs on high performance computing (HPC) cluster
 
@@ -204,27 +206,58 @@ As an alternative, you can run `sbatch setup_cases.slurm`, which will run
 `setup_cases.sh`. This will prepare all the cases one by one using a single
 machine.
 
+## Generate inputs from ReEDS data
+
+First, put these entries in `pg_data.yml`:
+
+```
+  pg_data/PowerGenome Data Files/pg_misc_tables_efs_2025.3.sqlite.zip: https://drive.google.com/file/d/1TR-bQ0vnE3pgNsl0opk03PFiPBkGIMB3/view?usp=sharing
+  ...
+  PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs_2025.3.sqlite  # ReEDS compatible, May 2025
+```
+
+Then run `python download_pg_data.py misc_tables`.
+
+Then get ReEDS-BA settings:
+
+```
+git clone --branch reeds-ba --single-branch https://github.com/PowerGenome/PowerGenome-examples.git
+```
+
+Generate model inputs:
+
+```
+# sampled case, not currently working; see options in 
+# PowerGenome-examples/ReEDS-BA/extra_inputs/scenario_inputs.csv
+python pg_to_switch.py PowerGenome-examples/ReEDS-BA/settings switch/reeds/in/ --case-id s1
+
+# all-hours case (7 years!)
+python pg_to_switch.py PowerGenome-examples/ReEDS-BA/settings switch/reeds/in/ --case-id p1
+```
+
 # Run Switch
 
 You can solve one case for one year like this:
 
 ```
 cd switch
-switch solve --inputs-dir 26-zone/in/2030/base_52_week_2027 --outputs-dir 26-zone/out/2030/base_52_week_2027
+switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
 ```
 
-This works well for the foresight cases, which only have one model to solve per
-case. However, for the myopic cases, it is necessary to solve each year in turn
-and chain the results forward to the next stage. The chaining can be done by
-adding `--include-module mip_modules.prepare_next_stage` to the command line for
-all but the last stage and adding
-`--input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv`
-for all but the first stage. (The `prepare_next_stage` module prepares
-alternative inputs for the next stage that include the construction plan from
-the current stage. Then the `--input-aliases` flag tells Switch to use those
-alternative inputs.)
+This works well for foresight cases or single-period cases, which only have one
+model to solve per case. However, for the myopic cases, it is necessary to solve
+each year in turn and chain the results forward to the next stage. The chaining
+can be done by adding `--include-module mip_modules.prepare_next_stage` to the
+command line for all but the last stage and adding `--input-aliases
+gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv
+gen_build_costs.csv=gen_build_costs.chained.base_short.csv
+transmission_lines.csv=transmission_lines.chained.base_short.csv` for all but
+the first stage. (The `prepare_next_stage` module prepares alternative inputs
+for the next stage that include the construction plan from the current stage.
+Then the `--input-aliases` flag tells Switch to use those alternative inputs.)
 
-So you _could_ solve the myopic version of the `base_short` model with these commands (but there's a better option, see below):
+So you _could_ solve the myopic version of the `base_short` model with these
+commands (but there's a better option, see below):
 
 ```
 cd switch
@@ -313,7 +346,7 @@ git push
 TODO: maybe move all of this into a switch module so it runs automatically when
 each case finishes
 
-# Notes
+# Updating repository with upstream changes
 
 To update this repository and all the submodules (PowerGenome and
 MIP_results_comparison), use
@@ -327,3 +360,86 @@ run `git add <submodule_dir>` and `git commit` in the main Switch-USA-PG
 directory to save the updated submodules in the Switch-USA-PG repository. This
 will save pointers in Switch-USA-PG showing which commit we are using in each
 submodule.
+
+# Replicating this repository
+
+The data used in this study fall into two categories:
+
+- Settings and data stored in this github repository (https://github.com/switch-model/Switch-USA-PG-ReEDS)
+- External data downloaded or created by the scripts discussed above
+
+This section provides some information on the origin of these. Users do not need
+to recreate these, since they are either part of the repository already,
+downloaded, or created automatically by the scripts run above. However, this
+information may be useful for people who want to replicate the upstream inputs
+or modify this workflow.
+
+## PowerGenome settings files
+
+The settings files (`pg/` directory of this repository) were originally prepared
+by Greg Schivley in May 2025 and uploaded to a reeds-ba branch of the
+PowerGenome/PowerGenome-examples repository. Matthias Fripp downloaded them from
+https://github.com/PowerGenome/PowerGenome-examples/tree/reeds-ba/ReEDS-BA and
+manually added settings to pg/settings/*.yml to customize it for this study. It
+is probably best to think of the *.yml files as being custom-written to define
+the inputs that are wanted for this particular study. Parts of these are also
+written automatically by `make_emission_policies.py`, discussed below.
+
+## External data
+
+The most important category of external data are the standard PowerGenome inputs
+and resource profiles created by Greg Schivley. These are documented in
+pg_data.yml and downloaded by the `download_pg_data.py` script. Upon download,
+these files have some errors, which are patched by
+`patch_pg_existing_resource_groups.py` or manually by users, based on notes
+printed from that script.
+
+In addition to the inputs from Greg Schivley, pg_data.yml points to a "retro"
+version of the PUDL database (mostly from EIA) that Matthias Fripp created by
+copying data from the August 2025 edition of PUDL into a new sqlite database
+with the PUDL schema used before December 2023. The `make_retro_pudl_data.py`
+script does this. See that script for additional information.
+
+After downloading the main data for PowerGenome, scripts were used to create
+various categories of additional input data for PowerGenome, as discussed below.
+The outputs of these scripts are part of the repository, but the scripts can be
+revised and/or re-run if needed to re-create or update the input data. These 
+should be run before running pg_to_switch.py to create Switch model inputs.
+
+**Load profiles, load growth forecasts and international exports.** Matthias
+Fripp created these using make_study_loads.py (which contains some additional
+documentation). The resulting inputs for PowerGenome are in the
+`pg/extra_inputs` folder of this repository. The **baseline load profiles** come
+from the load_curves_nrel_reeds in pg_data/pg_misc_tables_efs_2025.3.sqlite (see
+pg_data.yml) and may originate directly from
+[ReEDS](https://github.com/NREL/ReEDS-2.0/tree/main/inputs/load). **Zonal load
+growth rates** come from an [ICF
+study](https://www.icf.com/insights/energy/demand-growth-challenges-opportunities-utilities)
+and were converted from map images to zonal data via
+`growth_rates/retrieve_icf_growth.py`, including manual image editing at several
+stages documented there (mainly to remove text that obscured map colors and
+ensure that borders were correct). **International exports** come from EIA
+interchange data via PUDL. This model treats them as additional loads in the
+exporting zone.
+
+**Clean energy standards (CES), Renewable Portfolio Standards (RPS),
+minimum/maximum capacity requirements and carbon policies.** The
+`make_emission_policies.py` script implements these by reading rules from the
+ReEDS repository on github.com and creating several files and .yml sections with
+equivalent terms in the pg/settings and pg/extra_inputs directories. This also
+creates a national cap on new wind development equal to the highest rate of
+growth in 2014-24, as determined from EIA 860m data downloaded by PowerGenome.
+These are the files and sections created by this script:
+
+  - `emission_policies_current.csv`: current CO2 policies
+  - `emission_policies_decarb.csv`: national cap / carbon tax case
+  - `model_definition.yml/generator_columns` and `resource_tags.yml/model_tag_names`: RPS, CES and minimum-capacity tags that should be attached to generators (just defines the tags, doesn't assign values)
+  - `scenario_management.yml/settings_management/[various years]/all_cases`: levels for minimum and maximum capacity requirements
+  - `regional_resource_tags.yml`: generator eligibility for state RPS, CES and minimum-capacity programs
+    - eligibility for max-capacity programs (the national wind ban (`MaxCapTag_WindGrowth`) and an optional ban on individual technologies (`MaxCapTag_Ban`)) are specified manually in `model_definition.yml/generator_columns`, `resource_tags.yml/model_tag_values` and possibly `scenario_management.yml/settings_management/` as needed.
+
+**Coal plant closures**. The `update_coal_closures.py` script retrieves data on
+expected near-term coal plant closures from [Global Energy
+Monitor](https://globalenergymonitor.org/projects/global-coal-plant-tracker/download-data/)
+and uses them to update retirement dates in the local copy of EIA 860m data
+maintained by PowerGenome.

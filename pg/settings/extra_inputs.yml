@@ -1,0 +1,33 @@
+# The location and name of additional input files needed to create outputs
+# see documentation in 
+# https://github.com/PowerGenome/PowerGenome/blob/master/example_systems/settings_documentation.md
+
+input_folder: extra_inputs # Subfolder directly below the location of this settings file
+scenario_definitions_fn: scenario_inputs.csv # Define policy/cost scenarios for each case
+# Emission policies for each model_year/region/case_id
+# The version below is created by make_emission_policies.py from 
+# - ReEDS info for ESR (CES/RPS) programs
+# - ReEDS info for RGGI
+# - CA, NY and WA are given a 0 cap to create a simple carbon tax
+# TODO: check whether the ReEDS version of RGGI corresponds to the basic allocation
+# or basic + cost containment reserve and decide which we'd rather use (may depend on
+# how high our CO2 shadow price ends up)
+# Also see carbon_cost_dollar_per_tco2 for the single carbon tax price, also used as
+# escape price for all CO2 policies.
+emission_policies_fn: emission_policies_current.csv
+capacity_limit_spur_fn: resource_capacity_spur.csv # Max capacity and spur line distance for each renewable resource
+demand_segments_fn: demand_segments_voll.csv
+misc_gen_inputs_fn: misc_gen_inputs.csv
+user_transmission_costs: network_costs_ReEDS.csv
+# the reeds_ba_tx_NARIS_avg data don't have enough transmission to serve p119
+# during certain timepoints in a 2024 model, so we use REFS2009 instead. see
+# cryptic documentation at
+# https://github.com/NREL/ReEDS-2.0/blob/main/sources_documentation.md
+# Note: NARIS says p119 has 972 MW outbound to p122 and 171 inbound; REFS2009
+# says it has 2530 MW either way. Inspection of OpenInfraMap data gives an
+# estimate around 4600 MVA (assuming 1000 A per line).
+user_transmission_constraints_fn: reeds_ba_tx_REFS2009_avg.csv
+co2_pipeline_cost_fn: co2_pipeline_cost_percentiles.csv
+# reserves_fn: Reserves.csv
+plant_region_map_fn: reeds_plant_map.csv
+user_region_geodata_fn: "US_PCA_region"

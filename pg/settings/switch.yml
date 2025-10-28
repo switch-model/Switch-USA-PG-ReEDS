@@ -1,0 +1,38 @@
+# generator (resource) columns to pass through to gen_info.csv for Switch
+gen_info_extra_columns:
+  # gen_info column: PowerGenome resource column
+  gen_max_annual_availability: gen_max_annual_availability
+  gen_can_provide_spinning_reserves: gen_can_provide_spinning_reserves
+
+# financial terms (should be real, i.e., net of inflation)
+# TODO: take the average of various technologies from PowerGenome
+interest_rate: 0.05
+discount_rate: 0.03
+
+# can be all_timepoints or peak_load (timeseries with highest coincident load)
+# TODO: check if GenX has a native version of this
+prr_enforcement_timescale: peak_load
+
+# script(s) to run after setting up a model directory will be called with the
+# path to the directory plus any additional arguments in the `arguments` key.
+# Path to script should be specified relative to the PowerGenome settings
+# directory.
+model_adjustment_scripts:
+  # description of script:  # can set to ~ for a scenario to bypass this script
+  #   script: ../../path/to/script.py
+  #   arguments: (optional) --additional_arguments "to pass" --to 'script'
+  Add reserve info:
+    script: ../../add_reserve_info.py
+  Add extreme day:
+    script: ../../add_extreme_days.py
+
+# price to pay to go beyond carbon caps in emission_policies_fn (which may be
+# zero for a simple tax). Note: pg_to_switch.py is currently setup to use the
+# same price for all carbon programs
+# TODO: see which flags GenX used to implement this in MIP and use those
+# $35 is based on the average of California ($35.21) and 
+# Washington (31.64) in 2024
+# https://icapcarbonaction.com/en/ets/usa-california-cap-and-trade-program
+# https://icapcarbonaction.com/en/ets/usa-washington-cap-and-invest-program
+# also see  for which policies apply 
+carbon_cost_dollar_per_tco2: 33.43

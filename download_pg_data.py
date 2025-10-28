@@ -1,26 +1,36 @@
 """
 Retrieve and decompress input files to run PowerGenome and set PowerGenome
 parameters to access them.
+
+Will download all files and folders named in pg_data.yml by default, or only the
+ones that contain any word specified on the command line, if any, e.g.,
+
+python download_pg_data.py misc_tables
 """
 
-import os, sys, re, zipfile, platform
-import gdown, yaml, powergenome
+import os, sys, zipfile, platform, urllib
+import gdown, yaml
 
 
-def unzip(filename):
-    print(f"unzipping {filename}")
-    with zipfile.ZipFile(filename, "r") as zip_ref:
-        # identify the files we want to extract (ignore metadata)
-        names = [n for n in zip_ref.namelist() if not n.startswith("__MACOSX")]
-        top_level_files = set(n.split("/")[0] for n in names)
-        if len(top_level_files) == 1:
-            # contains one file or one directory; expand in place
-            dest = os.path.dirname(filename)
-        else:
-            # use zip file name as outer subdir
-            dest = os.path.splitext(filename)[0]
-        zip_ref.extractall(dest, members=names)
-    os.remove(filename)
+def unzip_if_needed(filename):
+    if filename.endswith(".zip"):
+        print(f"unzipping {filename}")
+        with zipfile.ZipFile(filename, "r") as zip_ref:
+            # identify the files we want to extract (ignore metadata)
+            names = [n for n in zip_ref.namelist() if not n.startswith("__MACOSX")]
+            top_level_files = set(n.split("/")[0] for n in names)
+            if len(top_level_files) == 1:
+                # contains one file or one directory; expand in place
+                dest = os.path.dirname(filename)
+            else:
+                # use zip file name as outer subdir
+                dest = os.path.splitext(filename)[0]
+            if os.path.exists(dest):
+                os.remove(dest)
+            zip_ref.extractall(dest, members=names)
+        os.remove(filename)
+    else:
+        pass
 
 
 def main(filter=[]):
@@ -47,43 +57,33 @@ def main(filter=[]):
             f.close()
             os.remove(test_file)
 
-    for dest, url in settings["download_folders"].items():
+    for dest, url in settings["download_gdrive_folders"].items():
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
             files = gdown.download_folder(url, output=dest)
             for filename in files:
-                if filename.endswith(".zip"):
-                    unzip(filename)
+                unzip_if_needed(filename)
+
+    for dest, url in settings["download_gdrive_files"].items():
+        if not filter or any(f in dest for f in filter):
+            print(f"\nretrieving {dest}")
+            filename = gdown.download(url, fuzzy=True, output=dest)
+            unzip_if_needed(filename)
 
     for dest, url in settings["download_files"].items():
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
-            filename = gdown.download(url, fuzzy=True, output=dest)
-            if filename.endswith(".zip"):
-                # unzip the file and delete the .zip
-                unzip(filename)
+            urllib.request.urlretrieve(url, dest)
+            unzip_if_needed(dest)
 
-    # create powergenome/.env
-    env_file = os.path.join(powergenome.__path__[0], ".env")
-    rel_path = os.path.relpath(env_file, os.getcwd())
-    if not rel_path.startswith(".."):
-        # change to relative path if powergenome is in a subdir, for neater reporting
-        env_file = rel_path
-    print(f"\ncreating {env_file}")
-    with open(env_file, "w") as f:
-        for var, dest in settings["env"].items():
-            abs_dest = os.path.abspath(dest)
-            f.write(f"{var}='{abs_dest}'\n")
-
-    # create case_settings/**/env.yml
-    for model, dest in settings["resource_groups"].items():
-        abs_dest = os.path.abspath(dest)
-        yml_file = os.path.join(
-            "MIP_results_comparison", "case_settings", model, "env.yml"
-        )
+    # create model_dir/env.yml
+    for model_dir, model_settings in settings["env.yml"].items():
+        yml_file = os.path.join(model_dir, "env.yml")
         print(f"\ncreating {yml_file}")
         with open(yml_file, "w") as f:
-            f.write(f"RESOURCE_GROUPS: '{abs_dest}'\n")
+            for var, dest in model_settings.items():
+                abs_dest = os.path.abspath(dest)
+                f.write(f"{var}: '{abs_dest}'\n")
 
     print(f"\n{sys.argv[0]} finished.")
 

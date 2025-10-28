@@ -1,12 +1,19 @@
-import os
+print(
+    "TODO: compare results from this script when running with MIP PowerGenome data, "
+    "with the following turned on or off in the upstream settings: "
+    "gen_tech, gen_energy_source, gen_is_variable, gen_is_baseload. "
+    "Try this with and without time reduction."
+)
+# TODO: use same timestamp formula for sampled timeseries as for full-record ones (maybe make proper time stamps?)
+# TODO: calculate interest_rate from gen_info.WACC and maybe similar info for transmission lines if not provided (avoid need for a custom switch.yml)
+# TODO (maybe): remove FLEX generators in gen_tables() and convert to custom demand response info
+# TODO: get gen_forced_outage_rate from equivalent GenX column, not custom column for Switch
+
 import sys
-import math
-from datetime import datetime as dt
-import ast
-import itertools
-from statistics import mode
+import os
 import collections
 import shlex
+import subprocess
 from pathlib import Path
 from typing import List, Optional
 from typing_extensions import Annotated
@@ -17,10 +24,7 @@ import scipy
 import sqlalchemy as sa
 import typer
 
-from powergenome.resource_clusters import ResourceGroup
-
 import pandas as pd
-from powergenome.fuels import fuel_cost_table
 from powergenome.generators import GeneratorClusters, create_plant_gen_id
 from powergenome.util import (
     build_scenario_settings,
@@ -29,14 +33,11 @@ from powergenome.util import (
     check_settings,
     snake_case_col,
 )
-
+from powergenome.load_profiles import make_final_load_curves
 from powergenome.time_reduction import kmeans_time_clustering
-from powergenome.eia_opendata import fetch_fuel_prices
 from powergenome.eia_opendata import add_user_fuel_prices
-import geopandas as gpd
 from powergenome.generators import *
 from powergenome.external_data import (
-    make_demand_response_profiles,
     make_generator_variability,
     load_demand_segments,
 )
@@ -45,11 +46,11 @@ from powergenome.GenX import (
     hydro_energy_to_power,
     add_co2_costs_to_o_m,
     create_policy_req,
-    set_must_run_generation,
+    # set_must_run_generation,
     min_cap_req,
+    max_cap_req,
+    create_regional_cap_res,
 )
-from powergenome.co2_pipeline_cost import merge_co2_pipeline_costs
-
 
 from conversion_functions import (
     switch_fuel_cost_table,
@@ -57,8 +58,6 @@ from conversion_functions import (
     gen_info_table,
     hydro_time_tables,
     load_zones_table,
-    fuel_market_tables,
-    timeseries,
     timeseries_full,
     graph_timestamp_map_table,
     graph_timestamp_map_kmeans,
@@ -70,21 +69,13 @@ from conversion_functions import (
     ts_tp_pg_kmeans,
     hydro_timepoints_pg_kmeans,
     hydro_timeseries_pg_kmeans,
-    hydro_system_module_tables,
-    variable_cf_pg_kmeans,
+    hydro_system_tables,
     load_pg_kmeans,
     first_key,
     first_value,
     final_key,
     final_value,
     km_per_mile,
-)
-
-from powergenome.load_profiles import (
-    make_load_curves,
-    add_load_growth,
-    make_final_load_curves,
-    make_distributed_gen_profiles,
 )
 
 if not sys.warnoptions:
@@ -110,71 +101,19 @@ def fuel_files(
     )
 
     fuels_table = switch_fuels(fuel_prices, fuel_emission_factors)
-    fuels_table.loc[len(fuels_table.index)] = [
-        "Fuel",
-        0,
-        0,
-    ]  # adding in a dummy fuel for regional_fuel_market
-
-    ### edit by RR
-    IPM_regions = regions
-    load_zones = load_zones_table(IPM_regions, zone_ccs_distance_km=0)
-    # add in the dummy loadzone
-    load_zones.loc[len(load_zones.index)] = [
-        "loadzone",
-        0,
-        load_zones["zone_dbid"].max() + 1,
-    ]
-    load_zones.to_csv(out_folder / "load_zones.csv", index=False)
-
-    regional_fuel_markets = pd.DataFrame(
-        {"regional_fuel_market": "loadzone-Fuel", "fuel": "Fuel"}, index=[0]
-    )
-    regional_fuel_markets
-
-    ### edited by RR. CHANGE COLUMN NAME from fuel to rfm.
-    zone_regional_fm = pd.DataFrame(
-        {"load_zone": "loadzone", "rfm": "loadzone-Fuel"}, index=[0]
-    )
-    zone_regional_fm
-    # creating dummy values based on one load zone in REAM's input file
-    # note:regional_fuel_market should align with the regional_fuel_market table.
-    # TODO --RR
-    fuel_supply_curves20 = pd.DataFrame(
-        {
-            "period": [2020, 2020, 2020, 2020, 2020, 2020],
-            "tier": [1, 2, 3, 4, 5, 6],
-            "unit_cost": [1.9, 4.0, 487.5, 563.7, 637.8, 816.7],
-            "max_avail_at_cost": [651929, 3845638, 3871799, 3882177, 3889953, 3920836],
-        }
-    )
-    fuel_supply_curves20.insert(0, "regional_fuel_market", "loadzone-Fuel")
-    fuel_supply_curves30 = fuel_supply_curves20.copy()
-    fuel_supply_curves30["period"] = 2030
-    fuel_supply_curves40 = fuel_supply_curves20.copy()
-    fuel_supply_curves40["period"] = 2040
-    fuel_supply_curves50 = fuel_supply_curves20.copy()
-    fuel_supply_curves50["period"] = 2050
-    fuel_supply_curves = pd.concat(
-        [
-            fuel_supply_curves20,
-            fuel_supply_curves30,
-            fuel_supply_curves40,
-            fuel_supply_curves50,
-        ]
-    )
-    fuel_supply_curves
-
-    regional_fuel_markets.to_csv(out_folder / "regional_fuel_markets.csv", index=False)
-    zone_regional_fm.to_csv(
-        out_folder / "zone_to_regional_fuel_market.csv", index=False
-    )
-    fuel_supply_curves.to_csv(out_folder / "fuel_supply_curves.csv", index=False)
-
-    ###
 
     fuel_cost.to_csv(out_folder / "fuel_cost.csv", index=False)
     fuels_table.to_csv(out_folder / "fuels.csv", index=False)
+
+
+def load_zones_file(settings, out_folder: Path):
+    load_zones = load_zones_table(settings)
+    load_zones.to_csv(out_folder / "load_zones.csv", index=False)
+
+
+"""
+testing: just use variables as-is from main()
+"""
 
 
 def generator_and_load_files(
@@ -184,7 +123,6 @@ def generator_and_load_files(
     scen_settings_dict: dict[dict],
     out_folder: Path,
     pg_engine: sa.engine,
-    hydro_variability_new: pd.DataFrame,
 ):
     """
     Steps:
@@ -207,9 +145,7 @@ def generator_and_load_files(
     # gathering operational data like variable capacity factors; build_year
     # shows gens built in a particular year, used to gather construction data
     # like capital cost and capacity built)
-    gens_by_model_year, gens_by_build_year = gen_tables(
-        gc, pudl_engine, scen_settings_dict
-    )
+    gens_by_model_year, gens_by_build_year = gen_tables(gc, scen_settings_dict)
 
     #########
     # create Switch input files from these tables
@@ -231,7 +167,6 @@ def generator_and_load_files(
     operational_files(
         scen_settings_dict,
         pg_engine,
-        hydro_variability_new,
         gens_by_model_year,
         out_folder,
     )
@@ -240,7 +175,6 @@ def generator_and_load_files(
 def operational_files(
     scen_settings_dict,
     pg_engine,
-    hydro_variability_new,
     gens_by_model_year,
     out_folder,
 ):
@@ -249,59 +183,55 @@ def operational_files(
     for loads, hydro, variable capacity factors for renewables, etc.
     """
 
-    timepoint_start = 1
     # will hold all years of each type of data
     output = collections.defaultdict(list)
 
-    timepoint_start = 1
+    # testing: model_year, year_settings = first_key(scen_settings_dict), first_value(scen_settings_dict)
     for model_year, year_settings in scen_settings_dict.items():
 
-        period_all_gen = gens_by_model_year.query("model_year == @model_year")
-        print("Gathering generator variability data.")
-        period_all_gen_variability = make_generator_variability(period_all_gen)
-        period_all_gen_variability.columns = period_all_gen["Resource"]
-        if "gen_is_baseload" in period_all_gen.columns:
-            period_all_gen_variability = set_must_run_generation(
-                period_all_gen_variability,
-                period_all_gen.loc[
-                    period_all_gen["gen_is_baseload"] == True, "Resource"
-                ].to_list(),
-            )
+        period_gens = gens_by_model_year.query("model_year == @model_year")
 
-        # TODO: is this needed? can it be eliminated by improvements upstream?
-        # ####### add by Rangrang, need to discuss further about CF of hydros in MIS_D_MD
-        # change the variability of hyfro generators in MIS_D_MS
-        # the profiles for them were missing and were filled with 1, which does not make sense since
-        # all variable resources should have a variable capacity factoe between 0-1.
-        hydro_variability_new = hydro_variability_new.iloc[:8760]
-        MIS_D_MS_hydro = [
-            col
-            for col in period_all_gen_variability.columns
-            if "MIS_D_MS" in col
-            if "hydro" in col
-        ]
-        for col in MIS_D_MS_hydro:
-            period_all_gen_variability[col] = hydro_variability_new["MIS_D_MS"]
-
+        # load curves for the period (1 row per hour/timepoint, possibly multi
+        # year; 1 column per region/zone)
+        print("Gathering load data.")  # can be slow
         period_lc = make_final_load_curves(pg_engine, year_settings)
 
-        cluster_time = year_settings.get("reduce_time_domain") is True
+        print("Extracting generator variability data.")
+        period_variability = make_generator_variability(period_gens)
+        # Assign resource names instead of numbers from '0' to 'n'.
+        period_variability.columns = period_gens["Resource"]
+
+        # This would force the availability to 100% for any must-run variable
+        # generators. This doesn't seem to be used by GenX, so we skip it too.
+        # if "MUST_RUN" in period_gens.columns:
+        #     period_variability = set_must_run_generation(
+        #         period_variability,
+        #         period_gens.loc[period_gens["MUST_RUN"] == 1, "Resource"].to_list(),
+        #     )
+
+        cluster_time = year_settings.get("reduce_time_domain") == True
 
         # do time clustering/sampling
         if cluster_time:
             assert "time_domain_periods" in year_settings
             assert "time_domain_days_per_period" in year_settings
 
+            num_clusters = year_settings["time_domain_periods"]
+            include_peak_day = year_settings.get("include_peak_day", True)
+            days_in_group = year_settings["time_domain_days_per_period"]
+            print(
+                f"Clustering to {num_clusters} {days_in_group}-day timeseries"
+                f"{' including coincident peak' if include_peak_day else ''} ({model_year})."
+            )
             # results is a dict with keys "resource_profiles" (gen_variability), "load_profiles",
             # "time_series_mapping" (maps clusters sequentially to potential periods in year),
             # "ClusterWeights", etc. See PG for full details.
-            print(f"Beginning clustering of timeseries ({model_year}).")
             results, representative_point, weights = kmeans_time_clustering(
-                resource_profiles=period_all_gen_variability,
+                resource_profiles=period_variability,
                 load_profiles=period_lc,
-                days_in_group=year_settings["time_domain_days_per_period"],
-                num_clusters=year_settings["time_domain_periods"],
-                include_peak_day=year_settings.get("include_peak_day", True),
+                days_in_group=days_in_group,
+                num_clusters=num_clusters,
+                include_peak_day=include_peak_day,
                 load_weight=year_settings.get("demand_weight_factor", 1),
                 variable_resources_only=year_settings.get(
                     "variable_resources_only", True
@@ -318,13 +248,11 @@ def operational_files(
         # weeks are selected for every period. Here we filter those out because
         # Switch will not accept time-varying data for generators that cannot be
         # used.
-        period_all_gen = period_all_gen.query("Existing_Cap_MW.notna() or new_build")
-        period_all_gen_variability = period_all_gen_variability.loc[
-            :, period_all_gen["Resource"]
-        ]
+        period_gens = period_gens.query("Existing_Cap_MW.notna() or new_build")
+        period_variability = period_variability.loc[:, period_gens["Resource"]]
         if cluster_time:
             period_variability_sampled = period_variability_sampled.loc[
-                :, period_all_gen["Resource"]
+                :, period_gens["Resource"]
             ]
 
         # timeseries_df and timepoints_df
@@ -336,141 +264,82 @@ def operational_files(
                 year_settings["model_year"],
                 year_settings["model_first_planning_year"],
             )
-            timepoints_df["timepoint_id"] = range(
-                timepoint_start, timepoint_start + len(timepoints_df)
-            )
-            timepoint_start = timepoints_df["timepoint_id"].max() + 1
         else:
-            if year_settings.get("full_time_domain") is True:
-                timeseries_df, timepoints_df, timestamp_interval = timeseries_full(
-                    period_lc_sampled,
-                    year_settings["model_year"],
-                    year_settings["model_first_planning_year"],
-                    settings=year_settings,
-                )
-            else:
-                timeseries_df, timepoints_df, timestamp_interval = timeseries(
-                    period_lc_sampled,
-                    year_settings["model_year"],
-                    year_settings["model_first_planning_year"],
-                    settings=year_settings,
-                )
+            # note: period_variability has 0-based index and period_lc has
+            # 1-based index when not using time reduction, but should be the
+            # same length, so
 
-            timepoints_df["timepoint_id"] = range(
-                timepoint_start, timepoint_start + len(timepoints_df)
+            # functions below just consider the length.
+            # PowerGenome doesn't preserve info on original date for the load
+            # data but generally drops leap years, so we assume it is n blocks
+            # of 8760 rows each, one per year. (Note that
+            # powergenome.load_profiles.make_load_curves always removes Feb 29
+            # if the series is exactly 8784 rows long.
+            # external_data.make_generator_variability also does this, but only
+            # if remove_feb_29 is also set in the settings. So for multi-year
+            # series, these won't attempt to remove Feb. 29. But the available
+            # PowerGenome multi-year series as of July 2025 seem to be multiples
+            # of 8760 hours.)
+            timeseries_df, timepoints_df = timeseries_full(
+                year_settings["model_year"],
+                year_settings["model_first_planning_year"],
+                len(period_variability),
             )
-            timepoint_start = timepoints_df["timepoint_id"].max() + 1
-
-            # create lists and dictionary for later use
-            timepoints_timestamp = timepoints_df[
-                "timestamp"
-            ].to_list()  # timestamp list
-            timepoints_tp_id = timepoints_df[
-                "timepoint_id"
-            ].to_list()  # timepoint_id list
-            timepoints_dict = dict(
-                zip(timepoints_timestamp, timepoints_tp_id)
-            )  # {timestamp: timepoint_id}
 
         output["timeseries.csv"].append(timeseries_df)
         output["timepoints.csv"].append(timepoints_df)
 
-        # hydro timepoint data
+        # data for UCSD/REAM/WECC version of hydro_simple module (won't work with
+        # standard hydro_simple module)
         if cluster_time:
             hydro_timepoints_df = hydro_timepoints_pg_kmeans(timepoints_df)
-            hydro_timeseries_table = hydro_timeseries_pg_kmeans(
-                period_all_gen,
+            hydro_timeseries_df = hydro_timeseries_pg_kmeans(
+                period_gens,
                 period_variability_sampled.loc[
-                    :, period_all_gen.loc[period_all_gen["HYDRO"] == 1, "Resource"]
+                    :, period_gens.loc[period_gens["HYDRO"] == 1, "Resource"]
                 ],
                 hydro_timepoints_df,
             )
         else:
-            hydro_timepoints_df, hydro_timeseries_table = hydro_time_tables(
-                period_all_gen,
-                period_all_gen_variability,
+            hydro_timepoints_df, hydro_timeseries_df = hydro_time_tables(
+                period_gens,
+                period_variability,
                 timepoints_df,
                 year_settings["model_year"],
             )
         output["hydro_timepoints.csv"].append(hydro_timepoints_df)
-        output["hydro_timeseries.csv"].append(hydro_timeseries_table)
+        output["hydro_timeseries.csv"].append(hydro_timeseries_df)
 
-        # hydro network data
-        if cluster_time:
-            (
-                water_nodes,
-                water_connections,
-                reservoirs,
-                hydro_pj,
-                water_node_tp_flows,
-            ) = hydro_system_module_tables(
-                period_all_gen,
-                period_variability_sampled.loc[
-                    :, period_all_gen.loc[period_all_gen["HYDRO"] == 1, "Resource"]
-                ],
-                hydro_timepoints_df,
-                flow_per_mw=1.02,
-            )
-        else:
-            (
-                water_nodes,
-                water_connections,
-                reservoirs,
-                hydro_pj,
-                water_node_tp_flows,
-            ) = hydro_system_module_tables(
-                period_all_gen,
-                period_all_gen_variability.loc[
-                    :, period_all_gen.loc[period_all_gen["HYDRO"] == 1, "Resource"]
-                ],
-                timepoints_df,
-                flow_per_mw=1.02,
-            )
-        output["water_nodes.csv"].append(water_nodes)
-        output["water_connections.csv"].append(water_connections)
-        output["reservoirs.csv"].append(reservoirs)
-        output["hydro_generation_projects.csv"].append(hydro_pj)
-        output["water_node_tp_flows.csv"].append(water_node_tp_flows)
+        # hydro system data
+        water_tables = hydro_system_tables(
+            period_gens,
+            period_variability_sampled if cluster_time else period_variability,
+            hydro_timepoints_df,
+            flow_per_mw=1.02,
+        )
+        output["water_nodes.csv"].append(water_tables[0])
+        output["water_connections.csv"].append(water_tables[1])
+        output["reservoirs.csv"].append(water_tables[2])
+        output["hydro_generation_projects.csv"].append(water_tables[3])
+        output["water_node_tp_flows.csv"].append(water_tables[4])
 
         # loads
+        # TODO: are load_pg_kmeans and loads_table the same now? (loads_table
+        # may previously have done some downsampling, dating back to a time
+        # when we did our own downsampling because PG didn't provide it)
         if cluster_time:
             loads = load_pg_kmeans(period_lc_sampled, timepoints_df)
-            timepoints_tp_id = timepoints_df[
-                "timepoint_id"
-            ].to_list()  # timepoint_id list
-            dummy_df = pd.DataFrame({"TIMEPOINT": timepoints_tp_id})
-            dummy_df.insert(0, "LOAD_ZONE", "loadzone")
-            dummy_df.insert(2, "zone_demand_mw", 0)
-            loads = loads.append(dummy_df)
         else:
-            loads, loads_with_year_hour = loads_table(
-                period_lc_sampled,
-                timepoints_timestamp,
-                timepoints_dict,
-                year_settings["model_year"],
-            )
-            # for fuel_cost and regional_fuel_market issue
-            dummy_df = pd.DataFrame({"TIMEPOINT": timepoints_tp_id})
-            dummy_df.insert(0, "LOAD_ZONE", "loadzone")
-            dummy_df.insert(2, "zone_demand_mw", 0)
-            loads = loads.append(dummy_df)
-            # year_hour is used by vcf below
-            year_hour = loads_with_year_hour["year_hour"].to_list()
+            loads = loads_table(period_lc, timepoints_df)
+
         output["loads.csv"].append(loads)
 
         # capacity factors for variable generators
-        if cluster_time:
-            vcf = variable_cf_pg_kmeans(
-                period_all_gen, period_variability_sampled, timepoints_df
-            )
-        else:
-            vcf = variable_capacity_factors_table(
-                period_all_gen_variability,
-                year_hour,
-                timepoints_dict,
-                period_all_gen,
-                year_settings["model_year"],
-            )
+        vcf = variable_capacity_factors_table(
+            period_variability_sampled if cluster_time else period_variability,
+            period_gens,
+            timepoints_df,
+        )
         output["variable_capacity_factors.csv"].append(vcf)
 
         # timestamp map for graphs
@@ -478,7 +347,7 @@ def operational_files(
             graph_timestamp_map = graph_timestamp_map_kmeans(timepoints_df)
         else:
             graph_timestamp_map = graph_timestamp_map_table(
-                timeseries_df, timestamp_interval
+                timepoints_df,
             )
         output["graph_timestamp_map.csv"].append(graph_timestamp_map)
 
@@ -486,7 +355,6 @@ def operational_files(
     # different capacities calculated in different years (!)
     aggregation_rules = {
         "reservoirs.csv": {"res_min_vol": "min", "res_max_vol": "max"},
-        "water_connections.csv": {"wc_capacity": "max"},
     }
     for file, agg_rule in aggregation_rules.items():
         df = pd.concat(output[file])
@@ -497,7 +365,9 @@ def operational_files(
     # Write to CSV files (remove any remaining duplicate rows, e.g., based on the
     # same generator reported in different model years)
     for file, dfs in output.items():
-        pd.concat(dfs).drop_duplicates().to_csv(out_folder / file, index=False)
+        pd.concat(dfs).drop_duplicates().to_csv(
+            out_folder / file, index=False, na_rep="."
+        )
 
 
 def gen_build_costs_file(gens_by_build_year, out_folder):
@@ -548,6 +418,13 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
 
     gbp = gens_by_build_year.loc[gens_by_build_year["existing"], gbp_cols.keys()]
     gbp = gbp.rename(columns=gbp_cols)
+    # make sure gbp is an int (if float or NaN, something has gone wrong)
+    try:
+        gbp["build_year"] = gbp["build_year"].astype(int)
+    except:
+        print(
+            "WARNING: there are non-integer or missing build years in gen_build_predetermined.csv"
+        )
 
     gbp.to_csv(out_folder / "gen_build_predetermined.csv", index=False, na_rep=".")
 
@@ -564,86 +441,69 @@ def gen_info_file(
 
     set_retirement_age(gens, settings)
 
-    gen_info = gen_info_table(
-        gens,
-        settings.get("transmission_investment_cost")["spur"]["capex_mw_mile"],
-    )
+    gen_info = gen_info_table(gens, settings)
 
-    graph_tech_colors_data = {
-        "gen_type": [
-            "Biomass",
-            "Coal",
-            "Naturalgas",
-            "Geothermal",
-            "Hydro",
-            "Nuclear",
-            "Oil",
-            "Solar",
-            "Storage",
-            "Waste",
-            "Wave",
-            "Wind",
-            "Other",
-        ],
-        "color": [
-            "green",
-            "saddlebrown",
-            "gray",
-            "red",
-            "royalblue",
-            "blueviolet",
-            "orange",
-            "gold",
-            "aquamarine",
-            "black",
-            "blue",
-            "deepskyblue",
-            "white",
-        ],
-    }
-    graph_tech_colors_table = pd.DataFrame(graph_tech_colors_data)
-    graph_tech_colors_table.insert(0, "map_name", "default")
-    graph_tech_colors_table
-
-    graph_tech_types_table = gen_info.drop_duplicates(subset="gen_tech")
-    graph_tech_types_table["map_name"] = "default"
-    graph_tech_types_table["energy_source"] = graph_tech_types_table[
-        "gen_energy_source"
-    ]
-
-    cols = ["map_name", "gen_type", "gen_tech", "energy_source"]
-    graph_tech_types_table = graph_tech_types_table[cols]
+    fuels = fuel_prices["fuel"].unique()
 
     # Drop the heat rate that PowerGenome provides for many non-fuel-using generators
-    fuels = fuel_prices["fuel"].unique()
-    fuels = [fuel.capitalize() for fuel in fuels]
-    non_fuel_table = graph_tech_types_table[
-        ~graph_tech_types_table["energy_source"].isin(fuels)
-    ]
-    non_fuel_energy_table = (
-        non_fuel_table[["energy_source"]].drop_duplicates().sort_values("energy_source")
-    )
+    # TODO: check if this is still true and remove this or move to gen_info_table()
+    non_fuel_mask = ~gen_info["gen_energy_source"].isin(fuels)
     gen_info.loc[
-        gen_info["gen_energy_source"].isin(non_fuel_energy_table["energy_source"]),
+        non_fuel_mask,
         "gen_full_load_heat_rate",
     ] = None
 
-    graph_tech_colors_table.to_csv(out_folder / "graph_tech_colors.csv", index=False)
-    graph_tech_types_table.to_csv(out_folder / "graph_tech_types.csv", index=False)
+    # create the non-fuel energy source table
+    non_fuel_energy_table = (
+        gen_info.loc[non_fuel_mask, ["gen_energy_source"]]
+        .drop_duplicates()
+        .rename(columns={"gen_energy_source": "energy_source"})
+        .sort_values("energy_source")
+    )
     non_fuel_energy_table.to_csv(
         out_folder / "non_fuel_energy_sources.csv", index=False
     )
 
-    # identify generators participating in ESR or minimum capacity programs,
-    # then drop those columns
-    ESR_col = [col for col in gen_info.columns if col.startswith("ESR")]
-    ESR_generators = gen_info[["GENERATION_PROJECT"] + ESR_col]
-    min_cap_col = [col for col in gen_info.columns if col.startswith("MinCapTag")]
-    min_cap_gens = gen_info[["GENERATION_PROJECT"] + min_cap_col]
-    gen_info = gen_info.drop(columns=ESR_col + min_cap_col)
+    # make csv files for graphing (not used by Switch, maybe used by UCSD?)
+    graph_color_tables(out_folder, gen_info)
 
+    ########
+    # identify generators eligible for ESR, min_cap and max_cap programs
+    # note: these will be removed in other_tables if the programs aren't in effect
+    prog_info = [
+        # PowerGenome prefix, output prefix, output file
+        ("ESR", "RPS", "rps_generators.csv"),
+        ("MinCapTag", "MIN_CAP", "min_cap_generators.csv"),
+        ("MaxCapTag", "MAX_CAP", "max_cap_generators.csv"),
+    ]
+    # create rps_generators.csv: list of generators participating in ESR (RPS/CES) programs
+    # TODO: substitute these vars into the strings and code below, then rename them
+    # something better
+    # TODO: refactor the commented out code above starting with ESR_col to use the
+    # columns collected here (or all the first tags from req_info)
+    all_prog_cols = []
+    for pg_prefix, PROG, out_file in prog_info:
+        prog_cols = [col for col in gen_info.columns if col.startswith(f"{pg_prefix}_")]
+        all_prog_cols.extend(prog_cols)
+        prog_gens = gen_info[["GENERATION_PROJECT"] + prog_cols]
+        prog_gens_long = pd.melt(
+            prog_gens, id_vars=["GENERATION_PROJECT"], value_vars=prog_cols
+        )
+        prog_gens_long = prog_gens_long[prog_gens_long["value"] == 1].rename(
+            columns={
+                "variable": f"{PROG}_PROGRAM",
+                "GENERATION_PROJECT": f"{PROG}_GEN",
+            }
+        )
+        prog_gens_long = prog_gens_long[[f"{PROG}_PROGRAM", f"{PROG}_GEN"]]
+        prog_gens_long.to_csv(out_folder / out_file, index=False)
+
+    ########
+    # drop the enviro program columns and save the rest
+    gen_info = gen_info.drop(columns=all_prog_cols)
     gen_info.to_csv(out_folder / "gen_info.csv", index=False, na_rep=".")
 
+    ########
     # save deviations from mean O&M cost in gen_om_by_period.csv to allow variation by study period.
     om_cols = [
         "Fixed_OM_Cost_per_MWyr",
@@ -651,7 +511,17 @@ def gen_info_file(
         "Fixed_OM_Cost_per_MWhyr",
     ]
     # drop existing generators that are retired by this time
-    gen_om_by_period = gens_by_model_year.query("Existing_Cap_MW.notna() or new_build")
+    gen_om_by_period = gens_by_model_year.query(
+        "Existing_Cap_MW.notna() or new_build"
+    ).copy()
+    # add Var_OM_Cost_per_MWh_In to Var_OM_Cost_per_MWh for storage generators
+    mask = gen_om_by_period["Var_OM_Cost_per_MWh_In"].notna()
+    gen_om_by_period.loc[mask, "Var_OM_Cost_per_MWh"] += gen_om_by_period.loc[
+        mask, "Var_OM_Cost_per_MWh_In"
+    ]
+    gen_om_by_period.loc[mask, "Var_OM_Cost_per_MWh_mean"] += gen_om_by_period.loc[
+        mask, "Var_OM_Cost_per_MWh_In_mean"
+    ]
     # calculate difference from the mean
     gen_om_by_period[om_cols] -= gen_om_by_period[[c + "_mean" for c in om_cols]].values
     # ignore tiny differences from the mean
@@ -675,37 +545,78 @@ def gen_info_file(
         out_folder / "gen_om_by_period.csv", index=False, na_rep="."
     )
 
-    ################
-    # ESR and min_cap programs
 
-    # create esr_generators.csv: list of generators participating in ESR (RPS/CES) programs
-    ESR_generators_long = pd.melt(
-        ESR_generators, id_vars=["GENERATION_PROJECT"], value_vars=ESR_col
+def graph_color_tables(out_folder, gen_info):
+    """
+    Create graph_tech_colors.csv and graph_tech_types.csv. These are not used by Switch
+    but may be used by the UCSD/REAM team?
+    """
+    graph_tech_colors_table = pd.DataFrame(
+        data=[
+            ("Biomass", "green"),
+            ("Coal", "saddlebrown"),
+            ("Naturalgas", "gray"),
+            ("Geothermal", "red"),
+            ("Hydro", "royalblue"),
+            ("Nuclear", "blueviolet"),
+            ("Oil", "orange"),
+            ("Solar", "gold"),
+            ("Storage", "aquamarine"),
+            ("Waste", "black"),
+            ("Wave", "blue"),
+            ("Wind", "deepskyblue"),
+            ("Other", "white"),
+        ],
+        columns=["gen_type", "color"],
     )
-    ESR_generators_long = ESR_generators_long[ESR_generators_long["value"] == 1].rename(
-        columns={"variable": "ESR_PROGRAM", "GENERATION_PROJECT": "ESR_GEN"}
-    )
-    ESR_generators_long = ESR_generators_long[["ESR_PROGRAM", "ESR_GEN"]]
-    ESR_generators_long.to_csv(out_folder / "esr_generators.csv", index=False)
+    graph_tech_colors_table.insert(0, "map_name", "default")
+    graph_tech_colors_table.to_csv(out_folder / "graph_tech_colors.csv", index=False)
 
-    # make min_cap_generators.csv, showing generators that can help satisfy
-    # minimum capacity rules
-    min_cap_generators_long = pd.melt(
-        min_cap_gens, id_vars=["GENERATION_PROJECT"], value_vars=min_cap_col
+    graph_tech_types_table = (
+        gen_info.drop_duplicates(subset="gen_tech")
+        .rename(columns={"gen_energy_source": "energy_source"})
+        .assign(map_name="default")
     )
-    min_cap_generators_long = min_cap_generators_long[
-        min_cap_generators_long["value"] == 1
-    ].rename(
-        columns={"variable": "MIN_CAP_PROGRAM", "GENERATION_PROJECT": "MIN_CAP_GEN"}
+    graph_tech_types_table["gen_type"] = (
+        graph_tech_types_table["energy_source"]
+        .str.lower()
+        .map(
+            {
+                "water": "Hydro",
+                "biomass": "Biomass",
+                "waste_biomass": "Biomass",
+                "waste biomass": "Biomass",
+                "coal": "Coal",
+                "naturalgas": "Naturalgas",
+                "natural gas": "Naturalgas",
+                "natural_gas": "Naturalgas",
+                "geothermal": "Geothermal",
+                "water": "Hydro",
+                "uranium": "Nuclear",
+                "oil": "Oil",
+                "petroleum": "Oil",
+                "sun": "Solar",
+                "storage": "Storage",
+                "waste": "Waste",
+                "wave": "Wave",
+                "wind": "Wind",
+            }
+        )
+        .fillna("Other")
     )
-    min_cap_generators_long = min_cap_generators_long[
-        ["MIN_CAP_PROGRAM", "MIN_CAP_GEN"]
+    graph_tech_types_table = graph_tech_types_table[
+        ["map_name", "gen_type", "gen_tech", "energy_source"]
     ]
-    min_cap_generators_long.to_csv(out_folder / "min_cap_generators.csv", index=False)
+    graph_tech_types_table.to_csv(out_folder / "graph_tech_types.csv", index=False)
     ###############################################################
 
 
-def gen_tables(gc, pudl_engine, scen_settings_dict):
+"""
+testing: use gc and scen_settings_dict from main()
+"""
+
+
+def gen_tables(gc, scen_settings_dict):
     """
     Return dataframes showing all generator clusters that can be operated in
     each model_year and that can be built in each build_year. gens_by_model_year
@@ -735,27 +646,21 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
     gen_dfs = []
     unit_dfs = []
     """
-    # for testing:
+    # testing:
     year_settings = first_value(scen_settings_dict)
     """
     for year_settings in scen_settings_dict.values():
 
         """
-        # for testing:
+        # testing (if previously called gc.create_all_generators()):
         gen_df = gc.all_resources.copy()
         """
         gc.settings = year_settings
         gen_df = gc.create_all_generators().copy()
 
         # identify existing and new-build for reference later
-        # (these could overlap in principle, but don't as of Feb. 2024)
-        if gc.current_gens:
-            gen_df["existing"] = gen_df["Resource"].isin(
-                gc.existing_resources["Resource"]
-            )
-        else:  # must all be new
-            gen_df["existing"] = False
-        gen_df["new_build"] = gen_df["Resource"].isin(gc.new_resources["Resource"])
+        gen_df["existing"] = gen_df["New_Build"] <= 0
+        gen_df["new_build"] = gen_df["New_Build"] >= 1
 
         # clean up some resource and technology labels
         gen_df["Resource"] = gen_df["Resource"].str.rstrip("_")
@@ -795,18 +700,28 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
             gen_df["Existing_Cap_MW"] = float("nan")
 
         # identify storage gens for the next few steps
-        storage_gens = gen_df["STOR"].astype(bool)
+        storage_gens = (gen_df["STOR"] > 0).astype(bool)
 
         # Use $0 as capex and fixed O&M for existing plants (our settings don't
         # have all of these for existing plants as of Mar 2024)
-        for c in ["capex_mw", "Fixed_OM_Cost_per_MWyr"]:
+        # sometimes
+        per_mw = ["capex_mw", "Fixed_OM_Cost_per_MWyr"]
+        per_mwh = ["capex_mwh", "Fixed_OM_Cost_per_MWhyr"]
+        # some may be missing for no-new-build cases, so make sure they're there
+        # and type float
+        for c in per_mw + per_mwh:
+            if c not in gen_df.columns:
+                gen_df[c] = 0.0
+        for c in per_mw:
             gen_df[c] = gen_df[c].fillna(0)
-        for c in ["capex_mwh", "Fixed_OM_Cost_per_MWhyr"]:
+        for c in per_mwh:
             gen_df.loc[storage_gens, c] = gen_df.loc[storage_gens, c].fillna(0)
 
         # Use 1 as regional_cost_multiplier if not specified (i.e., for existing gens)
-        gen_df["regional_cost_multiplier"] = gen_df["regional_cost_multiplier"].fillna(
-            1
+        gen_df["regional_cost_multiplier"] = (
+            gen_df["regional_cost_multiplier"].fillna(1)
+            if "regional_cost_multiplier" in gen_df.columns
+            else 1
         )
 
         # Remove storage-related params for non-storage gens (we get a lot of
@@ -835,9 +750,9 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
     # Set same info as eia_build_info() (build_year, capacity_mw and
     # capacity_mwh) for generic generators (Resources in the "existing" list
     # that didn't get matching record(s) from the eia_unit_info, currently only
-    # distributed generation). We do this after the loop so we can infer a
-    # sequence of capacity additions that results in the available capacity
-    # reported for each model year.
+    # distributed generation or virtual power plants for flexible load). We do
+    # this after the loop so we can infer a sequence of capacity additions that
+    # results in the available capacity reported for each model year.
     generic = units_by_model_year["existing"] & units_by_model_year["build_year"].isna()
     generic_units = units_by_model_year[generic].drop(
         columns=["plant_gen_id", "build_year", "capacity_mw", "capacity_mwh"]
@@ -854,7 +769,11 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
     )
 
     assert (
-        units_by_model_year.query("existing")["build_year"].notna().all()
+        units_by_model_year.query(
+            "existing & ((Existing_Cap_MW > 0) | (Existing_Cap_MWh > 0))"
+        )["build_year"]
+        .notna()
+        .all()
     ), "Some existing generating units have no build_year assigned."
 
     # In PowerGenome, Fixed_OM_Cost_per_MWyr, Var_OM_Cost_per_MWh and Fixed_OM_Cost_per_MWhyr vary by
@@ -865,8 +784,11 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
     for col in [
         "Fixed_OM_Cost_per_MWyr",
         "Var_OM_Cost_per_MWh",
+        "Var_OM_Cost_per_MWh_In",
         "Fixed_OM_Cost_per_MWhyr",
     ]:
+        if col not in gens_by_model_year.columns:
+            gens_by_model_year[col] = None  # may be missing in no-new-build cases
         mean = gens_by_model_year.groupby("Resource")[col].mean()
         gens_by_model_year[col + "_mean"] = gens_by_model_year["Resource"].map(mean)
         # gens_by_model_year[col + "_mean"] = (
@@ -938,6 +860,22 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
             "capacity_mwh",
         ],
     ] = None
+
+    # drop rows for existing gens with 0 capacity additions
+    # (these didn't show up in MIP but do show up with ReEDS data)
+    # TODO: check whether these are an error with ReEDS data
+    gens_by_build_year = gens_by_build_year.loc[
+        (gens_by_build_year["existing"] == 0)
+        | (gens_by_build_year["Existing_Cap_MW"] > 0)
+        | (gens_by_build_year["Existing_Cap_MWh"] > 0),
+        :,
+    ]
+
+    # Remove 0-capacity values for new_build gens (other code may expect NaNs instead)
+    for col in ["Existing_Cap_MW", "Existing_Cap_MWh"]:
+        gens_by_build_year.loc[
+            gens_by_build_year["new_build"] & (gens_by_build_year[col] == 0), col
+        ] = None
 
     assert (
         gens_by_build_year["new_build"] & gens_by_build_year["Existing_Cap_MW"].notna()
@@ -1105,12 +1043,12 @@ def generic_gen_build_info(gens, settings):
 
     These are generators that PowerGenome reported as existing but didn't get
     unit-level construction info from eia_build_info(), e.g., distributed
-    generation.
+    generation or virtual generators for flexible loads.
 
     The gens dataframe must have Resource, retirement_age, model_year,
     Existing_Cap_MW and Existing_Cap_MWh (capacity online as of that year). The
-    construction plan is achieves the specified capacity as of each model year
-    if possible.
+    construction plan achieves the specified capacity as of each model year if
+    possible.
 
     This sets up a least-squares problem to find build_years and quantities that
     are compatible with the reported total capacity online for each resource:
@@ -1152,9 +1090,9 @@ def other_tables(
     # get first year settings, which include any generic, cross-year settings
     first_year_settings = first_value(scen_settings_dict)
 
+    #######
+    # create carbon_policies_regional.csv if needed
     if first_year_settings.get("emission_policies_fn"):
-
-        # create carbon_policies_regional.csv
         dfs = [
             # start with a dummy data frame, so we always get some output
             pd.DataFrame(
@@ -1237,87 +1175,62 @@ def other_tables(
         )
         co2_cap_all_regions.to_csv(out_folder / "carbon_policies.csv", index=False)
 
-        # create esr_requirements.csv with clean energy standards / RPS requirements
-        dfs = [
-            # start with a dummy data frame with standard columns
-            pd.DataFrame(columns=["ESR_PROGRAM", "PERIOD", "load_zone", "rps_share"])
-        ]
-        # gather data across years
-        for model_year, scen_settings in scen_settings_dict.items():
+    #######
+    # create rps_requirements.csv with clean energy standards / RPS requirements
+    dfs = [
+        # start with a dummy data frame with standard columns
+        pd.DataFrame(columns=["RPS_PROGRAM", "PERIOD", "load_zone", "rps_share"])
+    ]
+    # gather data across years
+    for model_year, scen_settings in scen_settings_dict.items():
+        if "emission_policies_fn" in scen_settings:
             energy_share_req = create_policy_req(scen_settings, col_str_match="ESR")
-            if energy_share_req is not None:
-                ESR_col = [
-                    col for col in energy_share_req.columns if col.startswith("ESR")
-                ]
-                energy_share_long = pd.melt(
-                    energy_share_req, id_vars=["Region_description"], value_vars=ESR_col
-                )
-                energy_share_long["PERIOD"] = model_year
-                energy_share_long = energy_share_long.rename(
-                    columns={
-                        "variable": "ESR_PROGRAM",
-                        "Region_description": "load_zone",
-                        "value": "rps_share",
-                    }
-                )
-                # drop the zero-value and nan rows (no policy in effect)
-                energy_share_long.loc[
-                    energy_share_long["rps_share"] == 0, "rps_share"
-                ] = float("nan")
-                energy_share_long = energy_share_long.dropna(subset=["rps_share"])
-                # use standard columns in standard order
-                energy_share_long = energy_share_long[dfs[0].columns]
-                dfs.append(energy_share_long)
-
-        # aggregate across years
-        energy_share_long = pd.concat(dfs, axis=0)
-        energy_share_long.to_csv(out_folder / "esr_requirements.csv", index=False)
-
-        # remove any generator assignments for inactive ESR programs
-        try:
-            esr_gens = pd.read_csv(out_folder / "esr_generators.csv")
-        except FileNotFoundError:
-            pass
         else:
-            esr_gens = esr_gens.loc[
-                esr_gens["ESR_PROGRAM"].isin(energy_share_long["ESR_PROGRAM"]), :
-            ]
-            esr_gens.to_csv(out_folder / "esr_generators.csv", index=False)
+            energy_share_req = None  # (could also be returned by create_policy_req)
+        if energy_share_req is not None:
+            ESR_col = [col for col in energy_share_req.columns if col.startswith("ESR")]
+            energy_share_long = pd.melt(
+                energy_share_req, id_vars=["Region_description"], value_vars=ESR_col
+            )
+            energy_share_long["PERIOD"] = model_year
+            energy_share_long = energy_share_long.rename(
+                columns={
+                    "variable": "RPS_PROGRAM",
+                    "Region_description": "load_zone",
+                    "value": "rps_share",
+                }
+            )
+            # drop the zero-value and nan rows (no policy in effect)
+            energy_share_long.loc[energy_share_long["rps_share"] == 0, "rps_share"] = (
+                float("nan")
+            )
+            energy_share_long = energy_share_long.dropna(subset=["rps_share"])
+            # use standard columns in standard order
+            energy_share_long = energy_share_long[dfs[0].columns]
+            dfs.append(energy_share_long)
 
-        # create min_cap_requirements.csv with minimum capacity requirements for
-        # some technologies (empty, if no policies defined)
-        dfs = [pd.DataFrame(columns=["MIN_CAP_PROGRAM", "PERIOD", "min_cap_mw"])]
-        # gather data across years
-        for model_year, scen_settings in scen_settings_dict.items():
-            mcr = min_cap_req(scen_settings)
-            if mcr is not None:
-                mcr["MIN_CAP_PROGRAM"] = "MinCapTag_" + mcr[
-                    "MinCapReqConstraint"
-                ].astype(str)
-                mcr["PERIOD"] = model_year
-                mcr = mcr.rename(
-                    columns={
-                        "Min_MW": "min_cap_mw",
-                    }
-                )
-                # use standard columns in standard order
-                mcr = mcr[dfs[0].columns]
-                dfs.append(mcr)
-        # aggregate across years and write to file
-        mcr = pd.concat(dfs, axis=0)
-        mcr.to_csv(out_folder / "min_cap_requirements.csv", index=False)
+    # aggregate across years
+    energy_share_long = pd.concat(dfs, axis=0)
+    energy_share_long.to_csv(out_folder / "rps_requirements.csv", index=False)
 
-        # remove any generator assignments for inactive min_cap programs
-        try:
-            min_cap_gens = pd.read_csv(out_folder / "min_cap_generators.csv")
-        except FileNotFoundError:
-            pass
-        else:
-            min_cap_gens = min_cap_gens.loc[
-                min_cap_gens["MIN_CAP_PROGRAM"].isin(mcr["MIN_CAP_PROGRAM"]), :
-            ]
-            min_cap_gens.to_csv(out_folder / "min_cap_generators.csv", index=False)
+    # remove any generator assignments for inactive ESR programs
+    try:
+        rps_gens = pd.read_csv(out_folder / "rps_generators.csv")
+    except FileNotFoundError:
+        pass
+    else:
+        rps_gens = rps_gens.loc[
+            rps_gens["RPS_PROGRAM"].isin(energy_share_long["RPS_PROGRAM"]), :
+        ]
+        rps_gens.to_csv(out_folder / "rps_generators.csv", index=False)
 
+    #####
+    # create files showing min and max capacity requirements:
+    # min_cap_req.csv and max_cap_req.csv
+    cap_req_files("min", scen_settings_dict, out_folder)
+    cap_req_files("max", scen_settings_dict, out_folder)
+
+    #####
     # interest and discount rates in financials.csv
     financials_table = pd.DataFrame(
         {"base_financial_year": [first_year_settings["atb_data_year"]]}
@@ -1333,6 +1246,7 @@ def other_tables(
             )
     financials_table.to_csv(out_folder / "financials.csv", index=False)
 
+    #####
     periods_data = {
         "INVESTMENT_PERIOD": scen_settings_dict.keys(),
         "period_start": [
@@ -1343,6 +1257,7 @@ def other_tables(
     periods_table = pd.DataFrame(periods_data)
     periods_table.to_csv(out_folder / "periods.csv", index=False)
 
+    #####
     # this could potentially have different Voll for different segments, and it's
     # not clear what the difference is between the Voll and $/MWh columns. For
     # now, we just use the average of Voll across all segments.
@@ -1352,9 +1267,124 @@ def other_tables(
     )
     lost_load_cost_table.to_csv(out_folder / "lost_load_cost.csv", index=False)
 
+    ####
+    # Planning reserve margin
+    # Note: we assume all gens can contribute to the reserve margin
+    # Create prm_wide with column "Network_zones" (reserve region), and one
+    # additional column per capacity reserve program, e.g., CapRes_1 (possibly multiple)
+    prm_wide = create_regional_cap_res(first_value(scen_settings_dict))
+    program_cols = prm_wide.columns[1:]
+    # Note: officially prm_wide shows the reserve requirements for various arbitrary
+    # reserve regions, but in practice, there is one load zone per reserve region
+    prm_region_zone_map = dict(zip(prm_wide["Network_zones"], prm_wide.index))
+
+    # combine the name of the capacity reserve program (one of the margin_col names)
+    # with the name of the reserve region to define a region-specific requirement
+    prm = prm_wide.melt(
+        id_vars=["Network_zones"],
+        value_vars=program_cols,
+        var_name="prm_program",
+        value_name="prr_cap_reserve_margin",  # get margins values from the program columns
+    )
+    prm["PLANNING_RESERVE_REQUIREMENT"] = (
+        prm["prm_program"] + "_" + prm["Network_zones"]
+    )
+    prm["prr_enforcement_timescale"] = first_value(scen_settings_dict).get(
+        "prr_enforcement_timescale", "all_timepoints"
+    )
+    prm[
+        [
+            "PLANNING_RESERVE_REQUIREMENT",
+            "prr_cap_reserve_margin",
+            "prr_enforcement_timescale",
+        ]
+    ].to_csv(out_folder / "planning_reserve_requirements.csv", index=False)
+    prm_zones = pd.DataFrame(
+        {
+            "PLANNING_RESERVE_REQUIREMENT": prm["PLANNING_RESERVE_REQUIREMENT"],
+            "LOAD_ZONE": prm["Network_zones"].map(prm_region_zone_map),
+        }
+    )
+    prm_zones.to_csv(out_folder / "planning_reserve_requirement_zones.csv", index=False)
+
+    #####
     # write switch version txt file
     with open(out_folder / "switch_inputs_version.txt", "w") as file:
-        file.write("2.0.9")
+        file.write("2.0.10")
+
+
+def cap_req_files(minmax, scen_settings_dict, out_folder):
+    """
+    create min_cap_requirements.csv or max_cap_requirements.csv with minimum or
+    maximum capacity limits for some technologies (empty, if no policies
+    defined)
+    """
+    if minmax == "min":
+        cap_req = min_cap_req
+    elif minmax == "max":
+        cap_req = max_cap_req
+    else:
+        raise ValueError("Must call cap_req_files() with 'min' or 'max'")
+
+    MinMax = minmax.capitalize()
+    MINMAX = minmax.upper()
+
+    dfs = [
+        pd.DataFrame(columns=[f"{MINMAX}_CAP_PROGRAM", "PERIOD", f"{minmax}_cap_mw"])
+    ]
+    # gather data across years
+    for model_year, scen_settings in scen_settings_dict.items():
+        mcr = cap_req(scen_settings)
+        if mcr is not None:
+            mcr[f"{MINMAX}_CAP_PROGRAM"] = f"{MinMax}CapTag_" + mcr[
+                f"{MinMax}CapReqConstraint"
+            ].astype(str)
+            mcr["PERIOD"] = model_year
+            mcr = mcr.rename(columns={f"{MinMax}_MW": f"{minmax}_cap_mw"})
+            # use standard columns in standard order
+            mcr = mcr[dfs[0].columns]
+            dfs.append(mcr)
+    # aggregate across years and write to file
+    mcr = pd.concat(dfs, axis=0)
+    mcr.to_csv(out_folder / f"{minmax}_cap_requirements.csv", index=False)
+
+    # remove any generator assignments for inactive min_cap programs
+    out_file = out_folder / f"{minmax}_cap_generators.csv"
+    try:
+        limited_cap_gens = pd.read_csv(out_file)
+    except FileNotFoundError:
+        pass
+    else:
+        limited_cap_gens = limited_cap_gens.merge(mcr[f"{MINMAX}_CAP_PROGRAM"])
+        limited_cap_gens.to_csv(out_file, index=False)
+
+
+def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
+    """
+    run scripts specified in the model_adjustment_scripts setting
+    """
+    settings_path = Path(settings_file)  # may be a folder or a .yml file
+    base_dir = settings_path if settings_path.is_dir() else settings_path.parent
+
+    scripts = first_value(scen_settings_dict).get("model_adjustment_scripts") or {}
+    for desc, options in scripts.items():
+        if (options or {}).get("script") is None:
+            # Script not specified for this scenario
+            continue
+        cmd = (
+            f'"{sys.executable}" '
+            # normalize path without resolving symlinks
+            f'"{os.path.normpath(base_dir / options["script"])}" '
+            f'"{short_fn(out_folder)}" {options.get("args", "")}'
+        )
+        print("\n" + "-" * 80)
+        print(f"Running '{desc}' script:")
+        print(cmd)
+        print("=" * 80)
+        exit_status = subprocess.run(cmd, shell=True).returncode
+        if exit_status != 0:
+            print(f"\nWARNING: script exited with status {exit_status}")
+        print("=" * 80 + "\n")
 
 
 from powergenome.generators import load_ipm_shapefile
@@ -1386,22 +1416,9 @@ def transmission_tables(scen_settings_dict, out_folder, pg_engine):
     transmission = agg_transmission_constraints(pg_engine=pg_engine, settings=settings)
 
     ## transmission lines
-    # pulled from SWITCH load_zones file
-    # need zone_dbid information to populate transmission_line column
-    def load_zones_table(regions, zone_ccs_distance_km):
-        load_zones = pd.DataFrame(
-            columns=["LOAD_ZONE", "zone_ccs_distance_km", "zone_dbid"]
-        )
-        load_zones["LOAD_ZONE"] = regions
-        load_zones["zone_ccs_distance_km"] = 0  # set to default 0
-        load_zones["zone_dbid"] = range(1, len(regions) + 1)
-        return load_zones
-
-    model_regions = settings.get("model_regions")
-    load_zones = load_zones_table(model_regions, zone_ccs_distance_km=0)
-    zone_dict = dict(
-        zip(load_zones["LOAD_ZONE"].to_list(), load_zones["zone_dbid"].to_list())
-    )
+    # get zone_dbid information to populate transmission_line column
+    load_zones = load_zones_table(settings)
+    zone_dict = dict(load_zones[["LOAD_ZONE", "zone_dbid"]].values)
     if not settings.get("user_transmission_costs"):
         model_regions_gdf = load_ipm_shapefile(settings)
 
@@ -1435,8 +1452,6 @@ def transmission_tables(scen_settings_dict, out_folder, pg_engine):
             zone_dict,
             settings,
         )
-        transmission_lines
-
     else:
         # use .csv file from settings["user_transmission_costs"]
         transmission_lines = pd.read_csv(
@@ -1508,7 +1523,9 @@ def transmission_tables(scen_settings_dict, out_folder, pg_engine):
             columns={"start_region": "trans_lz1", "dest_region": "trans_lz2"}
         )
         transmission_lines["trans_dbid"] = range(1, len(transmission_lines) + 1)
-        transmission_lines["trans_derating_factor"] = 0.95
+        transmission_lines["trans_derating_factor"] = settings.get(
+            "cap_res_network_derate_default", 0.95
+        )
         transmission_lines["TRANSMISSION_LINE"] = (
             transmission_lines["tz1_dbid"].astype(str)
             + "-"
@@ -1536,12 +1553,12 @@ def transmission_tables(scen_settings_dict, out_folder, pg_engine):
     trans_params_table = pd.DataFrame(
         {
             "trans_capital_cost_per_mw_km": trans_capital_cost_per_mw_km,
+            # TODO: get trans_lifetime_yrs from PowerGenome if possible
             "trans_lifetime_yrs": 60,  # it was 20, now change to 60 for national_emm comparison by RR
             "trans_fixed_om_fraction": settings.get("trans_fixed_om_fraction", 0.0),
         },
         index=[0],
     )
-    trans_params_table
 
     # calculate expansion limits for all lines and periods
     dfs = [
@@ -1614,12 +1631,6 @@ def balancing_tables(settings, pudl_engine, all_gen, out_folder):
         spinning_res_wind_frac=".",
         spinning_res_solar_frac=".",
     )
-
-    bal_areas
-
-    # adding in the dummy loadzone for the fuel_cost / regional_fuel_market issue
-    zone_bal_areas.loc[len(zone_bal_areas.index)] = ["loadzone", "BANC"]
-    zone_bal_areas
 
     bal_areas.to_csv(out_folder / "balancing_areas.csv", index=False)
     zone_bal_areas.to_csv(out_folder / "zone_balancing_areas.csv", index=False)
@@ -1744,15 +1755,17 @@ def short_fn(filename, target=None):
 
 
 """
+#%%
 # settings for testing
 # settings_file = "MIP_results_comparison/case_settings/26-zone/settings"
-settings_file = "MIP_results_comparison/case_settings/26-zone/settings-atb2023"
-results_folder = "/tmp/pg_test"
-# case_id = ["base_short"]
-case_id = ["base_20_week", "base_52_week"]
-# year = [2030] # [2030, 2040, 2050]
-year = []
-myopic = False
+settings_file = "pg/settings"
+results_folder = "/tmp/test"
+case_id = ["p1"] # p1, s4 or s20_1
+year = [2030]  # 2024 or 2030
+myopic = True
+pg_unit_bug = False
+case_index = -1
+#%%
 """
 
 
@@ -1799,6 +1812,7 @@ def main(
         case, second prepares the second, etc. Index starts from 1 for the first
         case.
     """
+    # %%
     cwd = Path.cwd()
     results_folder = cwd / results_folder
     results_folder.mkdir(parents=True, exist_ok=True)
@@ -1810,7 +1824,15 @@ def main(
         freq="AS",
         start_year=min(settings.get("eia_data_years")),
         end_year=max(settings.get("eia_data_years")),
+        pudl_db=settings.get("PUDL_DB"),
+        pg_db=settings.get("PG_DB"),
     )
+
+    # # trace all SQL calls to the pudl database (debugging) (comment out to stop)
+    # @sqlalchemy.event.listens_for(pudl_engine, "before_cursor_execute")
+    # def _log_sql(conn, cursor, statement, parameters, context, executemany):
+    #     print(">SQL>", statement, parameters)
+
     check_settings(settings, pg_engine)
     input_folder = cwd / settings["input_folder"]
     settings["input_folder"] = input_folder
@@ -1823,13 +1845,16 @@ def main(
     # get dataframe of scenario descriptions
     scen_def_fn = input_folder / settings["scenario_definitions_fn"]
     scenario_definitions = pd.read_csv(scen_def_fn)
+    # summarize for later if needed
+    available_cases = scenario_definitions["case_id"].unique().tolist()
+    available_years = scenario_definitions["year"].unique().tolist()
 
     # filter scenarios to match requested case_id(s) and year(s) if any
     # note: typer gives an empty list (not None) if no options are specified
     if case_id:
         filter_cases = case_id
     else:
-        filter_cases = scenario_definitions.case_id.unique().tolist()
+        filter_cases = available_cases.copy()
 
     # run only the specified case_index, if given
     if case_index == -1:
@@ -1845,7 +1870,7 @@ def main(
     if year:
         filter_years = year
     else:
-        filter_years = scenario_definitions.year.unique()
+        filter_years = available_years.copy()
 
     scenario_definitions = scenario_definitions.loc[
         (
@@ -1855,25 +1880,29 @@ def main(
         :,
     ]
 
+    err_msg = ""
     if scenario_definitions.empty:
         if case_id or year:
             extra = " matching the requested case_id(s) or year(s)"
         else:
             extra = ""
-        raise KeyError(f"No scenarios{extra} were found in {short_fn(scen_def_fn)}.")
+        err_msg = f"No scenarios{extra} were found in {short_fn(scen_def_fn)}."
     else:
         missing = set(filter_cases).difference(set(scenario_definitions["case_id"]))
         if missing:
-            raise KeyError(
-                f"Requested case(s) {missing} were not found in {short_fn(scen_def_fn)}."
-            )
-        missing = set(filter_years).difference(set(scenario_definitions["year"]))
-        if missing:
-            raise KeyError(
-                f"Requested year(s) {missing} were not found in {short_fn(scen_def_fn)}."
-            )
-        # if case_id and year and len(found) < len(filter_cases) * len(filter_years):
-        #     print(f"Note that not every combination of case_id and year specified on the command line was defined in {scen_def_fn}.")
+            err_msg = f"Requested case(s) {missing} were not found in {short_fn(scen_def_fn)}."
+        else:
+            missing = set(filter_years).difference(set(scenario_definitions["year"]))
+            if missing:
+                err_msg = f"Requested year(s) {missing} were not found in {short_fn(scen_def_fn)}."
+
+    if err_msg:
+        item_list = lambda lst: ", ".join(str(i) for i in lst) if lst else "none"
+        err_msg += (
+            f" Available cases: {item_list(available_cases)}."
+            f" Available years: {item_list(available_years)}."
+        )
+        raise KeyError(err_msg)
 
     # build scenario_settings dict, with scenario-specific values for each
     # scenario. scenario_settings will have keys for all available years, then
@@ -1912,19 +1941,16 @@ def main(
         all_years = scen_settings_dict.keys()
         print(f"{c}: {', '.join(str(y) for y in all_years)}")
     print()
-
-    # load hydro_variability_new, and need to add variability for region 'MIS_D_MS'
-    # by copying values from ' MIS_AR'
-    hydro_var = pd.read_csv(input_folder / settings["hydro_variability_fn"])
-    hydro_var["MIS_D_MS"] = hydro_var["MIS_AR"].values
-    hydro_variability_new = hydro_var.copy()
-
+    # %%
     """
+    #%%
     # values for testing
     c, scen_settings_dict = to_run[0]
+    #%%
     """
     # Run through the different cases and save files in a new folder for each.
     for c, scen_settings_dict in to_run:
+        # %%
         # c is case_id for this case
         # scen_settings_dict has all settings for this case, organized by year
         all_years = scen_settings_dict.keys()
@@ -1954,6 +1980,7 @@ def main(
         # Set object attribute indicating if the PG unit retirement data bug should be
         # replicated.
         gc.pg_unit_bug = pg_unit_bug
+        # %%
 
         # gc.fuel_prices already spans all years. We assume any added fuels show
         # up in the last year of the study. Then add_user_fuel_prices() adds them
@@ -1968,7 +1995,6 @@ def main(
             scen_settings_dict,
             out_folder,
             pg_engine,
-            hydro_variability_new,
         )
         fuel_files(
             fuel_prices=all_fuel_prices,
@@ -1976,6 +2002,10 @@ def main(
             regions=final_year_settings["model_regions"],
             fuel_region_map=final_year_settings["aeo_fuel_region_map"],
             fuel_emission_factors=final_year_settings["fuel_emission_factors"],
+            out_folder=out_folder,
+        )
+        load_zones_file(
+            final_year_settings,
             out_folder=out_folder,
         )
         other_tables(
@@ -1986,6 +2016,11 @@ def main(
             scen_settings_dict,
             out_folder,
             pg_engine,
+        )
+        model_adjustment_scripts(
+            scen_settings_dict=scen_settings_dict,
+            settings_file=settings_file,
+            out_folder=out_folder,
         )
 
     scenario_files(results_folder, case_settings, myopic)

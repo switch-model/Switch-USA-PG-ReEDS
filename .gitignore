@@ -2,12 +2,18 @@
 # (must be at the top to avoid unignoring previously ignored files in these
 # directories)
 */
+!pg/
+!pg/**
 !switch/
 !switch/*
 !PowerGenome/
 !PowerGenome/**
-!MIP_results_comparison/
-!MIP_results_comparison/**
+
+# large data files (too big for github, can be re-created locally)
+pg/extra_inputs/*.zip
+
+# local cluster caches
+pg/extra_inputs/cluster_assignments
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

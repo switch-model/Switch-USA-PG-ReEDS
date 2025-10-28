@@ -1,0 +1,157 @@
+# Transmission financial information to calculate annual investment costs
+# capex_mw_mile: Capital cost per MW-mile for all (numeric) or each model region (dict).
+# WACC and investment years from https://www.sciencedirect.com/science/article/abs/pii/S0301421519305816
+transmission_investment_cost:
+  # If true, uses interconnect_annuity when available
+  use_total: true
+  spur: # Average of cost per MW mile from each "r" to "rr" in ReEEDS 500kVac_ba file
+    capex_mw_mile:
+      p1: 1826
+      p10: 2033
+      p100: 2692
+      p101: 2127
+      p102: 2134
+      p103: 1855
+      p104: 1831
+      p105: 1957
+      p106: 1885
+      p107: 1826
+      p108: 1842
+      p109: 2015
+      p11: 1905
+      p110: 2278
+      p111: 2184
+      p112: 2203
+      p113: 2115
+      p114: 2184
+      p115: 2519
+      p116: 2493
+      p117: 2522
+      p118: 2356
+      p119: 2653
+      p12: 1842
+      p120: 2712
+      p121: 2691
+      p122: 2829
+      p123: 2764
+      p124: 2688
+      p125: 2767
+      p126: 2805
+      p127: 2561
+      p128: 2998
+      p129: 2570
+      p13: 1771
+      p130: 2857
+      p131: 2880
+      p132: 2787
+      p133: 2859
+      p134: 2956
+      p14: 1820
+      p15: 1750
+      p16: 1753
+      p17: 1744
+      p18: 1684
+      p19: 1636
+      p2: 1793
+      p20: 1687
+      p21: 1723
+      p22: 1714
+      p23: 1686
+      p24: 1691
+      p25: 1762
+      p26: 1775
+      p27: 1781
+      p28: 1774
+      p29: 1754
+      p3: 1791
+      p30: 1703
+      p31: 1722
+      p32: 1659
+      p33: 1707
+      p34: 1703
+      p35: 1646
+      p36: 1642
+      p37: 1647
+      p38: 1675
+      p39: 1667
+      p4: 1781
+      p40: 1677
+      p41: 1701
+      p42: 1657
+      p43: 1695
+      p44: 1671
+      p45: 1694
+      p46: 1730
+      p47: 1652
+      p48: 1651
+      p49: 1663
+      p5: 1820
+      p50: 1685
+      p51: 1696
+      p52: 1663
+      p53: 1686
+      p54: 1711
+      p55: 1740
+      p56: 1730
+      p57: 1772
+      p58: 1738
+      p59: 1672
+      p6: 1821
+      p60: 1668
+      p61: 1719
+      p62: 1660
+      p63: 1842
+      p64: 1905
+      p65: 1912
+      p66: 1777
+      p67: 1849
+      p68: 1687
+      p69: 1718
+      p7: 1753
+      p70: 1718
+      p71: 1726
+      p72: 1768
+      p73: 1763
+      p74: 1722
+      p75: 1725
+      p76: 1728
+      p77: 1732
+      p78: 1753
+      p79: 1758
+      p8: 1826
+      p80: 1787
+      p81: 1744
+      p82: 1762
+      p83: 1802
+      p84: 1783
+      p85: 1747
+      p86: 1746
+      p87: 1760
+      p88: 1860
+      p89: 2058
+      p9: 2153
+      p90: 1898
+      p91: 1956
+      p92: 1985
+      p93: 1936
+      p94: 2158
+      p95: 2282
+      p96: 2257
+      p97: 2317
+      p98: 2344
+      p99: 2347
+    wacc: 0.044
+    investment_years: 60
+
+# Percent expansion in planning period above and beyond existing transmission
+# (allows the minimum of the two possible values, % of existing vs. absolute MW)
+tx_expansion_per_period: 0
+tx_expansion_mw_per_period: 0
+# PG default:
+# tx_expansion_per_period: 1.0 
+# tx_expansion_mw_per_period: 400
+
+# which column to read for existing transmission capacity (nonfirm_ttc_mw or
+# firm_ttc_mw (smaller))
+# For this study, we conservatively assume only existing firm contracts can be used.
+tx_value_col: firm_ttc_mw

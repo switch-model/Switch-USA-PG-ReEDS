@@ -1,0 +1,468 @@
+# REGIONS
+# Select the regions and any regional aggregations that should be performed.
+# This currenly only works for IPM regions either as the regions used in GenX or as
+# aggregations.
+
+
+model_regions:
+- p1
+- p2
+- p3
+- p4
+- p5
+- p6
+- p7
+- p8
+- p9
+- p10
+- p11
+- p12
+- p13
+- p14
+- p15
+- p16
+- p17
+- p18
+- p19
+- p20
+- p21
+- p22
+- p23
+- p24
+- p25
+- p26
+- p27
+- p28
+- p29
+- p30
+- p31
+- p32
+- p33
+- p34
+- p35
+- p36
+- p37
+- p38
+- p39
+- p40
+- p41
+- p42
+- p43
+- p44
+- p45
+- p46
+- p47
+- p48
+- p49
+- p50
+- p51
+- p52
+- p53
+- p54
+- p55
+- p56
+- p57
+- p58
+- p59
+- p60
+- p61
+- p62
+- p63
+- p64
+- p65
+- p66
+- p67
+- p68
+- p69
+- p70
+- p71
+- p72
+- p73
+- p74
+- p75
+- p76
+- p77
+- p78
+- p79
+- p80
+- p81
+- p82
+- p83
+- p84
+- p85
+- p86
+- p87
+- p88
+- p89
+- p90
+- p91
+- p92
+- p93
+- p94
+- p95
+- p96
+- p97
+- p98
+- p99
+- p100
+- p101
+- p102
+- p103
+- p104
+- p105
+- p106
+- p107
+- p108
+- p109
+- p110
+- p111
+- p112
+- p113
+- p114
+- p115
+- p116
+- p117
+- p118
+- p119
+- p120
+- p121
+- p122
+- p123
+- p124
+- p125
+- p126
+- p127
+- p128
+- p129
+- p130
+- p131
+- p132
+- p133
+- p134
+
+# Comment out this setting if no aggregated regions are included in the study.
+region_aggregations: null
+
+# Dollar year that all outputs will be converted to (must be a historical year
+# so CPI data are available)
+target_usd_year: 2024
+
+# Allowed model year(s) and first planning year(s). When PowerGenome is run for
+# just one year it will downsample these as needed.
+# Each of these parameters should be a list.
+# - model_year: The final year in each planning period used to calculate load
+# profiles etc
+# - model_first_planning_year: The first year of each planning period. Capex for
+# new-build generators from ATB are an average of costs from first to last (inclusive).
+# Generators scheduled to retire before model_first_planning_year will be omitted.
+model_year: [2024, 2030]
+model_first_planning_year: [2024, 2030]m
+
+# HOURS OFFSET FROM UTC
+# All time profile data are stored in UTC. Provide an offset for the model timezone.
+# US East cost is -5 Pacific is -8
+utc_offset: -5
+
+# apply 8.4% planning reserve margin in every region
+# This is what the system was able to reach in 2024 and roughly 
+# corresponds to NERC's historical default Reference Margin Level of 15% since we include 
+# T&D losses (5-7%) and they (probably) don't.
+# https://www.nerc.com/pa/RAPA/ra/Reliability%20Assessments%20DL/SRA_About_This_Report.pdf
+regional_capacity_reserves:
+  CapRes_1:
+    p1: 0.084
+    p2: 0.084
+    p3: 0.084
+    p4: 0.084
+    p5: 0.084
+    p6: 0.084
+    p7: 0.084
+    p8: 0.084
+    p9: 0.084
+    p10: 0.084
+    p11: 0.084
+    p12: 0.084
+    p13: 0.084
+    p14: 0.084
+    p15: 0.084
+    p16: 0.084
+    p17: 0.084
+    p18: 0.084
+    p19: 0.084
+    p20: 0.084
+    p21: 0.084
+    p22: 0.084
+    p23: 0.084
+    p24: 0.084
+    p25: 0.084
+    p26: 0.084
+    p27: 0.084
+    p28: 0.084
+    p29: 0.084
+    p30: 0.084
+    p31: 0.084
+    p32: 0.084
+    p33: 0.084
+    p34: 0.084
+    p35: 0.084
+    p36: 0.084
+    p37: 0.084
+    p38: 0.084
+    p39: 0.084
+    p40: 0.084
+    p41: 0.084
+    p42: 0.084
+    p43: 0.084
+    p44: 0.084
+    p45: 0.084
+    p46: 0.084
+    p47: 0.084
+    p48: 0.084
+    p49: 0.084
+    p50: 0.084
+    p51: 0.084
+    p52: 0.084
+    p53: 0.084
+    p54: 0.084
+    p55: 0.084
+    p56: 0.084
+    p57: 0.084
+    p58: 0.084
+    p59: 0.084
+    p60: 0.084
+    p61: 0.084
+    p62: 0.084
+    p63: 0.084
+    p64: 0.084
+    p65: 0.084
+    p66: 0.084
+    p67: 0.084
+    p68: 0.084
+    p69: 0.084
+    p70: 0.084
+    p71: 0.084
+    p72: 0.084
+    p73: 0.084
+    p74: 0.084
+    p75: 0.084
+    p76: 0.084
+    p77: 0.084
+    p78: 0.084
+    p79: 0.084
+    p80: 0.084
+    p81: 0.084
+    p82: 0.084
+    p83: 0.084
+    p84: 0.084
+    p85: 0.084
+    p86: 0.084
+    p87: 0.084
+    p88: 0.084
+    p89: 0.084
+    p90: 0.084
+    p91: 0.084
+    p92: 0.084
+    p93: 0.084
+    p94: 0.084
+    p95: 0.084
+    p96: 0.084
+    p97: 0.084
+    p98: 0.084
+    p99: 0.084
+    p100: 0.084
+    p101: 0.084
+    p102: 0.084
+    p103: 0.084
+    p104: 0.084
+    p105: 0.084
+    p106: 0.084
+    p107: 0.084
+    p108: 0.084
+    p109: 0.084
+    p110: 0.084
+    p111: 0.084
+    p112: 0.084
+    p113: 0.084
+    p114: 0.084
+    p115: 0.084
+    p116: 0.084
+    p117: 0.084
+    p118: 0.084
+    p119: 0.084
+    p120: 0.084
+    p121: 0.084
+    p122: 0.084
+    p123: 0.084
+    p124: 0.084
+    p125: 0.084
+    p126: 0.084
+    p127: 0.084
+    p128: 0.084
+    p129: 0.084
+    p130: 0.084
+    p131: 0.084
+    p132: 0.084
+    p133: 0.084
+    p134: 0.084
+
+# turn off transmission derating (PG defaults to 0.95) because we are handling it via 
+# planning reserve margins instead.
+cap_res_network_derate_default: 1.0
+
+######################################################################################
+# MODEL OUTPUTS
+
+# This is a list of all column names included in the final GenX generators file.
+# Remove any columns that you don't want/need.
+generator_columns:
+- region
+- Resource
+- technology
+- cluster
+- R_ID
+- Zone
+- Num_VRE_Bins
+- CapRes_1
+- CapRes_2
+- THERM
+- VRE
+- MUST_RUN
+- STOR
+- FLEX
+- LDS
+- HYDRO
+- MaxCapTag_Ban
+- MaxCapTag_WindGrowth
+- Min_Share
+- Max_Share
+- Existing_Cap_MWh
+- Existing_Cap_MW
+- Existing_Charge_Cap_MW
+- num_units
+- unmodified_existing_cap_mw
+- New_Build
+- Cap_Size
+- Min_Cap_MW
+- Max_Cap_MW
+- Max_Cap_MWh
+- Min_Cap_MWh
+- Max_Charge_Cap_MW
+- Min_Charge_Cap_MW
+- Min_Share_percent
+- Max_Share_percent
+- capex_mw
+- Inv_Cost_per_MWyr
+- Fixed_OM_Cost_per_MWyr
+- capex_mwh
+- Inv_Cost_per_MWhyr
+- Fixed_OM_Cost_per_MWhyr
+- Var_OM_Cost_per_MWh
+- Var_OM_Cost_per_MWh_In
+- Inv_Cost_Charge_per_MWyr
+- Fixed_OM_Cost_Charge_per_MWyr
+  # - Externality_cost_MWh
+- Start_Cost_per_MW
+- Start_Fuel_MMBTU_per_MW
+- Heat_Rate_MMBTU_per_MWh
+- heat_rate_mmbtu_mwh_iqr
+- heat_rate_mmbtu_mwh_std
+- Fuel
+- Min_Power
+- Self_Disch
+- Eff_Up
+- Eff_Down
+- Hydro_Energy_to_Power_Ratio
+- Ratio_power_to_energy
+- Min_Duration
+- Max_Duration
+- Max_Flexible_Demand_Delay
+- Max_Flexible_Demand_Advance
+- Flexible_Demand_Energy_Eff
+- Ramp_Up_Percentage
+- Ramp_Dn_Percentage
+- Up_Time
+- Down_Time
+- NACC_Eff
+- NACC_Peak_to_Base
+- Reg_Max
+- Rsv_Max
+- Reg_Cost
+- Rsv_Cost
+- spur_miles
+- spur_capex
+- offshore_spur_miles
+- offshore_spur_capex
+- tx_miles
+- tx_capex
+- interconnect_annuity
+- Min_Retired_Cap_MW
+- Min_Retired_Energy_Cap_MW
+- Min_Retired_Charge_Cap_MW
+# Columns starting with ESR_ or MinCapTag_ are added and removed by
+# make_emission_policies.py.
+- ESR_AZ_rps
+- ESR_CA_ces
+- ESR_CA_rps
+- ESR_CO_ces
+- ESR_CO_rps
+- ESR_CT_ces
+- ESR_CT_rps
+- ESR_DE_rps
+- ESR_DE_rps_solar
+- ESR_IA_rps
+- ESR_IL_ces
+- ESR_IL_rps
+- ESR_IL_rps_solar
+- ESR_IL_rps_wind
+- ESR_MA_ces
+- ESR_MA_rps
+- ESR_MA_rps_solar
+- ESR_MD_rps
+- ESR_MD_rps_solar
+- ESR_MD_rps_wind
+- ESR_ME_ces
+- ESR_ME_rps
+- ESR_MI_ces
+- ESR_MI_rps
+- ESR_MN_ces
+- ESR_MN_rps
+- ESR_MN_rps_solar
+- ESR_MO_rps
+- ESR_MO_rps_solar
+- ESR_NC_ces
+- ESR_NC_rps
+- ESR_NC_rps_solar
+- ESR_NE_ces
+- ESR_NH_rps
+- ESR_NH_rps_solar
+- ESR_NJ_rps
+- ESR_NJ_rps_solar
+- ESR_NM_ces
+- ESR_NM_rps
+- ESR_NV_ces
+- ESR_NV_rps
+- ESR_NY_ces
+- ESR_NY_rps
+- ESR_OH_rps
+- ESR_OR_ces
+- ESR_OR_rps
+- ESR_OR_rps_solar
+- ESR_PA_rps
+- ESR_PA_rps_solar
+- ESR_RI_rps
+- ESR_TX_rps
+- ESR_VA_ces
+- ESR_VA_rps
+- ESR_VT_rps
+- ESR_WA_ces
+- ESR_WA_rps
+- ESR_WI_rps
+- MinCapTag_CA_offshorewind
+- MinCapTag_CT_offshorewind
+- MinCapTag_MA_offshorewind
+- MinCapTag_MD_offshorewind
+- MinCapTag_ME_offshorewind
+- MinCapTag_NJ_offshorewind
+- MinCapTag_NY_offshorewind
+- MinCapTag_RI_offshorewind
+- MinCapTag_VA_offshorewind

@@ -1,0 +1,1906 @@
+#================================================================================
+# This file is managed by make_emission_policies.py.
+# The marked sections will be overwritten each time that is run.
+#================================================================================
+
+regional_tag_values:
+  p1:
+    ESR_WA_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_WA_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p2:
+    ESR_WA_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_WA_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p3:
+    ESR_WA_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_WA_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p4:
+    ESR_WA_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_WA_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p5:
+    ESR_OR_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_OR_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_OR_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p6:
+    ESR_OR_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_OR_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_OR_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p7:
+    ESR_OR_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_OR_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_OR_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p8:
+    ESR_CA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_CA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+    MinCapTag_CA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p9:
+    ESR_CA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_CA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+    MinCapTag_CA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p10:
+    ESR_CA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_CA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+    MinCapTag_CA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p11:
+    ESR_CA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_CA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+    MinCapTag_CA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p12:
+    ESR_NV_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NV_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p13:
+    ESR_NV_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NV_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p27:
+    ESR_AZ_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p28:
+    ESR_AZ_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p29:
+    ESR_AZ_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p30:
+    ESR_AZ_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p31:
+    ESR_NM_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_NM_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p33:
+    ESR_CO_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_CO_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p34:
+    ESR_CO_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_CO_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p39:
+    ESR_NE_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+  p40:
+    ESR_NE_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+  p41:
+    ESR_NE_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+  p42:
+    ESR_MN_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MN_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MN_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p43:
+    ESR_MN_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MN_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MN_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p44:
+    ESR_MN_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MN_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MN_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p45:
+    ESR_IA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p46:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p47:
+    ESR_NM_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+    ESR_NM_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p48:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p54:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p55:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p57:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p59:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p60:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p61:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p62:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p63:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p64:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p65:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p66:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p67:
+    ESR_TX_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+  p68:
+    ESR_MN_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MN_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MN_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p69:
+    ESR_IA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p70:
+    ESR_IA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p71:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p72:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p73:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p74:
+    ESR_MI_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MI_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+  p75:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p76:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p77:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p78:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p79:
+    ESR_WI_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p80:
+    ESR_IL_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_IL_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      imports: 1
+    ESR_IL_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_IL_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+  p81:
+    ESR_IL_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_IL_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      imports: 1
+    ESR_IL_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_IL_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+  p82:
+    ESR_IL_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_IL_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      imports: 1
+    ESR_IL_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_IL_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+  p83:
+    ESR_IL_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_IL_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      imports: 1
+    ESR_IL_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_IL_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+  p84:
+    ESR_MO_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    ESR_MO_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p97:
+    ESR_NC_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NC_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_NC_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p98:
+    ESR_NC_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NC_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_NC_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p99:
+    ESR_VA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_VA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_VA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p100:
+    ESR_VA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_VA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_VA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p103:
+    ESR_MI_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MI_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+  p104:
+    ESR_MI_ces:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MI_rps: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+  p111:
+    ESR_OH_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p112:
+    ESR_OH_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p113:
+    ESR_OH_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p114:
+    ESR_OH_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+  p115:
+    ESR_PA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_PA_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p118:
+    ESR_VA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_VA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_VA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p119:
+    ESR_PA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_PA_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p120:
+    ESR_PA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_PA_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p121:
+    ESR_MD_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_MD_rps_solar:          # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_MD_rps_wind:           # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+    MinCapTag_MD_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p122:
+    ESR_PA_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_PA_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p123:
+    ESR_MD_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_MD_rps_solar:          # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_MD_rps_wind:           # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+    MinCapTag_MD_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p124:
+    ESR_VA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_VA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_VA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p125:
+    ESR_DE_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_DE_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p126:
+    ESR_NJ_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_NJ_rps_solar:          # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    MinCapTag_NJ_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p127:
+    ESR_NY_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NY_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    MinCapTag_NY_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p128:
+    ESR_NY_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_NY_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      imports: 1
+    MinCapTag_NY_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p129:
+    ESR_VT_rps:  # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      geothermal: 1
+      imports: 1
+  p130:
+    ESR_NH_rps:  # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_NH_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+  p131:
+    ESR_MA_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MA_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_MA_rps_solar:          # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    MinCapTag_MA_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p132:
+    ESR_CT_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_CT_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_CT_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p133:
+    ESR_RI_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_RI_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+  p134:
+    ESR_ME_ces:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_ME_rps:                # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    MinCapTag_ME_offshorewind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1

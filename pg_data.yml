@@ -1,39 +1,138 @@
-# All the files that end up in `PowerGenome Data Files` originate from
-# https://drive.google.com/drive/folders/1K5GWF5lbe-mKSTUSuJxnFdYGCdyDJ7iE
-# which is referenced from https://github.com/PowerGenome/PowerGenome#data
-# (links to individual files found via right click > share > copy link;
-# don't remove view?usp stuff from the end).
-# We download them selectively instead of downloading the whole folder
-# because the resource groups folder there is very large and we don't need
-# all of it.
+# Data notes:
+# RESOURCE_GROUP
+# - unique version of this folder for each aggregation plan
+# - main folder and subfolders are searched for .json files
+# - each json file points to other files (by name, without path):
+#   - `metadata`: name of file with data on individual sites
+#     - currently existing are aggregated into a single "site" per ReEDS or IPM
+#       region
+#     - unique version of this file for each aggregation plan
+#     - stored in same folder as .json
+#     - .csv file
+#   - `profiles`: name of file with generation profiles for each site 
+#     - either a CPA described in `metadata` file or something that CPAs map to
+#       via `site_map`
+#     - PowerGenome looks for profiles files first in the RESOURCE_GROUP_PROFILES dir,
+#       then in the same dir as the .json file
+#     - .parquet (generally for large files, like new-build) or .csv (generally
+#       for smaller, like existing gens)
+#   - `site_map` (optional): name of file that maps CPAs (zones?) to generation
+#     sites. Used for things like mapping CPAs on a 4-km grid to generation
+#     profiles on a 10-km grid so we don't have to store a profile for every
+#     CPA.
+#     - must be in same location as `profiles` file
+#     - .parquet (generally for large files, like new-build) or .csv (for smaller 
+#       data, like existing gens)
+# RESOURCE_GROUP_PROFILES
+#   - can hold profiles and site_maps for individual wind/solar facilities
+#   - useful to share across different aggregation plans, reusing multi-GB, 
+#     shared files
+#     - generally PG stores (large) ATB/new-build profiles and site_maps in
+#       RESOURCE_GROUP_PROFILES dir and (smaller) existing ones in
+#       RESOURCE_GROUP dir
+#   - these files are referenced from the `profiles` and `site_maps` keys in
+#     .json files in the RESOURCE_GROUP folder and subfolders
+# DISTRIBUTED_GEN_DATA
+#   - one .parquet file referenced in settings/distributed_gen.yml (`distributed_gen_fn`)
+#   - one or more *pop_weight* files in same folder (PowerGenome will read newest one)
 
-# The `corrected-20z-resource-groups` file (which gets unzipped to a folder) is
-# from custom Google Drive folder for MIP project:
-# https://drive.google.com/drive/u/2/folders/1KBdoonCeDfvAgQ10KpwVhmlyfKi1rY5K
 
-download_folders:
-  pg_data/PowerGenome Data Files/PUDL Data: https://drive.google.com/drive/folders/1z9BdvbwgpS5QjPTrcgyFZJUb-eN2vebu
-  pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles: https://drive.google.com/drive/folders/1ZYxnl4U_3HXlYPxm8qlmqyWB8NyC3PpG
-  pg_data/conus-26 resource groups: https://drive.google.com/drive/folders/1QUtctoFDgSqrTZ2NYnM7i_EBBQthuRhg
+# Anything marked as "standard PowerGenome data" below comes from files in
+# https://drive.google.com/drive/folders/1K5GWF5lbe-mKSTUSuJxnFdYGCdyDJ7iE,
+# which is referenced from
+# https://github.com/PowerGenome/PowerGenome/tree/v0.7.0#data. (Click on file,
+# then press cmd-C, or right-click > share > copy link; don't remove view?usp
+# stuff from the end.)
 
+# retrieve whole folders from Google Drive
+download_gdrive_folders:
+  # standard PowerGenome data (commented-out values below are for MIP (26-zone, IPM-based), not ReEDS-based zones)
+  # pg_data/PUDL Data: https://drive.google.com/drive/folders/1z9BdvbwgpS5QjPTrcgyFZJUb-eN2vebu
+  # pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles: https://drive.google.com/drive/folders/1ZYxnl4U_3HXlYPxm8qlmqyWB8NyC3PpG
+  # pg_data/conus-26 resource groups: https://drive.google.com/drive/folders/1QUtctoFDgSqrTZ2NYnM7i_EBBQthuRhg
+
+# retrieve individual files from Google Drive
 # note: .zip files will be replaced by their expanded version
-download_files:
-  # pg_data/corrected-20z-resource-groups.zip: https://drive.google.com/file/d/1MXkdRW-YQ-hq3KzK_TbzTfD1-0CRZmdR/view?usp=drive_link
-  # pg_data/PowerGenome Data Files/pg_misc_tables_efs.sqlite.zip: https://drive.google.com/file/d/1XrLOqVGNP1qjvsXeTt1YH2Pyppqad0fc/view?usp=drive_link
-  pg_data/PowerGenome Data Files/pg_misc_tables_efs_2023.2.sqlite.zip: https://drive.google.com/file/d/1eznTvIoOPj_o4D_dSIgJDnRkXzENiboB/view?usp=share_link
-  pg_data/PowerGenome Data Files/efs_files_utc.zip: https://drive.google.com/file/d/1dWA35bQpPksnSb6auybMbrIqyaBG6wBM/view?usp=drive_link
-  pg_data/PowerGenome Data Files/cambium_dg_data.zip: https://drive.google.com/file/d/1nbhWwOsNeOtcUew9Mn4QGuAtCsZo0VZ2/view?usp=drive_link
+download_gdrive_files:
+  # new pudl data using the sqlite schema from before 2023-12 and earlier, created by make_retro_pudl_data.py
+  pg_data/pudl.2025_08.sqlite.zip: https://drive.google.com/file/d/1jYg9mqBx7rG22r_HHEJoZxNK0wgmnhCl/view?usp=drive_link
+  # shared by Greg Schivley via slack 2025-05-12 (ReEDS compatible)
+  pg_data/pg_misc_tables_efs_2025.3.sqlite.zip: https://drive.google.com/file/d/1TR-bQ0vnE3pgNsl0opk03PFiPBkGIMB3/view?usp=sharing
+  # standard PowerGenome data
+  pg_data/efs_files_utc.zip: https://drive.google.com/file/d/1dWA35bQpPksnSb6auybMbrIqyaBG6wBM/view?usp=drive_link
+  # standard PowerGenome data (IPM basis)
+  # pg_data/cambium_dg_data.zip: https://drive.google.com/file/d/1nbhWwOsNeOtcUew9Mn4QGuAtCsZo0VZ2/view?usp=drive_link
+  # Remaining files are for ReEDS zones from https://drive.google.com/drive/folders/1SDj2XuS-GYRpsWto5i1yICOYP-xENskk 
+  # (shared by Greg Schivley via Slack 2025-05-13). 
+  # Greg Schivley created these profiles in May 2025 by applying NREL's ReV tool to sites previously
+  # identified using Princeton's longstanding screening and interconnection tools. These replace
+  # profiles from Vibrant Clean Energy for 2012 previously used for those sites. ReV converts
+  # meteorological data from Wind Toolkit and NSRDB into power production profiles.
+  # These need some repairs after downloading; see patch_pg_existing_resource_groups.py
+  pg_data/resource_groups/ReEDS-cpas.zip: https://drive.google.com/file/d/1bZQPwEsgL11g_KWeniJ41YZhUMEpcVKW/view?usp=drive_link
+  pg_data/resource_groups/existing_resource_groups_20250513.zip: https://drive.google.com/file/d/1ZXvHnJxftjgWzeF_HXB0uxw3l2cIQsbW/view?usp=drive_link
+  # All of the *_rev_profiles.parquet and *_site_mapping.parquet files in the top level of this Gooogle Drive
+  pg_data/profiles/solar_site_mapping_20240801.parquet: https://drive.google.com/file/d/18sfwsJzsuiHcwQETobnyzzMCqxKS4n4Z/view?usp=drive_link
+  pg_data/profiles/solar_rev_profiles_20240801.parquet: https://drive.google.com/open?id=1ZiVzQVDR60Hy5mRe-i-bmlXb-670kCcu&usp=drive_copy
+  pg_data/profiles/onshorewind_site_mapping_20240801.parquet: https://drive.google.com/open?id=11SXJiVOHEiDXxDdoUIvyugUv95gGFc_1&usp=drive_copy
+  pg_data/profiles/onshorewind_rev_profiles_20240801.parquet: https://drive.google.com/open?id=1bSje2czbF6GMsIYbxLkNYRkeiS6eshon&usp=drive_copy
+  pg_data/profiles/offshorewind_site_mapping_20240801.parquet: https://drive.google.com/open?id=1yDTYawNNOgtG3EUcOYQEVMH6cFIrUHSe&usp=drive_copy
+  pg_data/profiles/offshorewind_rev_profiles_20240801.parquet: https://drive.google.com/open?id=1ZkKyL-zBYEIkFqQVP7aOj69R-3ROdsuz&usp=drive_copy
+  # NREL dist gen data (referenced from settings/distributed_gen.yml)
+  pg_data/NREL-dist-gen/nrel_reeds_distr_pv_2025.2.0.parquet: https://drive.google.com/open?id=1YTs6TS09CJzIh9CwjefXfZfIEzAEvLH2&usp=drive_copy
+  pg_data/NREL-dist-gen/nrel_ba_unity_pop_weight.csv: https://drive.google.com/open?id=1C4DkMHFaN1RLfopAQWXlRuoaw3bAL_dc&usp=drive_copy
 
-env:
-  PUDL_DB: pg_data/PowerGenome Data Files/PUDL Data/pudl.sqlite
-  # PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs.sqlite
-  PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs_2023.2.sqlite
-  RESOURCE_GROUP_PROFILES: pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles
-  EFS_DATA: pg_data/PowerGenome Data Files/efs_files_utc
-  DISTRIBUTED_GEN_DATA: pg_data/PowerGenome Data Files/cambium_dg_data
+# retrieve individual files from urls, possibly expanding into folders
+# note: .zip files will be replaced by their expanded version, likely
+# using the internal file name instead of the one given here
+download_files: []
+  # don't re-download these settings because we have edited them extensively (in pg/).
+  # PowerGenome-examples-reeds-ba.zip: https://github.com/PowerGenome/PowerGenome-examples/archive/refs/heads/reeds-ba.zip
+  # this format doesn't work. Maybe add a github download option? Or use URLs created by https://download-directory.github.io/?
+  # reeds-shapefiles.zip: https://github.com/NREL/ReEDS-2.0/tree/main/inputs/shapefiles
 
-resource_groups:
-  # 26-zone/settings: pg_data/corrected-20z-resource-groups
-  # 26-zone/settings-atb2023: pg_data/corrected-20z-resource-groups
-  26-zone/settings: pg_data/conus-26 resource groups
-  26-zone/settings-atb2023: pg_data/conus-26 resource groups
+# settings here will be converted to absolute paths and written to
+# <setting_folder>/env.yml, where <setting_folder> is the key below
+env.yml:
+  # Aug 2025 (ReEDS/ATB 2024):
+  PowerGenome-examples-reeds-ba/ReEDS-BA/settings: 
+    PUDL_DB: pg_data/pudl.2025_08.sqlite.zip
+    PG_DB: pg_data/pg_misc_tables_efs_2025.3.sqlite
+    EFS_DATA: pg_data/efs_files_utc
+    DISTRIBUTED_GEN_DATA: pg_data/NREL-dist-gen
+    RESOURCE_GROUPS: pg_data/resource_groups
+    RESOURCE_GROUP_PROFILES: pg_data/profiles
+
+  # # MIP pre 2024:
+  # MIP_results_comparison/case_settings/26-zone/settings:
+  #   PUDL_DB: pg_data/PowerGenome Data Files/PUDL Data/pudl.sqlite
+  #   PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs.sqlite
+  #   RESOURCE_GROUP_PROFILES: pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles
+  #   RESOURCE_GROUPS: pg_data/corrected-20z-resource-groups
+  #   EFS_DATA: pg_data/PowerGenome Data Files/efs_files_utc
+  #   DISTRIBUTED_GEN_DATA: pg_data/PowerGenome Data Files/cambium_dg_data
+
+  # MIP_results_comparison/case_settings/26-zone/settings-atb2023:
+  #   PUDL_DB: pg_data/PowerGenome Data Files/PUDL Data/pudl.sqlite
+  #   PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs.sqlite
+  #   RESOURCE_GROUP_PROFILES: pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles
+  #   RESOURCE_GROUPS: pg_data/corrected-20z-resource-groups
+  #   EFS_DATA: pg_data/PowerGenome Data Files/efs_files_utc
+  #   DISTRIBUTED_GEN_DATA: pg_data/PowerGenome Data Files/cambium_dg_data
+
+  # # MIP late 2024 (final):
+  # MIP_results_comparison/case_settings/26-zone/settings:
+  #   PUDL_DB: pg_data/PowerGenome Data Files/PUDL Data/pudl.sqlite
+  #   PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs_2023.2.sqlite
+  #   RESOURCE_GROUP_PROFILES: pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles
+  #   RESOURCE_GROUPS: pg_data/conus-26 resource groups
+  #   EFS_DATA: pg_data/PowerGenome Data Files/efs_files_utc
+  #   DISTRIBUTED_GEN_DATA: pg_data/PowerGenome Data Files/cambium_dg_data
+
+  # MIP_results_comparison/case_settings/26-zone/settings-atb2023:
+  #   PUDL_DB: pg_data/PowerGenome Data Files/PUDL Data/pudl.sqlite
+  #   PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs_2023.2.sqlite
+  #   RESOURCE_GROUP_PROFILES: pg_data/PowerGenome Data Files/PowerGenome Resource Groups/generation_profiles
+  #   RESOURCE_GROUPS: pg_data/conus-26 resource groups
+  #   EFS_DATA: pg_data/PowerGenome Data Files/efs_files_utc
+  #   DISTRIBUTED_GEN_DATA: pg_data/PowerGenome Data Files/cambium_dg_data

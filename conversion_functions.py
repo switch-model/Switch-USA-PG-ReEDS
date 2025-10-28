@@ -3,12 +3,12 @@ Functions to convert data from PowerGenome for use with Switch
 """
 
 from statistics import mean, mode
-from typing import List
+import math
 
+from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-import math
 
 from powergenome.time_reduction import kmeans_time_clustering
 
@@ -35,14 +35,14 @@ def final_value(d: dict):
 
 
 def switch_fuel_cost_table(
-    aeo_fuel_region_map, fuel_prices, IPM_regions, scenario, year_list
+    aeo_fuel_region_map, fuel_prices, regions, scenario, year_list
 ):
     """
     Create the fuel_cost input file based on REAM Scenario 178.
     Inputs:
         * aeo_fuel_region_map: has aeo_fuel_regions and the ipm regions within each aeo_fuel_region
         * fuel_prices: output from PowerGenome gc.fuel_prices
-        * IPM_regions: from settings('model_regions')
+        * regions: from settings('model_regions')
         * scenario: filtering the fuel_prices table. Suggest using 'reference' for now.
         * year_list: the periods - 2020, 2030, 2040, 2050.  To filter the fuel_prices year column
     Output:
@@ -77,26 +77,20 @@ def switch_fuel_cost_table(
     fuel_cost.rename(columns={"year": "period", "price": "fuel_cost"}, inplace=True)
     fuel_cost = fuel_cost[["load_zone", "fuel", "period", "fuel_cost"]]
     fuel_cost["period"] = fuel_cost["period"].astype(int)
-    fuel_cost = fuel_cost[fuel_cost["load_zone"].isin(IPM_regions)]
-    fuel_cost["fuel"] = fuel_cost[
-        "fuel"
-    ].str.capitalize()  # align with energy_source in gen_pro_info? switch error.
+    fuel_cost = fuel_cost[fuel_cost["load_zone"].isin(regions)]
     return fuel_cost
 
 
-def switch_fuels(fuel_prices, REAM_co2_intensity):
+def switch_fuels(fuel_prices, fuel_emission_factors):
     """
-    Create fuels table using fuel_prices (from gc.fuel_prices) and basing other columns on REAM scenario 178
+    Create fuels table using fuel_prices (from gc.fuel_prices) and basing other
+    columns on REAM scenario 178
     Output columns
         * fuel: based on the fuels contained in the PowerGenome fuel_prices table
         * co2_intensity: based on REAM scenario 178
-        * upstream_co2_intensity: based on REAM scenario 178
     """
-    fuels = pd.DataFrame(fuel_prices["fuel"].unique(), columns=["fuel"])
-    fuels["co2_intensity"] = fuels["fuel"].apply(lambda x: REAM_co2_intensity[x])
-    fuels["upstream_co2_intensity"] = 0  # based on REAM scenario 178
-    # switch error - capitalize to align with gen pro info energy_source?
-    fuels["fuel"] = fuels["fuel"].str.capitalize()
+    fuels = pd.DataFrame({"fuel": fuel_prices["fuel"].unique()})
+    fuels["co2_intensity"] = fuels["fuel"].map(fuel_emission_factors).fillna(0)
     return fuels
 
 
@@ -121,10 +115,7 @@ def plant_gen_id(df):
     return df
 
 
-def gen_info_table(
-    all_gens,
-    spur_capex_mw_mile,
-):
+def gen_info_table(gens, settings):
     """
     Create the gen_info table
     Inputs:
@@ -159,55 +150,103 @@ def gen_info_table(
         * gen_store_to_release_ratio: batteries use 1
         * gen_can_provide_cap_reserves: all 1s
         * gen_self_discharge_rate, gen_storage_energy_to_power_ratio: blanks
+        # others specified in settings['gen_info_passthrough']: passed from PowerGenome with specified name
 
     """
+    cols = []
+    optional_cols = []
 
-    gen_info = all_gens.copy().reset_index(drop=True)
+    gen_info = gens.copy().reset_index(drop=True)
 
+    # Make sure GENERATION_PROJECT is the first column (index)
     gen_info["GENERATION_PROJECT"] = gen_info["Resource"]
-    # TODO Change the upstream powergenome code to set up co2_pipeline_capex_mw as 0 when no access to ccs tech
-    # for now, modifyng the translation layer --RR
-    if "co2_pipeline_capex_mw" not in gen_info.columns:
-        gen_info["co2_pipeline_capex_mw"] = 0
+    cols.append("GENERATION_PROJECT")
 
-    # Include co2 pipeline costs as part of connection -- could also be in build capex
-    gen_info["gen_connect_cost_per_mw"] = gen_info[
-        ["spur_capex", "interconnect_capex_mw", "co2_pipeline_capex_mw"]
-    ].sum(axis=1)
+    # Calculate gen_connect_cost_per_mw from spur_capex and interconnect_capex_mw
+    if "spur_capex" in gen_info.columns:
+        spur_capex = gen_info["spur_capex"].fillna(0)
+    else:
+        spur_capex = pd.Series(0, index=gen_info.index)
 
-    # create gen_connect_cost_per_mw from spur_miles and spur_capex_mw_mile
-    gen_info["spur_capex_mw_mi"] = gen_info["region"].map(spur_capex_mw_mile)
-    gen_info["spur_miles"] = gen_info["spur_miles"].fillna(0)
-    gen_info.loc[
-        gen_info["gen_connect_cost_per_mw"] == 0, "gen_connect_cost_per_mw"
-    ] = (gen_info["spur_capex_mw_mi"] * gen_info["spur_miles"])
-    gen_info = gen_info.drop(["spur_miles", "spur_capex_mw_mi"], axis=1)
+    spur_capex_mw_mile = settings.get("transmission_investment_cost")["spur"][
+        "capex_mw_mile"
+    ]
+    if "spur_miles" in gen_info.columns and spur_capex_mw_mile:
+        # replace zeros with calculated values (seems like a rare or obsolete case)
+        calc_spur_capex = (
+            gen_info["region"].map(spur_capex_mw_mile) * gen_info["spur_miles"]
+        ).fillna(0)
+        spur_capex = spur_capex.where(spur_capex != 0, calc_spur_capex)
 
-    # clean up gen_is_variable; usually only solar and wind technologies are true
-    gen_info["gen_is_variable"] = gen_info["gen_is_variable"].astype(bool)
+    gen_info["gen_connect_cost_per_mw"] = spur_capex + (
+        gen_info["interconnect_capex_mw"].fillna(0)
+        if "interconnect_capex_mw" in gen_info.columns
+        else 0.0
+    )
+    cols.append("gen_connect_cost_per_mw")
 
-    # gen_storage_efficiency and gen_store_to_release_ratio (input vs output MW rating)
-    storage_gens = gen_info["STOR"] == 1
+    # Include CO2 pipeline costs as part of connection -- could also be in build capex
+    if "co2_pipeline_capex_mw" in gen_info.columns:
+        gen_info["gen_connect_cost_per_mw"] += gen_info["co2_pipeline_capex_mw"]
+
+    # gen_amortization_period is optional (Switch will use gen_max_age by
+    # default). But we report it if PG provides it, in case the settings use a
+    # longer retirement_age to prevent age-based retirement.
+    for cap_col in ["Capital_Recovery_Period", "cap_recovery_years"]:  # 0.7.0 / 0.6.3
+        if cap_col in gen_info.columns:
+            gen_info["gen_amortization_period"] = gen_info[cap_col]
+            break
+    if "gen_amortization_period" in gen_info.columns:
+        # drop zeros, which PG 0.7.0+ gives for existing gens (with $0 CapEx)
+        # Switch will use generator lifetime instead
+        gen_info["gen_amortization_period"] = gen_info[
+            "gen_amortization_period"
+        ].replace(0, None)
+        cols.append("gen_amortization_period")
+
+    # Infer gen energy source if not provided in the PowerGenome settings
+    if "gen_energy_source" not in gen_info.columns:
+        gen_info["gen_energy_source"] = infer_gen_energy_source(gen_info, settings)
+    cols.append("gen_energy_source")
+
+    # gen_storage_efficiency
+    # See documentation for STOR variable at https://github.com/macroenergy/Dolphyn.jl/blob/main/docs/src/data_documentation.md
+    # note: GenX has an option for STOR = 2 and then charge capacity becomes
+    # a separate decision variable capped by `Max_Charge_Cap_MW`, but Switch
+    # doesn't currently handle that, so we treat all storage as symmetrical
+    # TODO: add charging equipment cost for STOR=2 cases to discharging
+    # CapEx, assuming discharge capacity = charge capacity
+    storage_gens = gen_info["STOR"] > 0
     gen_info.loc[storage_gens, "gen_storage_efficiency"] = (
         gen_info["Eff_Up"] * gen_info["Eff_Down"]
     )
-    gen_info.loc[storage_gens, "gen_store_to_release_ratio"] = 1
-    gen_info["gen_can_provide_cap_reserves"] = 1
+    cols.append("gen_storage_efficiency")
 
-    gen_info["gen_self_discharge_rate"] = None
-    gen_info["gen_storage_energy_to_power_ratio"] = None
-
-    gen_info["gen_dbid"] = gen_info["GENERATION_PROJECT"]
-
-    # get capacity limit if any, but ignore -1 (existing plants that won't
-    # show up as buildable in the future anyway)
-    gen_info["gen_capacity_limit_mw"] = gen_info["Max_Cap_MW"].replace({-1: None})
-
-    # fill in CCS capture rate, using NaN for non-CCS plants
-    gen_info["gen_ccs_capture_efficiency"] = gen_info["CO2_Capture_Rate"]
+    # get capacity limit if any, but ignore -1 (no limit; doesn't seem to be
+    # used) or existing plants with 0 limit. PG doesn't seem to create existing
+    # plant records that can also be built in the future, and if it did, we
+    # would split them into different rows (see notes around
+    # `existing_gens["new_build"] = False` in gen_tables()). So this will only
+    # affect the existing versions. PG 0.7.0 and maybe later assign 0 for
+    # existing plants, which would cause infeasibility in Switch, so we force
+    # those to NaN here.
+    gen_info["gen_capacity_limit_mw"] = (
+        gen_info["Max_Cap_MW"].replace(-1, None)
+        if "Max_Cap_MW" in gen_info.columns
+        else None
+    )
     gen_info.loc[
-        gen_info["gen_ccs_capture_efficiency"] == 0, "gen_ccs_capture_efficiency"
+        gen_info["existing"] & (gen_info["gen_capacity_limit_mw"] == 0),
+        "gen_capacity_limit_mw",
     ] = None
+    cols.append("gen_capacity_limit_mw")
+
+    # Get capture efficiency for CCS plants if available, omitting non-CCS plants
+    if "CO2_Capture_Rate" in gen_info.columns:
+        gen_info["gen_ccs_capture_efficiency"] = gen_info["CO2_Capture_Rate"].replace(
+            0, None
+        )
+        cols.append("gen_ccs_capture_efficiency")
 
     # identify generators that can retire early
     try:
@@ -219,92 +258,149 @@ def gen_info_table(
         # New_Build == 0 -> existing, can retire
         # New_Build >= 1 -> new build, can retire in current version of GenX
         gen_info["gen_can_retire_early"] = (gen_info["New_Build"] >= 0).astype("Int64")
+    cols.append("gen_can_retire_early")
 
-    # rename columns
-    gen_info.rename(
-        columns={
-            "technology": "gen_tech",
-            "region": "gen_load_zone",
-            "retirement_age": "gen_max_age",
-            "Heat_Rate_MMBTU_per_MWh": "gen_full_load_heat_rate",
-            "Var_OM_Cost_per_MWh_mean": "gen_variable_om",
-            # gen_amortization_period is optional and often not needed (Switch
-            # will use gen_max_age by default). But we always report it in case
-            # the settings use a longer retirement_age (or none) to prevent
-            # age-based retirement.
-            "cap_recovery_years": "gen_amortization_period",
-            "Min_Power": "gen_min_load_fraction",
-            "Ramp_Up_Percentage": "gen_ramp_limit_up",
-            "Ramp_Dn_Percentage": "gen_ramp_limit_down",
-            "Up_Time": "gen_min_uptime",
-            "Down_Time": "gen_min_downtime",
-            "Start_Cost_per_MW": "gen_startup_om",
-        },
-        inplace=True,
+    # variable O&M must be filled in
+    gen_info["gen_variable_om"] = gen_info["Var_OM_Cost_per_MWh_mean"].fillna(0)
+    cols.append("gen_variable_om")
+
+    # both VRE (renewables) and FLEX (demand response) have limiting profiles
+    gen_info["gen_is_variable"] = (
+        (gen_info["VRE"] > 0) | (gen_info["FLEX"] > 0)
+    ).astype(int)
+    cols.append("gen_is_variable")
+
+    # Min_Power can be negative in flexible demand cases with load that
+    # sometimes goes negative; we ignore that
+    if "Min_Power" in gen_info.columns:
+        gen_info["gen_min_load_fraction"] = gen_info["Min_Power"].clip(0, None)
+        cols.append("gen_min_load_fraction")
+
+    # Keep some columns as-is, just renaming
+    rename_cols = {
+        "technology": "gen_tech",
+        "region": "gen_load_zone",
+        "retirement_age": "gen_max_age",
+        "Heat_Rate_MMBTU_per_MWh": "gen_full_load_heat_rate",
+        "Ramp_Up_Percentage": "gen_ramp_limit_up",
+        "Ramp_Dn_Percentage": "gen_ramp_limit_down",
+        "Up_Time": "gen_min_uptime",
+        "Down_Time": "gen_min_downtime",
+        "Start_Cost_per_MW": "gen_startup_om",
+        # gen_self_discharge_rate is not defined in main Switch 2.0.10 or earlier. Used by UCSD?
+        "Self_Disch": "gen_self_discharge_rate",
+        "tonne_co2_captured_mwh": "gen_ccs_load_mwh_per_tCO2",
+        # gen_ccs_energy_load was renamed in Switch 2.0.10; this will pick up the old or new name
+        "gen_ccs_energy_load": "gen_ccs_load_fraction",
+        # If using Switch unit commitment, MUST_RUN will be treated as must run at 100% when committed.
+        # If not using unit commitment, MUST_RUN will be treated as must run at same level for the whole period.
+        # This behavior probably differs from GenX
+        "MUST_RUN": "gen_is_baseload",
+        "FLEX": "gen_is_vpp",
+    }
+    rename_cols.update(
+        # pass through extra columns specified in the settings, swapping order to rename
+        {pg: sw for (sw, pg) in settings.get("gen_info_extra_columns", {}).items()}
+    )
+    gen_info.rename(columns=rename_cols, inplace=True)
+    cols.extend([c for c in rename_cols.values() if c in gen_info.columns])
+
+    # Add columns for state-level environmental policies
+    cols.extend(
+        c
+        for c in gen_info.columns
+        if any(c.startswith(f"{tag}_") for tag in ["ESR", "MinCapTag", "MaxCapTag"])
     )
 
-    # use zero instead of NaN for some columns (other NaNs will get converted
-    # to "." for Switch when saving later)
-    gen_info["gen_variable_om"] = gen_info["gen_variable_om"].fillna(0)
-    gen_info["gen_connect_cost_per_mw"] = gen_info["gen_connect_cost_per_mw"].fillna(0)
-
-    cols = [
-        "GENERATION_PROJECT",
-        "gen_tech",
-        "gen_energy_source",
-        "gen_load_zone",
-        "gen_max_age",
-        "gen_amortization_period",
-        "gen_can_retire_early",
-        "gen_is_variable",
-        "gen_is_baseload",
-        "gen_full_load_heat_rate",
-        "gen_variable_om",
-        "gen_connect_cost_per_mw",
+    # Additional columns that will be passed through as-is if defined in the
+    # settings files. Typically these would be defined in
+    # pg_settings/extra_inputs/misc_gen_inputs on a per-resource-type basis.
+    # Unless otherwise noted, these are not usually defined.
+    optional_cols = [
         "gen_dbid",
+        "gen_is_cogen",
         "gen_scheduled_outage_rate",
         "gen_forced_outage_rate",
-        "gen_capacity_limit_mw",
-        "gen_min_load_fraction",
-        "gen_ramp_limit_up",
-        "gen_ramp_limit_down",
-        "gen_min_uptime",
-        "gen_min_downtime",
-        "gen_startup_om",
-        "gen_is_cogen",
-        "gen_storage_efficiency",
         "gen_store_to_release_ratio",
-        "gen_can_provide_cap_reserves",
-        "gen_self_discharge_rate",
-        "gen_ccs_capture_efficiency",
-        "gen_ccs_energy_load",
         "gen_storage_energy_to_power_ratio",
-        "gen_type",
-        "ESR_1",  # Below are the columns used for current policy
-        "ESR_2",
-        "ESR_3",
-        "ESR_4",
-        "ESR_5",
-        "ESR_6",
-        "ESR_7",
-        "ESR_8",
-        "ESR_9",
-        "ESR_10",
-        "ESR_11",
-        "ESR_12",
-        "ESR_13",
-        "ESR_14",
-        "ESR_15",
-        "ESR_16",
-        "MinCapTag_1",
-        "MinCapTag_2",
-        "MinCapTag_3",
-        "MinCapTag_4",
-        "MinCapTag_5",
-    ]  # index
+        "gen_can_provide_cap_reserves",
+        "gen_type",  # not used by standard Switch, maybe used by UCSD?
+    ]
 
+    cols.extend(c for c in optional_cols if c in gen_info.columns)
     gen_info = gen_info[cols]
     return gen_info
+
+
+def infer_gen_energy_source(gen_info, settings):
+    """
+    Create a gen_energy_source series based on technology name and standard
+    PG generator type flags. First tries to match the technology in
+    tech_fuel_map, then falls back to the other approaches.
+    """
+
+    # direct lookup of fuel name (simple, but misses some (new build?) technologies)
+    # gen_energy_source = gen_info["technology"].map(settings['tech_fuel_map'])
+
+    info = gen_info[["region", "technology", "Fuel"]]
+
+    # first try splitting the generic fuel off the end of the Fuel column
+    aeo_region_map = {
+        z: a for (a, zones) in settings["aeo_fuel_region_map"].items() for z in zones
+    }
+    info["aeo_region"] = info["region"].map(aeo_region_map)
+
+    def split_fuel(row):
+        if row.Fuel.startswith(row.aeo_region + "_"):
+            return row.Fuel[len(row.aeo_region) + 1 :]
+        else:
+            return None
+
+    info["gen_energy_source"] = info.apply(split_fuel, axis=1)
+
+    # assign energy source based on standard PowerGenome flags
+    flag_based_energy_sources = [
+        ("STOR", "storage"),
+        ("HYDRO", "water"),
+        ("FLEX", "demand_response"),
+    ]
+    for flag, source in flag_based_energy_sources:
+        mask = (gen_info[flag] > 0) & info["gen_energy_source"].isna()
+        info.loc[mask, "gen_energy_source"] = source
+
+    # Assign remaining generators (wind, solar and a few other no-fuel
+    # technologies) by matching terms in their name. Weaker matches are near the
+    # end so they'll be tried later.
+    non_fuel_energy_sources = [
+        ("photovoltaic", "sun"),
+        ("solar", "sun"),
+        ("wind", "wind"),
+        ("hydro", "water"),  # small hydro may not be marked 'HYDRO'
+        ("geothermal", "geothermal"),
+        ("biomass", "biomass"),
+        ("import", "imports"),
+        ("demand", "demand_response"),
+        ("distributed", "sun"),  # we assume distributed gen is solar
+        ("nuclear", "uranium"),
+        ("geo", "geothermal"),
+        ("pv", "sun"),
+        ("resp", "demand_response"),
+        ("dr", "demand_response"),
+    ]
+    tech_non_fuel_map = {
+        t: t.lower()  # use tech name as energy source by default
+        for t in gen_info.loc[info["gen_energy_source"].isna(), "technology"].unique()
+    }
+    # map known technology names to specific energy sources
+    for tech in tech_non_fuel_map:
+        for pattern, fuel in non_fuel_energy_sources:
+            if pattern in tech.lower():
+                tech_non_fuel_map[tech] = fuel
+                break
+    info["gen_energy_source"] = info["gen_energy_source"].fillna(
+        gen_info["technology"].map(tech_non_fuel_map)
+    )
+    return info["gen_energy_source"]
 
 
 hydro_forced_outage_tech = {
@@ -530,43 +626,44 @@ def hydro_timeseries_pg_kmeans(
     return hydro_ts[cols]
 
 
-def variable_cf_pg_kmeans(
-    all_gens: pd.DataFrame, all_gen_variability: pd.DataFrame, timepoints: pd.DataFrame
-) -> pd.DataFrame:
-    """Create the variable capacity factors table when using kmeans time reduction in PG
+# # obsolete, ended up identical to variable_capacity_factors_table
+# def variable_cf_pg_kmeans(
+#     all_gens: pd.DataFrame, all_gen_variability: pd.DataFrame, timepoints: pd.DataFrame
+# ) -> pd.DataFrame:
+#     """Create the variable capacity factors table when using kmeans time reduction in PG
 
-    Variable generators are identified as those with hourly average capacity factors
-    less than 1.
+#     Variable generators are identified as those with hourly average capacity factors
+#     less than 1.
 
-    Parameters
-    ----------
-    all_gens : pd.DataFrame
-        All resources. Must have the columns "Resource" and "gen_is_variable".
-    all_gen_variability : pd.DataFrame
-        Wide dataframe with hourly capacity factors of all generators.
-    timepoints : pd.DataFrame
-        Timepoints table with column "timepoint_id"
+#     Parameters
+#     ----------
+#     all_gens : pd.DataFrame
+#         All resources. Must have the columns "Resource" and "VRE".
+#     all_gen_variability : pd.DataFrame
+#         Wide dataframe with hourly capacity factors of all generators.
+#     timepoints : pd.DataFrame
+#         Timepoints table with column "timepoint_id"
 
-    Returns
-    -------
-    pd.DataFrame
-        Tidy dataframe with columns "GENERATION_PROJECT", "timepoint", and
-        "gen_max_capacity_factor"
-    """
+#     Returns
+#     -------
+#     pd.DataFrame
+#         Tidy dataframe with columns "GENERATION_PROJECT", "timepoint", and
+#         "gen_max_capacity_factor"
+#     """
 
-    vre_gens = all_gens.loc[all_gens["gen_is_variable"] == 1, "Resource"]
-    vre_variability = all_gen_variability[vre_gens]
-    vre_variability["timepoint_id"] = timepoints["timepoint_id"].values
-    vre_ts = vre_variability.melt(
-        id_vars=["timepoint_id"], value_name="gen_max_capacity_factor"
-    )
-    vre_ts = vre_ts.rename(
-        columns={"Resource": "GENERATION_PROJECT", "timepoint_id": "timepoint"}
-    )
+#     vre_gens = all_gens.loc[all_gens["VRE"] == 1, "Resource"]
+#     vre_variability = all_gen_variability[vre_gens]
+#     vre_variability["timepoint_id"] = timepoints["timepoint_id"].values
+#     vre_ts = vre_variability.melt(
+#         id_vars=["timepoint_id"], value_name="gen_max_capacity_factor"
+#     )
+#     vre_ts = vre_ts.rename(
+#         columns={"Resource": "GENERATION_PROJECT", "timepoint_id": "timepoint"}
+#     )
 
-    return vre_ts.reindex(
-        columns=["GENERATION_PROJECT", "timepoint", "gen_max_capacity_factor"]
-    )
+#     return vre_ts.reindex(
+#         columns=["GENERATION_PROJECT", "timepoint", "gen_max_capacity_factor"]
+#     )
 
 
 def load_pg_kmeans(load_curves: pd.DataFrame, timepoints: pd.DataFrame) -> pd.DataFrame:
@@ -585,18 +682,18 @@ def load_pg_kmeans(load_curves: pd.DataFrame, timepoints: pd.DataFrame) -> pd.Da
         Tidy dataframe with columns "LOAD_ZONE" and "TIMEPOINT"
     """
     load_curves = load_curves.astype(int)
+    load_curves.columns.name = "LOAD_ZONE"  # rename from "region" or None
     load_curves["TIMEPOINT"] = timepoints["timepoint_id"].values
     load_ts = load_curves.melt(id_vars=["TIMEPOINT"], value_name="zone_demand_mw")
-    load_ts = load_ts.rename(columns={"region": "LOAD_ZONE"})
     load_ts["zone_demand_mw"] = load_ts["zone_demand_mw"].astype("object")
 
     # change the order of the columns
-    return load_ts.reindex(columns=["LOAD_ZONE", "TIMEPOINT", "zone_demand_mw"])
+    return load_ts[["LOAD_ZONE", "TIMEPOINT", "zone_demand_mw"]]
 
 
 def graph_timestamp_map_kmeans(timepoints_df):
     """
-    Create the graph_timestamp_map table based on REAM Scenario 178
+    Create the graph_timestamp_map table for Switch-WECC (UCSD)
     Input:
         timeseries_df, timepoints_df: the SWITCH timeseries table
     Output columns:
@@ -621,384 +718,176 @@ def graph_timestamp_map_kmeans(timepoints_df):
     return graph_timeseries_map
 
 
-def timeseries(
-    load_curves,
-    planning_year,
-    planning_start_year,
-    settings,
-):  # 20.2778, 283.8889
+def make_n_timepoints(num_steps, planning_year):
     """
-    Create the timeseries table based on REAM Scenario 178
-    Input:
-        1) load_curves: created using PowerGenome make(final_load_curves(pg_engine, scenario_settings[][]))
-        2) max_weight: the weight to apply to the days with highest values
-        3) avg_weight: the weight to apply to the days with average value
-        3) ts_duration_of_tp: how many hours should the timpoint last
-        4) ts_num_tps: number of timpoints in the selected day
-    Output columns:
-        - TIMESERIES: format: yyyy_yyyy-mm-dd
-        - ts_period: the period decade
-        - ts_duration_of_tp: based on input value
-        - ts_num_tps: based on input value. Should multiply to 24 with ts_duration_of_tp
-        - ts_scale_to_period: use the max&avg_weights for the average and max days in a month
+    Generate a pandas Series with unique timepoint IDs for the specified number
+    of steps in the specified planning year. These are integers that encode the
+    year, possibly the repetition count, month, day and hour. We assume the steps
+    are hourly and cover an integer number of years.
     """
-    if settings.get("sample_dates_fn") and settings.get("input_folder"):
-        sample_dates = pd.read_csv(
-            settings.get("input_folder") / settings["sample_dates_fn"]
+    if num_steps % 8760 != 0:
+        raise ValueError(
+            "`n_steps` must be an exact multiple of 8760 for make_n_timepoints()"
         )
-    else:
-        sample_year = planning_year
-        sample_year_start = str(sample_year) + "0101"
-        sample_year_end = str(sample_year) + "1231"
-        sample_dates = [
-            d.strftime("%Y%m%d")
-            for d in pd.date_range(sample_year_start, sample_year_end)
-        ]
 
-    leap_yr = str(sample_year) + "0229"
-    if leap_yr in sample_dates:
-        sample_dates.remove(leap_yr)  ### why remove Feb 29th? --RR
-
-    hr_load_sum = pd.DataFrame(load_curves.sum(axis=1), columns=["sum_across_regions"])
-    load_hrs = len(load_curves.index)  # number of hours PG outputs data for in a year
-    baseyear_hours = len(sample_dates) * 24
-    hr_interval = round(load_hrs / baseyear_hours)
-    # hr_int_list = list(range(1, int(24 / hr_interval) + 1))
-    hr_interval_load_sum = hr_load_sum.groupby(hr_load_sum.index // hr_interval).sum()
-    # create initial date list for 2020
-    timestamp = list()
-    for d in range(len(sample_dates)):
-        for i in range(1, 25):
-            date_hr = sample_dates[d]
-            timestamp.append(date_hr)
-
-    timeseries = [x[:4] + "_" + x[:4] + "-" + x[4:6] + "-" + x[6:8] for x in timestamp]
-    ts_period = [x[:4] for x in timestamp]
-    timepoint_id = list(range(len(timestamp)))
-
-    column_list = ["timeseries", "ts_period"]
-    data = np.array([timeseries, ts_period]).T
-    initial_df = pd.DataFrame(
-        data, columns=column_list, index=hr_interval_load_sum.index
-    )
-    initial_df = initial_df.join(hr_interval_load_sum)
-
-    if settings.get("chunk_days"):
-        chunk_days = settings.get("chunk_days")
-        # split dataframe into chunks of representative_days
-        chunk_hr = chunk_days * 24
-        n_chunks = len(sample_dates) // chunk_days
-        num_days = chunk_days * n_chunks
-        chunk_df = []
-        for i in range(n_chunks):
-            ck_df = (
-                (initial_df.iloc[i * chunk_hr : (i + 1) * chunk_hr, :])
-                .groupby("timeseries")
-                .sum()
-            )
-            chunk_df.append(ck_df)
-    else:
-        chunk_days = 8760 / (12 * 24)
-        month_hrs = [744, 672, 744, 720, 744, 720, 744, 744, 720, 744, 720, 744]
-        year_cumul = [
-            744,
-            1416,
-            2160,
-            2880,
-            3624,
-            4344,
-            5088,
-            5832,
-            6552,
-            7296,
-            8016,
-            8760,
-        ]  # cumulative hours by month
-        num_days = sum(month_hrs) / 24
-        # split dataframe into months (grouped by day)
-        chunk_df = []
-        chunk_df.append(
-            (initial_df.iloc[0 : year_cumul[0], :]).groupby("timeseries").sum()
-        )
-        for i in range(len(year_cumul) - 1):
-            M_df = (
-                (initial_df.iloc[year_cumul[i] : year_cumul[i + 1], :])
-                .groupby("timeseries")
-                .sum()
-            )
-            chunk_df.append(M_df)
-
-    # find mean and max for each month, add date to a dataframe
-    timeseries_df = pd.DataFrame(
-        columns=["sum_across_regions", "timeseries", "close_to_mean"]
-    )
-    for df in chunk_df:
-        df["timeseries"] = df.index
-        mean = df["sum_across_regions"].mean()
-        df["close_to_mean"] = abs(df["sum_across_regions"] - mean)
-        df_mean = df.loc[df["close_to_mean"] == df["close_to_mean"].min()]
-        df_max = df.loc[df["sum_across_regions"] == df["sum_across_regions"].max()]
-        timeseries_df = timeseries_df.append(df_max)
-        timeseries_df = timeseries_df.append(df_mean)
-        timeseries_df["timeseries"] = timeseries_df.index
-
-    # add in other columns
-    timeseries_df["ts_period"] = str(sample_year)
-    ts_duration_of_tp = settings.get("ts_duration_of_tp", 1)
-    ts_num_tps = settings.get("ts_num_tps", 24 / ts_duration_of_tp)
-    timeseries_df["ts_duration_of_tp"] = ts_duration_of_tp  # assuming 4 for now
-    timeseries_df["ts_num_tps"] = ts_num_tps  # assuming 6 for now
-    timeseries_df = timeseries_df.reset_index(drop=True)
-    timeseries_df = timeseries_df.drop(["sum_across_regions"], axis=1)
-
-    timeseries_df["ts_scale_to_period"] = None
-
-    planning_yrs = planning_year - planning_start_year + 1
-    max_days = settings.get("max_days")
-    sample_to_year_ratio = 8760 / (num_days * 24)
-    max_weight = round(planning_yrs * max_days * sample_to_year_ratio, 4)
-    avg_weight = round(planning_yrs * (chunk_days - max_days) * sample_to_year_ratio, 4)
-
-    for i in range(len(timeseries_df)):
-        if i % 2 == 0:
-            timeseries_df.loc[i, "ts_scale_to_period"] = max_weight
-    timeseries_df["ts_scale_to_period"].replace(
-        to_replace=[None], value=avg_weight, inplace=True
-    )
-
-    timeseries_df = timeseries_df[
-        [
-            "timeseries",
-            "ts_period",
-            "ts_duration_of_tp",
-            "ts_num_tps",
-            "ts_scale_to_period",
-        ]
+    dates = [
+        d.strftime("%Y%m%d")
+        for d in pd.date_range(f"{planning_year}-01-01", f"{planning_year}-12-31")
     ]
+    # ignore leap day if present in the model year, since we always use n x 8760 sample hours
+    leap_yr = f"{planning_year:04d}0229"
+    if leap_yr in dates:
+        dates.remove(leap_yr)
 
-    timeseries_dates = timeseries_df["timeseries"].to_list()
-    timestamp_interval = list()
-    for i in range(ts_num_tps):
-        s_interval = ts_duration_of_tp * i
-        stamp_interval = str(f"{s_interval:02d}")
-        timestamp_interval.append(stamp_interval)
+    num_years = num_steps // 8760
+    if num_years > 1:
+        # repeat the year n_years times and insert a repetition number
+        digits = int(math.log10(num_years)) + 1
+        dates = [
+            # 2030020301 = year 2030, repetition 02, month 03, day 01
+            f"{d[:4]}{r+1:0{digits}d}{d[4:]}"
+            for r in range(num_years)
+            for d in dates
+        ]
 
-    timepoint_id = list(range(1, len(timeseries_dates) + 1))
-    timestamp = [x[:4] + x[10:12] + x[13:] for x in timeseries_dates]
+    hours = [f"{i:02d}" for i in range(24)]
 
-    column_list = ["timepoint_id", "timestamp", "timeseries"]
-    timepoints_df = pd.DataFrame(columns=column_list)
-    for i in timestamp_interval:
-        timestamp_interval = [x + i for x in timestamp]
-        df_data = np.array([timepoint_id, timestamp_interval, timeseries_dates]).T
-        df = pd.DataFrame(df_data, columns=column_list)
-        timepoints_df = timepoints_df.append(df)
-
-    timepoints_df["timepoint_id"] = range(
-        1, len(timepoints_df["timeseries"].to_list()) + 1
-    )
-
-    return timeseries_df, timepoints_df, timestamp_interval
+    return pd.Series(f"{d}{h}" for d in dates for h in hours)
 
 
 def timeseries_full(
-    load_curves,
     planning_year,
     planning_start_year,
-    settings,
-):  # 20.2778, 283.8889
-    """Create timeseries and timepoints tables when using yearly data with 8760 hours
-    Apply this function reduce_time_domain: False & full_time_domain: True in settings
+    num_sample_hours,
+) -> Tuple[
+    pd.DataFrame,  # timeseries_df
+    pd.DataFrame,  # timepoints_df
+]:
+    """
+    Create timeseries and timepoints tables when using data with 8760 hours per
+    year for one or more years. Apply this function when reduce_time_domain is
+    False in settings.
+
     Parameters
     ----------
-    planning_periods : List[int]
-        A list of the planning years
-    planning_period_start_years : List[int]
-        A list of the start year for each planning period, used to calculate the number
-        of years in each period
+    planning_year:
+        model year to prepare data for (assumed to be the end of the period)
+    planning_period_start_year:
+        first year of the study period, used to calculate the number
+        of years in the period
+    num_sample_hours:
+        number of sample hours to generate timeseries for
+    settings:
+        PowerGenome settings dict
 
     Returns
     -------
-    pd.DataFrame, pd.DataFrame
+    pd.DataFrame, pd.DataFrame, pd.DataFrame
         A tuple of the timeseries and timepoints dataframes
     """
+    timepoints = make_n_timepoints(num_sample_hours, planning_year)
 
-    if settings.get("sample_dates_fn") and settings.get("input_folder"):
-        sample_dates = pd.read_csv(
-            settings.get("input_folder") / settings["sample_dates_fn"]
-        )
-    else:
-        sample_year = planning_year
-        sample_year_start = str(sample_year) + "0101"
-        sample_year_end = str(sample_year) + "1231"
-        sample_dates = [
-            d.strftime("%Y%m%d")
-            for d in pd.date_range(sample_year_start, sample_year_end)
-        ]
+    num_hours = len(timepoints)
+    sample_to_year_ratio = 8760 / num_hours
+    num_planning_yrs = planning_year - planning_start_year + 1
 
-    leap_yr = str(sample_year) + "0229"
-    if leap_yr in sample_dates:
-        sample_dates.remove(leap_yr)  ### why remove Feb 29th? --RR
-    num_days = len(sample_dates)
-    num_hours = 24 * num_days
-    sample_to_year_ratio = 8760 / (num_days * 24)
-    planning_yrs = planning_year - planning_start_year + 1
-
-    timeseries_df = pd.DataFrame()
-    ts = f"{sample_year}_{sample_year}-full"
-    timeseries_df["timeseries"] = [ts]
-    timeseries_df["ts_period"] = [f"{sample_year}"]
-    timeseries_df["ts_duration_of_tp"] = [1]  # each hour as one timepoint
-    timeseries_df["ts_num_tps"] = [num_hours]
-    timeseries_df["ts_scale_to_period"] = [planning_yrs * sample_to_year_ratio]
-
-    timestamp_interval = list()
-    for i in range(24):
-        s_interval = i
-        stamp_interval = str(f"{s_interval:02d}")
-        timestamp_interval.append(stamp_interval)
-
-    timepoints_df = pd.DataFrame()
-    timepoints_df["timeseries"] = [ts for i in range(num_hours)]
-    timepoints_df["timepoint_id"] = range(
-        1, len(timepoints_df["timeseries"].to_list()) + 1
+    # define a single timeseries for all the hours
+    ts = f"{planning_year}-full"
+    timeseries_df = pd.DataFrame(
+        {
+            "timeseries": [ts],
+            "ts_period": [f"{planning_year}"],
+            "ts_duration_of_tp": [1],  # each hour as one timepoint
+            "ts_num_tps": [num_hours],
+            "ts_scale_to_period": [num_planning_yrs * sample_to_year_ratio],
+        }
     )
 
-    timepoints_df["timestamp"] = [
-        f"{d}{i}" for d in sample_dates for i in timestamp_interval
-    ]
+    timepoints_df = pd.DataFrame(
+        {
+            "timepoint_id": timepoints,
+            "timeseries": [ts] * num_hours,
+            "timestamp": timepoints,
+        }
+    )
+    return timeseries_df, timepoints_df
 
-    timepoints_df = timepoints_df[["timepoint_id", "timestamp", "timeseries"]]
-    return timeseries_df, timepoints_df, timestamp_interval
 
-
-def hydro_time_tables(existing_gen, hydro_variability, timepoints_df, planning_year):
+def hydro_time_tables(
+    gens: pd.DataFrame,
+    gen_variability: pd.DataFrame,
+    timepoints_df: pd.DataFrame,
+    planning_year,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:  # (hydro_timepoints, hydro_timeseries)
     """
-    Create the hydro_timepoints table based on REAM Scenario 178
+    Create the hydro_timepoints and hydro_timeseries tables for the UCSD/WECC version of Switch
+    (these won't work with the hydro_simple module from the standard Switch as of mid-2025.)
     Inputs:
-        1) timepoints_df: the SWITCH timepoints table
+        * gens: all generators (resources) active in this period
+        * gen_variability: 0-1 availability matrix, one row per timepoint, one column per generator
+        * timepoints_df: timepoints to be output; timestamp should be in pattern "YYYY[r]MMDDHH",
+          where r may or may not be present, but if it is, it identifies a year repetition number
+          when a multi-year timeseries is used for one study year (YYYY)
     Output Columns
-        * timepoint_id: from the timepoints table
-        * tp_to_hts: format: yyyy_M#. Based on the timestamp date from the timepoints table
+        * hydro_timeseries
+            * hydro_project: name of a hydro generation project (Resource from gens, with HYDRO==1)
+            * timeseries: ID for a month when min and avg flow limits will be enforced;
+                  Format: "YYYY[r]MM". Based on the timestamp date from the timepoints table.
+            * outage_rate: outage rate for hydro during this time; appears to be unused
+            * hydro_min_flow_mw: minimum hydro flow rate (MW equiv) to enforce during this block
+            * hydro_avg_flow_mw: average hydro flow rate (MW equiv) to enforce during this block
+        * hydro_timepoints
+            * timepoint_id: from the timepoints table
+            * tp_to_hts: timeseries value from hydro_timeseries, identifies which timepoints
+                are in each month
     """
 
-    hydro_timepoints = timepoints_df.copy()
-    hydro_timepoints = hydro_timepoints.rename(columns={"timeseries": "tp_to_hts"})
-    convert_to_hts = {
-        "01": "_M1",
-        "02": "_M2",
-        "03": "_M3",
-        "04": "_M4",
-        "05": "_M5",
-        "06": "_M6",
-        "07": "_M7",
-        "08": "_M8",
-        "09": "_M9",
-        "10": "_M10",
-        "11": "_M11",
-        "12": "_M12",
-    }
-
-    def convert(tstamp):
-        month = tstamp[4:6]
-        year = tstamp[0:4]
-        return year + convert_to_hts[month]
-
-    hydro_timepoints["tp_to_hts"] = hydro_timepoints["timestamp"].apply(convert)
-    hydro_timepoints.drop("timestamp", axis=1, inplace=True)
-
-    hydro_list = [
-        "Conventional Hydroelectric",
-        # "Hydroelectric Pumped Storage",
-        "Small Hydroelectric",
-    ]
-
-    #### edit by RR
-    # filter existing gen to just hydro technologies
-    hydro_df = existing_gen.copy()
-    # hydro_df["index"] = hydro_df.index
-    hydro_df = hydro_df[hydro_df["technology"].isin(hydro_list)]
-    hydro_indx = hydro_df["Resource"].to_list()
-    hydro_region = hydro_df["region"].to_list()
-
-    # slice the hours to 8760
-    hydro_variability = hydro_variability.iloc[:8760]
-    hydro_variability = hydro_variability.loc[:, hydro_indx]
-    hydro_variability.columns = hydro_indx
-    ####
+    # only work with HYDRO gens (note: as of 2024, PowerGenome only flags large
+    # hydro as "HYDRO" == 1; small hydro is treated as a standard intermittent
+    # renewable resource and pumped storage hydro is treated as standard
+    # storage)
+    hydro_gens = gens.loc[gens["HYDRO"] == 1, :]
+    hydro_variability = gen_variability.loc[:, hydro_gens["Resource"]]
 
     # get cap size for each hydro tech
-    hydro_Cap_Size = hydro_df["Existing_Cap_MW"].to_list()  # cap size for each hydro
+    hydro_Cap_Size = hydro_gens["Existing_Cap_MW"].to_list()  # cap size for each hydro
     # multiply cap size by hourly
     for i in range(len(hydro_Cap_Size)):
-        hydro_variability.iloc[:, i] = hydro_variability.iloc[:, i].apply(
-            lambda x: x * hydro_Cap_Size[i]
-        )
+        hydro_variability.iloc[:, i] *= hydro_Cap_Size[i]
 
-    hydro_transpose = hydro_variability.transpose()
+    # define hydro_timepoints table, with standard timepoint_ids and tp_to_hts
+    # to bridge to hydro_timeseries identifiers
+    hydro_timepoints = timepoints_df[["timepoint_id"]]
+    # assign a different timeseries for each historical month by dropping the
+    # day and hour from the end of the timestamp and keeping the year,
+    # year-repetition number and month at the start.
+    hydro_timepoints["tp_to_hts"] = timepoints_df["timestamp"].str[:-4]
 
-    month_hrs = [744, 672, 744, 720, 744, 720, 744, 744, 720, 744, 720, 744]
-    year_cumul = [
-        744,
-        1416,
-        2160,
-        2880,
-        3624,
-        4344,
-        5088,
-        5832,
-        6552,
-        7296,
-        8016,
-        8760,
-    ]  # cumulative hours by month
+    # group hydro variability data by hydro timeseries, then aggregate
+    hydro_variability["timeseries"] = hydro_timepoints["tp_to_hts"]
 
-    # split dataframe into months
-    month_df = []
-    month_df.append((hydro_transpose.iloc[:, 0 : year_cumul[0]]))
-    for i in range(len(year_cumul) - 1):
-        M_df = hydro_transpose.iloc[:, year_cumul[i] : year_cumul[i + 1]]
-        month_df.append(M_df)
-
-    month_names = [
-        "M1",
-        "M2",
-        "M3",
-        "M4",
-        "M5",
-        "M6",
-        "M7",
-        "M8",
-        "M9",
-        "M10",
-        "M11",
-        "M12",
-    ]
-    df_list = list()
-    for i in range(len(month_df)):
-        df = pd.DataFrame(hydro_transpose.index, columns=["hydro_project"])
-        df["timeseries"] = month_names[i]
-        df["outage_rate"] = list(
-            map(match_hydro_forced_outage_tech, hydro_df["Resource"])
-        )
-        df["hydro_min_flow_mw"] = month_df[i].min(axis=1).to_list()
-        df["hydro_avg_flow_mw"] = month_df[i].mean(axis=1).to_list()
-        df_list.append(df)
-
-    hydro_timeseries = pd.concat(df_list, axis=0)
-    hydro_timeseries["timeseries"] = (
-        str(planning_year) + "_" + hydro_timeseries["timeseries"]
+    # get minimum and average flow per timeseries per project
+    hydro_var_long = hydro_variability.melt(
+        id_vars="timeseries", var_name="hydro_project", value_name="MW"
+    )
+    hydro_timeseries = (
+        hydro_var_long.groupby(["hydro_project", "timeseries"])["MW"]
+        .agg(hydro_min_flow_mw="mean", hydro_avg_flow_mw="min")
+        .reset_index()
+    )
+    hydro_timeseries["outage_rate"] = hydro_timeseries["hydro_project"].map(
+        match_hydro_forced_outage_tech
     )
 
     return hydro_timepoints, hydro_timeseries
 
 
-def hydro_system_module_tables(
-    gen,
-    hydro_variability: pd.DataFrame,
+def hydro_system_tables(
+    gens,
+    gen_variability: pd.DataFrame,
     hydro_timepoints: pd.DataFrame,
     flow_per_mw: float = 1.02,
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Create the tables specific for module hydro_system
     Inputs:
@@ -1041,60 +930,47 @@ def hydro_system_module_tables(
             wnode_tp_consumption <- 0
     """
 
-    hydro_df = gen.copy()
-    hydro_df = hydro_df.loc[hydro_df["HYDRO"] == 1, :]
-
-    hydro_variability = hydro_variability.loc[:, hydro_df["Resource"]]
+    hydro_gens = gens.query("HYDRO == 1")
+    hydro_variability = gen_variability.loc[:, hydro_gens["Resource"]].copy()
 
     # for water_nodes.csv
     water_nodes_in = pd.DataFrame()
-    water_nodes_in["WATER_NODES"] = hydro_df["Resource"] + "_inlet"
+    water_nodes_in["WATER_NODES"] = hydro_gens["Resource"] + "_inlet"
     water_nodes_in["wn_is_sink"] = 0
     water_nodes_in["wnode_constant_consumption"] = 0
     water_nodes_in["wnode_constant_inflow"] = 0
     water_nodes_out = pd.DataFrame()
-    water_nodes_out["WATER_NODES"] = hydro_df["Resource"] + "_outlet"
+    water_nodes_out["WATER_NODES"] = hydro_gens["Resource"] + "_outlet"
     water_nodes_out["wn_is_sink"] = 1
     water_nodes_out["wnode_constant_consumption"] = 0
     water_nodes_out["wnode_constant_inflow"] = 0
     water_nodes = pd.concat([water_nodes_in, water_nodes_out])
     # for water_connections.csv
     water_connections = pd.DataFrame()
-    water_connections["WATER_CONNECTIONS"] = hydro_df["Resource"]
-    water_connections["water_node_from"] = hydro_df["Resource"] + "_inlet"
-    water_connections["water_node_to"] = hydro_df["Resource"] + "_outlet"
-    water_connections["wc_capacity"] = hydro_df["Existing_Cap_MW"] * flow_per_mw  # m3/s
+    water_connections["WATER_CONNECTIONS"] = hydro_gens["Resource"]
+    water_connections["water_node_from"] = hydro_gens["Resource"] + "_inlet"
+    water_connections["water_node_to"] = hydro_gens["Resource"] + "_outlet"
+    water_connections["wc_capacity"] = None  # m3/s, unknown, set unlimited
 
     # for reservoirs.csv
-    # note: reservoir volume and level are given in million m3
+    # note: reservoir volume and level are given in million m^3
     reservoirs = pd.DataFrame()
-    reservoirs["RESERVOIRS"] = hydro_df["Resource"] + "_inlet"
+    reservoirs["RESERVOIRS"] = hydro_gens["Resource"] + "_inlet"
     reservoirs["res_min_vol"] = 0
     # (MW)(hour)((m3/s)/MW)(3600 sec/hour)(1 million m3/1e6 m3) = million m3
     reservoirs["res_max_vol"] = (
-        hydro_df["Existing_Cap_MW"]  # MW
-        * hydro_df["Hydro_Energy_to_Power_Ratio"]  # h
+        hydro_gens["Existing_Cap_MW"]  # MW
+        * hydro_gens["Hydro_Energy_to_Power_Ratio"]  # h
         * flow_per_mw  # m3/s / MW
         * 3600  # m3/sec -> m3/hour
         * 1e-6  # m3 -> million m3
     )
 
-    # The initial_res_vol and final_res_vol calculations commented out below
-    # would work with the standard hydro_system module. But that doesn't work
-    # well with multi- timeseries periods, so we use a new version that does,
-    # and we let it optimize the starting level and loop from end to start of
-    # timeseries. If these are wanted for the new module (not used by other
-    # models in this study), they should be stored in reservoir_ts_data.csv,
-    # with reservoir and timeseries as the indexes.
-
-    # reservoirs["initial_res_vol"] = 0.5 * reservoirs["res_max_vol"]
-    # reservoirs["final_res_vol"] = 0.5 * reservoirs["res_max_vol"]
-
     # for hydro_generation_projects.csv
     hydro_pj = pd.DataFrame()
-    hydro_pj["HYDRO_GENERATION_PROJECTS"] = hydro_df["Resource"]
+    hydro_pj["HYDRO_GENERATION_PROJECTS"] = hydro_gens["Resource"]
     hydro_pj["hydro_efficiency"] = 1 / flow_per_mw
-    hydro_pj["hydraulic_location"] = hydro_df["Resource"]
+    hydro_pj["hydraulic_location"] = hydro_gens["Resource"]
     # for water_node_tp_flows.csv
     hydro_variability["TIMEPOINTS"] = hydro_timepoints["timepoint_id"].values
     water_node_tp = hydro_variability.melt(id_vars=["TIMEPOINTS"])
@@ -1102,7 +978,7 @@ def hydro_system_module_tables(
         flow_per_mw
         * water_node_tp["value"]
         * water_node_tp["Resource"].map(
-            hydro_df.set_index("Resource")["Existing_Cap_MW"]
+            hydro_gens.set_index("Resource")["Existing_Cap_MW"]
         )
     )
     water_node_tp["WATER_NODES"] = water_node_tp["Resource"] + "_inlet"
@@ -1118,173 +994,96 @@ def hydro_system_module_tables(
     return water_nodes, water_connections, reservoirs, hydro_pj, water_node_tp_flows
 
 
-def graph_timestamp_map_table(timeseries_df, timestamp_interval):
+def graph_timestamp_map_table(timepoints_df):
     """
-    Create the graph_timestamp_map table based on REAM Scenario 178
+    Create the graph_timestamp_map table for Switch-WECC (UCSD)
     Input:
         1) timeseries_df: the SWITCH timeseries table
         2) timestamp_interval:based on ts_duration_of_tp and ts_num_tps from the timeseries table.
                 Should be between 0 and 24.
     Output columns:
-        * timestamp: dates based on the timeseries table
-        * time_row: the period decade year based on the timestamp
-        * time_column: format: yyyymmdd. Using 2012 because that is the year data is based on.
+        * timestamp: dates based on the timepoints table
+        * timeseries: the timeseries ID
+        * time_row: the study period (planning_year) based on the timestamp
+        * time_column: format: [r]mmdd, where r is an optional repetition number
+            if there are multiple years of historical data in the timeseries
     """
-
-    timeseries_df_copy = timeseries_df.copy()
-    timeseries_df_copy = timeseries_df_copy[["timeseries", "ts_period"]]
-    # reformat timeseries for timestamp
-    timeseries_df_copy["timestamp"] = timeseries_df_copy["timeseries"].apply(
-        lambda x: x[5:9] + x[10:12] + x[13:]
-    )
-
-    # add in intervals to the timestamp
-    graph_timeseries_map = pd.DataFrame(
-        columns=["timeseries", "ts_period", "timestamp"]
-    )
-    for x in timestamp_interval:
-        df = timeseries_df_copy[["timeseries", "ts_period"]]
-        df["timestamp"] = timeseries_df_copy["timestamp"] + x
-        graph_timeseries_map = graph_timeseries_map.append(df)
-
-    # using 2012 for financial year
-    graph_timeseries_map["time_column"] = graph_timeseries_map["timeseries"].apply(
-        lambda x: str(2012) + x[10:12] + x[13:15]
-    )
-
-    graph_timeseries_map = graph_timeseries_map.drop(["timeseries"], axis=1)
-    graph_timeseries_map = graph_timeseries_map.rename(
-        columns={"ts_period": "time_row"}
-    )
-    graph_timeseries_map = graph_timeseries_map[
-        ["timestamp", "time_row", "time_column"]
-    ]
+    graph_timeseries_map = timepoints_df[["timestamp", "timeseries"]]
+    graph_timeseries_map["time_row"] = graph_timeseries_map["timestamp"].str[:4]
+    graph_timeseries_map["time_column"] = graph_timeseries_map["timestamp"].str[4:-2]
 
     return graph_timeseries_map
 
 
-def loads_table(load_curves, timepoints_timestamp, timepoints_dict, planning_year):
+def loads_table(load_curves, timepoints_df):
     """
     Inputs:
-        load_curves: from powergenome
-        timepoints_timestamp: the timestamps in timepoints
-        timepoints_dict: to go from timestamp to timepoint
-        period_list: the decade list
+        load_curves: from powergenome (one column per zone, one row per
+            timepoint)
+        timepoints_df: timepoints table previously prepared for switch,
+            including timepoint_id column
+    Output df
+        loads: table of loads per load zone and timepoint
     Output columns
         * load_zone: the IPM regions
         * timepoint: from timepoints
         * zone_demand_mw: based on load_curves
-    Output df
-        loads: the 'final' table
-        loads_with_hour_year: include hour year so it is easier to do variable_capacity_factors
     """
-    loads_initial = pd.DataFrame(columns=["year_hour", "LOAD_ZONE", "zone_demand_mw"])
-    hours = load_curves.index.to_list()
-    cols = load_curves.columns.to_list()
 
-    # add load zone for each hour of the year, adding in the load_curve values for each hour
-    for c in cols:
-        df = pd.DataFrame()
-        df["year_hour"] = hours
-        df["LOAD_ZONE"] = c
-        df["zone_demand_mw"] = load_curves[c].to_list()
-        loads_initial = loads_initial.append(df)
-
-    # convert timepoints to date of the year
-    start = pd.to_datetime(f"2021-01-01 0:00")  # use 2021 due to 2020 being a leap year
-    loads_initial["date"] = loads_initial["year_hour"].apply(
-        lambda x: start + pd.to_timedelta(x, unit="H")
+    # Assign timepoints and switch from one row per timepoint and one column per
+    # zone to one row per timepoint-zone combination
+    loads = load_curves.assign(TIMEPOINT=timepoints_df["timepoint_id"].values).melt(
+        id_vars="TIMEPOINT",
+        var_name="LOAD_ZONE",
+        value_name="zone_demand_mw",
     )
-    # reformat to timestamp format
-    loads_initial["reformat"] = loads_initial["date"].apply(
-        lambda x: x.strftime("%Y%m%d%H")
-    )
-    loads_initial["reformat"] = loads_initial["reformat"].astype(str)
-    # create timestamp
-    date_list = loads_initial["reformat"].to_list()
-
-    updated_dates = [f"{planning_year}" + x[4:] for x in date_list]
-    loads_initial["timestamp"] = updated_dates
-
-    # filter to correct timestamps for timepoints
-    loads = loads_initial.loc[loads_initial["timestamp"].isin(timepoints_timestamp)]
-    loads["TIMEPOINT"] = loads["timestamp"].apply(lambda x: timepoints_dict[x])
-    loads_with_year_hour = loads[["timestamp", "TIMEPOINT", "year_hour"]]
-    loads = loads[["LOAD_ZONE", "TIMEPOINT", "zone_demand_mw"]]
-
-    return loads, loads_with_year_hour
+    return loads[["LOAD_ZONE", "TIMEPOINT", "zone_demand_mw"]]
 
 
-def variable_capacity_factors_table(
-    all_gen_variability, year_hour, timepoints_dict, all_gen, planning_year
-):
+def variable_capacity_factors_table(all_gen_variability, all_gen, timepoints_df):
     """
     Inputs
-        all_gen_variability: from powergenome
-        year_hour: the hour of the year that has a timepoint (based on loads)
-        timepoints_dict: convert timestamp to timepoint
+        all_gen_variability: from powergenome (index=timepoint, columns=projects)
         all_gen: from powergenome
-    Output:
-        GENERATION_PROJECT: based on all_gen index
-            the plants here should only be the ones with gen_is_variable =True
-        timepoint: based on timepoints
+        timepoints_df: timepoints dataframe previously prepared for switch
+    Output dataframe:
+        GENERATION_PROJECT: from all_gen[Resource], filtered to include only
+            variable projects PowerGenome's VRE == 1)
+        TIMEPOINT: taken from index of all_gen_variability
         gen_max_capacity_factor: based on all_gen_variability
     """
 
-    v_capacity_factors = all_gen_variability.copy().transpose()
-    v_capacity_factors["GENERATION_PROJECT"] = all_gen["Resource"].values
-    v_c_f = v_capacity_factors.melt(
-        id_vars="GENERATION_PROJECT",
-        var_name="year_hour",
-        value_name="gen_max_capacity_factor",
+    # switch from one row per timepoint and one column per project to one row per
+    # timepoint-project combination and assign correct names
+    variable_projects = all_gen.loc[
+        (all_gen["VRE"] > 0) | (all_gen["FLEX"] > 0), "Resource"
+    ]
+    vcf = (
+        all_gen_variability.loc[:, variable_projects]
+        .assign(TIMEPOINT=timepoints_df["timepoint_id"].values)
+        .melt(
+            id_vars="TIMEPOINT",
+            var_name="GENERATION_PROJECT",
+            value_name="gen_max_capacity_factor",
+        )
     )
-    # reduce variability to just the hours of the year that have a timepoint
-    # needs to start with 1 to allign with year_hour
-    year_hour = [x - 1 for x in year_hour]
 
-    v_c_f = v_c_f.loc[v_c_f["year_hour"].isin(year_hour), :]
-    mod_vcf = v_c_f.copy()
-    # get the dates from hour of the year
-    start = pd.to_datetime("2021-01-01 0:00")  # 2020 is a leap year
-    mod_vcf["date"] = mod_vcf["year_hour"].apply(
-        lambda x: start + pd.to_timedelta(x, unit="H")
-    )
-    mod_vcf["reformat"] = mod_vcf["date"].apply(lambda x: x.strftime("%Y%m%d%H"))
-    mod_vcf["reformat"] = mod_vcf["reformat"].astype(str)
-    date_list = mod_vcf["reformat"].to_list()
-    # change 2021 to correct period year/decade
-    # to get the timestamp
-    updated_dates = [str(planning_year) + x[4:] for x in date_list]
-    #     mod_vcf_copy = mod_vcf.copy()
-    mod_vcf["timestamp"] = updated_dates
-    mod_vcf["timepoint"] = mod_vcf["timestamp"].apply(lambda x: timepoints_dict[x])
-    mod_vcf.drop(["year_hour", "date", "reformat", "timestamp"], axis=1, inplace=True)
-    # only get all_gen plants that are wind or solar
-    all_gen = all_gen.loc[all_gen["gen_is_variable"] == 1, :]
-
-    var_cap_fac = mod_vcf.loc[
-        mod_vcf["GENERATION_PROJECT"].isin(all_gen["Resource"]), :
-    ]
-
-    # filter to final columns
-    var_cap_fac = var_cap_fac[
-        ["GENERATION_PROJECT", "timepoint", "gen_max_capacity_factor"]
-    ]
-    searchfor = ["pv", "solar", "wind", "distribute"]
-    var_cap_fac = var_cap_fac[
-        var_cap_fac["GENERATION_PROJECT"].str.contains("|".join(searchfor), case=False)
-    ]
-
-    return var_cap_fac
+    return vcf[["GENERATION_PROJECT", "TIMEPOINT", "gen_max_capacity_factor"]]
 
 
-def load_zones_table(IPM_regions, zone_ccs_distance_km):
+def load_zones_table(settings):
+    regions = settings["model_regions"]
     load_zones = pd.DataFrame(
-        columns=["LOAD_ZONE", "zone_ccs_distance_km", "zone_dbid"]
+        {
+            "LOAD_ZONE": regions,
+            # not really needed, but may be used by UCSD/REAM to generate
+            # short, unique project names for each zone
+            "zone_dbid": range(1, len(regions) + 1),
+        }
     )
-    load_zones["LOAD_ZONE"] = IPM_regions
-    load_zones["zone_ccs_distance_km"] = 0  # set to default 0
-    load_zones["zone_dbid"] = range(1, len(IPM_regions) + 1)
+    dist_loss = settings.get("avg_distribution_loss", None)
+    if dist_loss is not None:
+        load_zones["local_td_loss_rate"] = dist_loss
     return load_zones
 
 
@@ -1394,8 +1193,12 @@ def transmission_lines_table(
         transm_final["cap_cost_per_mw_km"] / trans_capital_cost_per_mw_km
     )
 
-    # set as 1 for now
+    # TODO: set trans_new_build_allowed if available in PowerGenome.
+    # For now, we allow expansion on all lines (which is the default
+    # in Switch) and use trans_path_expansion_limit.csv (in pg_to_switch.py)
+    # to restrict transmission construction if needed.
     transm_final["trans_new_build_allowed"] = 1
+
     # sort columns
     transm_final = transm_final[
         [
@@ -1408,7 +1211,6 @@ def transmission_lines_table(
             "trans_dbid",
             "trans_derating_factor",
             "trans_terrain_multiplier",
-            "trans_new_build_allowed",
         ]
     ]
     return transm_final, trans_capital_cost_per_mw_km
@@ -1433,7 +1235,7 @@ def tx_cost_transform(tx_cost_df):
 
 def balancing_areas(
     pudl_engine,
-    IPM_regions,
+    regions,
     all_gen,
     quickstart_res_load_frac,
     quickstart_res_wind_frac,
@@ -1529,15 +1331,15 @@ def balancing_areas(
 
     """
     ZONE_BALANCING_AREAS table:
-        for each of the IPM regions, find the most common balancing_authority to create table
+        for each of the regions, find the most common balancing_authority to create table
     """
 
     zone_b_a_list = list()
-    for ipm in IPM_regions:
-        region_df = plant_region_df.loc[plant_region_df["region"] == ipm]
+    for region in regions:
+        region_df = plant_region_df.loc[plant_region_df["region"] == region]
         # take the most common balancing authority (assumption)
         bal_aut = mode(region_df["balancing_authority_code_eia"].to_list())
-        zone_b_a_list.append([ipm, bal_aut])
+        zone_b_a_list.append([region, bal_aut])
     zone_b_a_list.append(["_ALL_ZONES", "."])  # Last line in the REAM inputs
     ZONE_BALANCING_AREAS = pd.DataFrame(
         zone_b_a_list, columns=["LOAD_ZONE", "balancing_area"]
