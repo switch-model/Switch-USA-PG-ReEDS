@@ -5,12 +5,6 @@ about 25 GB of storage on your computer before you start generating model
 inputs. Most of this is used by the PowerGenome input files that will be
 stored in the `pg_data` directory (9.2 GB).
 
-# Install miniconda
-Download and install Miniconda from https://www.anaconda.com/download (you will 
-need to create a login with your email address but don't have to sign up to receive emails.)
-
-if you already have Miniconda or Anaconda, you can skip ahead.
-
 # Install VS Code and Python Extensions
 
 We assume you are using the Visual Studio Code (VS Code) text editor to view and
@@ -59,39 +53,88 @@ such as the .csv files used by Switch:
 - Type “excel viewer” in the search box, then click to install the Excel Viewer
   extension (this is also optional, but gives a nice grid view of .csv files):
 
+# Install Python/conda environment
+
+We recommend that you install Miniforge for your platform following the
+instructions below. If you already have Miniforge, Miniconda or Anaconda, you
+can skip ahead to the next section. 
+
+## Windows
+
+Download and run the Miniforge installer from
+[https://conda-forge.org/download/]. We recommend selecting the option to "Add
+Miniforge3 to my PATH environment variable" despite the warning. Otherwise
+conda and Python won't be able to be found from the VS Code terminal pane later.
+
+## Linux/macOS
+
+Miniforge does not have a graphical installer for Linux and macOS. The easiest
+way to insall on these platforms is to open VS Code, choose Terminal > New
+Terminal, then run the command below. This will download and run the text-based
+installer. 
+
+```
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" && bash Miniforge3-$(uname)-$(uname -m).sh -u && rm Miniforge3-$(uname)-$(uname -m).sh
+```
+
+When prompted, say `yes` to the option to "update your shell profile to
+automatically initialize conda".
+
+After installation finishes, type `exit` to close the VS Code terminal pane.
+
+If the `curl` command above doesn't work, you could instead follow the
+installation instructions at [https://conda-forge.org/download/].
+
+On macOS, if you prefer a graphical installer instead of the text-based
+installer above, you could instead install Miniconda from
+[https://www.anaconda.com/docs/getting-started/miniconda/install]. Licensing for
+Miniconda is more restrictive than Miniforge and you will need to create an
+Anaconda account and receive commercial emails (at least until you unsubscribe).
+Or you could avoid the login and emails by installing a Miniconda .pkg file from
+[https://repo.anaconda.com/miniconda/].
+
 
 # Setup modeling software
 
-Open VS Code.
+Open VS Code if it is not open already. 
 
-Press shift-control-P (Windows) or shift-cmd-P (Mac). Choose `Python: Select
-Interpreter`, then select the Python interpreter you installed in the previous
-step (you may be able to find it by searching for "base").
+Choose File > Open Folder... and open the parent folder where you want to place
+this repository. e.g., if you open Documents, the steps below will create a
+folder for the study called Switch-USA-PG-ReEDS inside the Documents folder.
 
-Open a terminal pane: Terminal > New Terminal
+Open a new terminal pane: Terminal > New Terminal
 
-Run these commands in the terminal pane.
+Run these commands in the terminal pane:
 
 ```
-# Create and activate Switch/PowerGenome Python environment
-conda env create -n switch-pg-reeds --file https://github.com/switch-model/Switch-USA-PG-ReEDS/raw/refs/heads/main/environment.yml
+# update conda itself
+conda update -y -n base -c conda-forge conda
+
+# Create Switch/PowerGenome Python environment (may take a few minutes to solve environment)
+# On Windows this will give a file error but still work correctly
+conda env create -n switch-pg-reeds --env-spec environment.yml --file https://github.com/switch-model/Switch-USA-PG-ReEDS/raw/refs/heads/main/environment.yml
+
+# Activate the new environment
 conda activate switch-pg-reeds
  
-# clone this repository and the dependency submodules (PowerGenome and MIP_results_comparison)
-cd <wherever you want the Switch-USA-PG code>
+# clone the Switch-USA-PG-ReEDS repository and PowerGenome submodule
 git clone https://github.com/switch-model/Switch-USA-PG-ReEDS --recurse-submodules --depth=1
 cd Switch-USA-PG-ReEDS
 
-# install PowerGenome from local sub-repository
-pip install -e PowerGenome
+# install PowerGenome from the local sub-repository
+cd PowerGenome
+pip install -e .
+cd ..
 ```
 
-Close the current VS Code window. Then choose File > Open, then navigate to the
-Switch-USA-PG folder and choose "Open". You can repeat this step anytime you
-want to work with this repository in the future.
+Close the current VS Code window. Then choose File > Open, navigate to the
+Switch-USA-PG-ReEDS folder you just created and choose "Open". You can repeat
+this step anytime you want to work with this repository in the future.
 
-Set VS Code to use the switch-pg-reeds Python environment for future work:
-shift-ctrl-P (Windows/Linux) or shift-cmd-P (macOS) > `Python: Select Interpreter` > search for `switch-pg-reeds` > Enter/return
+Set VS Code to use the switch-pg-reeds conda environment for future work: 
+- Press shift-ctrl-P (Windows) or shift-command-P (Mac). 
+- Choose `Python: Select Interpreter`.
+- Select the switch-pg-reeds environment.
 
 # Download and patch PowerGenome input data and configure PowerGenome to use it
 
@@ -107,18 +150,21 @@ python patch_pg_existing_resource_groups.py
 
 After this, manually update several .csv data files in `pg_data` as noted in the
 output from the `patch_pg_existing_resource_groups.py` script. This may be
-easiest using a spreadsheet program. (TODO: maybe post the patched versions on
-our own Google Drive and download those directly.)
+easiest to do with a spreadsheet program. (In the future we may post the patched
+versions of the input files on our own Google Drive and update pg_data.yml to
+download those directly.)
 
-In the VS Code terminal pane, run the script below to create the custom load profiles used for this study (too large to store on github):
+In the VS Code terminal pane, run the command below to create the custom load profiles used for this study (too large to store on github):
 
 ```
 python make_study_loads.py
 ```
 
-If you prefer to use the ReEDS standard loads instead, you can skip this script and instead comment out `regional_load_fn` in `pg/settings/demand.yml/` and set `load_source_table_name: load_curves_nrel_reeds` in the same file.
+If you prefer to use the ReEDS standard loads instead, you can skip this step
+and instead comment out `regional_load_fn` in `pg/settings/demand.yml/` and set
+`load_source_table_name: load_curves_nrel_reeds` in the same file.
 
-## Notes about PowerGenome scenario configuration
+# Notes about PowerGenome scenario configuration
 
 `pg/settings/` holds the settings used for all scenarios in this study in a
 collection of `*.yml` files. In addition to these, tabular data is stored in

@@ -13,15 +13,11 @@ dependencies:
   - mosek::mosek
   - highspy
   # packages used by various data scripts, e.g., switch/summarize_inputs.py
-  # and process_map_image.py
+  # and retrieve_icf_growth_rates.py
   - plotly
   - ipympl
-  - cmake
-  - pytables
-  - pytesseract
-  - opencv
-  - pillow
-  # probably covered by other packages, but just to be sure
+  # mostly covered by other packages, but just to be sure
+  - pandas
   - shapely
   - numpy
   - scipy
@@ -63,3 +59,230 @@ dependencies:
   # the environment after creation instead of using the offical one
   # - pip:
   #   - powergenome==0.7.0
+
+  # pin a bunch of catalystcoop.pudl-compatible versions to speed up the conda solve
+  # (everything that gets changed when you add catalystcoop.pudl to the environment
+  # you would otherwise install without it)
+  # found by 
+  # conda env create -n switch-pg-reeds-test --env-spec environment.yml --file enviro_test.yml 
+  # conda export -n switch-pg-reeds-test > env_reeds_pre_pudl.yml
+  # conda install -n switch-pg-reeds-test catalystcoop.pudl=2022.11.30
+  # conda export -n switch-pg-reeds-test > env_reeds_with_pudl.yml                                
+  # diff env_reeds_pre_pudl.yml env_reeds_with_pudl.yml | grep '^>'
+  # Then drop or change versions of packages on Windows and macOS until it works
+  # in both places.
+  - addfips=0.4
+  - aiohappyeyeballs=2.6
+  - aiohttp=3.13
+  - aiosignal=1.4
+  - arelle-release=2.2
+  - arrow-cpp=10.0
+  - async-timeout=5.0
+  - aws-c-auth=0.6
+  - aws-c-cal=0.5
+  - aws-c-common=0.8
+  - aws-c-compression=0.2
+  - aws-c-event-stream=0.2
+  - aws-c-http=0.7
+  - aws-c-io=0.13
+  - aws-c-mqtt=0.8
+  - aws-c-s3=0.2
+  - aws-c-sdkutils=0.1
+  - aws-checksums=0.1
+  - aws-crt-cpp=0.19
+  - aws-sdk-cpp=1.10
+  - azure-core-cpp=1.10
+  - azure-identity-cpp=1.6
+  - blinker=1.9
+  - blosc=1.21
+  - bokeh=2.4
+  - boost-cpp=1.78
+  - brotli=1.0
+  - brotli-bin=1.0
+  - brotli-python=1.0
+  - cachetools=6.2
+  - cairo=1.16
+  - catalystcoop.dbfread=3.0
+  - catalystcoop.ferc-xbrl-extractor=0.6
+  - catalystcoop.pudl=2022.11
+  - cfitsio=4.2
+  - click-plugins=1.1.1
+  - cligj=0.7
+  - cloudpickle=3.1
+  - coloredlogs=15.0
+  - cryptography=42.0
+  - curl=7.88
+  - cytoolz=1.1
+  - dask=2022.6
+  - dask-core=2022.6
+  - distributed=2022.6
+  - dnspython=2.6
+  - email-validator=2.3
+  - expat=2.7
+  - fiona=1.9
+  - font-ttf-dejavu-sans-mono=2
+  - font-ttf-inconsolata=3
+  - font-ttf-source-code-pro=2
+  - font-ttf-ubuntu=0.83
+  - fontconfig=2.15
+  - fonts-conda-ecosystem
+  - fonts-conda-forge
+  - freexl=1.0
+  - frictionless=4.40
+  - frozenlist=1.7
+  - fsspec=2022.11
+  - gcsfs=2022.11
+  - gdal=3.6
+  - geopandas=0.12
+  - geopandas-base=0.12
+  - geos=3.11
+  - geotiff=1.7
+  - gettext=0.22
+  - gettext-tools=0.22
+  - git=2.42
+  - glog=0.6
+  - google-api-core=2.25
+  - google-auth=2.42
+  - google-auth-oauthlib=1.2
+  - google-cloud-core=2.4
+  - google-cloud-storage=3.4
+  - google-crc32c=1.7
+  - google-resumable-media=2.7
+  - googleapis-common-protos=1.70
+  - grpcio=1.52
+  - h3=4.3
+  - h3-py=4.3
+  - hdf4=4.2
+  - hdf5=1.12
+  - humanfriendly=10
+  - icu=70
+  - importlib_resources=6.5
+  - json-c=0.16
+  - kealib=1.5
+  - krb5=1.20
+  - lcms2=2
+  - libabseil=20230125
+  - libaec=1.1
+  - libarchive=3.6
+  - libarrow=10.0
+  - libasprintf=0.22
+  - libasprintf-devel=0.22
+  - libblas=3.9
+  - libbrotlicommon=1.0
+  - libbrotlidec=1.0
+  - libbrotlienc=1.0
+  - libcblas=3.9
+  - libcurl=7.88
+  - libdeflate=1
+  - libgdal=3.6
+  - libgettextpo=0.22
+  - libgettextpo-devel=0.22
+  - libglib=2.78
+  - libgoogle-cloud=2.8
+  - libgrpc=1.52
+  - libhwy=1.0
+  - libintl-devel=0.22
+  - libjpeg-turbo=2.1.5
+  - libjxl=0.8
+  - liblapack=3.9
+  - libllvm14=14.0
+  - liblzma-devel=5.8
+  - libnetcdf=4.9
+  - libnghttp2=1.58
+  - libopenblas=0.3
+  - libpq=15
+  - libprotobuf=3.21
+  - librttopo=1.1
+  - libsodium=1.0
+  - libspatialindex=2.1
+  - libspatialite=5.0
+  - libsqlite=3.50
+  - libssh2=1.11
+  - libthrift=0.18
+  - libtiff=4.5
+  - libutf8proc=2.8
+  - libxcb=1
+  - libxml2=2.10
+  - libxslt=1.1
+  - libzip=1.10
+  - llvmlite=0.43
+  - locket=1.0
+  - lxml=4.9
+  - lz4=4.3
+  - lz4-c=1.9
+  - marko=2.2
+  - matplotlib-base=3.6
+  - minizip=4.0
+  - msgpack-python=1.1
+  - multidict=6.6
+  - munch=4.0
+  - networkx=2.8
+  # - nspr=4
+  # - nss=3
+  - numba=0.60
+  - numpy=1.23
+  - oauthlib=3.3
+  - openjpeg=2.5
+  - openssl=3.1
+  - orc=1.8
+  - pandas=1.4
+  - parquet-cpp=1.5
+  - partd=1.4
+  - pcre2=10
+  - petl=1.7
+  - pillow=9.5
+  - pixman=0.46
+  - poppler=23.03
+  - poppler-data=0.4
+  - postgresql=15
+  - proj=9.1
+  - prometheus-cpp=1.1
+  - propcache=0.3
+  - proto-plus=1.26
+  - protobuf=4.21
+  - pyarrow=10.0
+  - pyasn1=0.6
+  - pyasn1-modules=0.4
+  - pydantic=1.10
+  - pygeos=0.13
+  - pyjwt=2.10
+  - pyogrio=0.5
+  - pyopenssl=25.1
+  - pyproj=3.4
+  - python=3.10
+  - python-slugify=8.0
+  - python-snappy=0.6
+  - pyu2f=0.1
+  - re2=2023.02
+  - regex=2025.10
+  - requests-oauthlib=2.0
+  - rsa=4.9
+  - rtree=1.4
+  - scikit-learn=1.1
+  - scipy=1.9
+  - shapely=2.0
+  - simpleeval=1.0
+  - snappy=1.1
+  - sniffio=1.3
+  - sortedcontainers=2.4
+  - sqlalchemy=1.4
+  - sqlite=3.50
+  - stringcase=1.2
+  - tabulate=0.9
+  - tblib=3.1
+  - text-unidecode=1
+  - tiledb=2.13
+  - timezonefinder=6.0
+  - toolz=1.1
+  # - tzcode=2025b
+  - validators=0.35
+  - xerces-c=3.2
+  - xlsxwriter=3.0
+  # - xz=5.8
+  # - xz-gpl-tools=5.8
+  # - xz-tools=5.8
+  - yarl=1.22
+  - zeromq=4.3
+  - zict=3.0
+
+
