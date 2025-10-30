@@ -400,6 +400,10 @@ renewables_clusters:
   - region: all
     technology: imports
 
+# use shorter file and folder names for the resource clustering cache (in
+# extra_inputs/cluster_assignments) to reduce problems with paths longer than 255
+# chars on Windows and OneDrive
+shorten_cluster_cache_paths: true
 
 # The atb_modifers parameter is used here to add a VOM cost to battery technologies. PNNL
 # reports a 0.03 cents per kWh VOM, which is split between Var_OM_Cost_per_MWh and
