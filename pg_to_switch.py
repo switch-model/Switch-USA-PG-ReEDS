@@ -1,9 +1,4 @@
-print(
-    "TODO: compare results from this script when running with MIP PowerGenome data, "
-    "with the following turned on or off in the upstream settings: "
-    "gen_tech, gen_energy_source, gen_is_variable, gen_is_baseload. "
-    "Try this with and without time reduction."
-)
+# TODO: compare results from this script with MIP version when running with MIP PowerGenome data, with the following turned on or off in the upstream settings: gen_tech, gen_energy_source, gen_is_variable, gen_is_baseload. Try this with and without time reduction.
 # TODO: use same timestamp formula for sampled timeseries as for full-record ones (maybe make proper time stamps?)
 # TODO: calculate interest_rate from gen_info.WACC and maybe similar info for transmission lines if not provided (avoid need for a custom switch.yml)
 # TODO (maybe): remove FLEX generators in gen_tables() and convert to custom demand response info
@@ -12,6 +7,7 @@ print(
 import sys
 import os
 import collections
+import logging
 import shlex
 import subprocess
 from pathlib import Path
@@ -23,6 +19,7 @@ import numpy as np
 import scipy
 import sqlalchemy as sa
 import typer
+import coloredlogs
 
 import pandas as pd
 from powergenome.generators import GeneratorClusters, create_plant_gen_id
@@ -77,6 +74,26 @@ from conversion_functions import (
     final_value,
     km_per_mile,
 )
+
+# turn on info-level logging with colored messages at the root level
+# (this uses a simplified version of pudl's colored-logging approach)
+# logging.basicConfig(level=logging.INFO, format="%(message)s")
+root_logger = logging.getLogger()
+coloredlogs.install(
+    fmt="[%(levelname)7s] %(name)s %(message)s",
+    level="INFO",
+    logger=root_logger,
+    level_styles={'warning': {'color': 'red'}, 'info': {'color': None}},
+    field_styles={'levelname': {'color': None}, 'name': {'color': 'blue'}}
+)
+
+# set pudl to use the root logger, so its messages only show up once
+pudllog = logging.getLogger("catalystcoop")
+pudllog.handlers.clear()     # drop library-attached handlers
+pudllog.propagate = True     # let it flow to root only
+
+# TODO: change print() output below to logger.info
+# TODO: maybe stop using coloredlogs and just color warnings directly instead; also omit name and omit levelname except for warning and higher.
 
 if not sys.warnoptions:
     import warnings
