@@ -117,7 +117,9 @@ flexible_demand_resources:
       # setting the shiftable fraction to 0 and by setting annual availability
       # to 0.
       fraction_shiftable: 0.0
+      parameter_values: {} # prevent warnings from PG
   2030:
     us_exports:
-      # net exports to Canada/Mexico (may be negative)
       fraction_shiftable: 0.0
+      parameter_values: {}
+  # also see load_growth settings in scenario_settings

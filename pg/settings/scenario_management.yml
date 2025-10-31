@@ -27,15 +27,17 @@ settings_management:
           Add extreme day: null
     load_growth:
       icf:
-        # add the load growth and market it as shiftable; but shifting
+        # add the load growth and mark it as shiftable; but shifting
         # will be constrained separately by load_growth_flexibility
         flexible_demand_resources:
           2024:
             load_growth:
               fraction_shiftable: 1.0
+              parameter_values: {} # prevent warnings from PG
           2030:
             load_growth:
               fraction_shiftable: 1.0
+              parameter_values: {}
       none: null
 
     load_growth_flexibility:
