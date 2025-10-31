@@ -9,6 +9,9 @@
 !PowerGenome/
 !PowerGenome/**
 
+# user-specific configuration
+env.yml
+
 # large data files (too big for github, can be re-created locally)
 pg/extra_inputs/*.zip
 

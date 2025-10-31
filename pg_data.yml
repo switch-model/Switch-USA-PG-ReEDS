@@ -44,6 +44,10 @@
 # then press cmd-C, or right-click > share > copy link; don't remove view?usp
 # stuff from the end.)
 
+# length of longest path created by this script, useful for warning users if 
+# they may exceed Windows limits
+maximum_path_length: 125
+
 # retrieve whole folders from Google Drive
 download_gdrive_folders:
   # standard PowerGenome data (commented-out values below are for MIP (26-zone, IPM-based), not ReEDS-based zones)
