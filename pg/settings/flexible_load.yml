@@ -115,11 +115,16 @@ flexible_demand_resources:
       # net exports to Canada/Mexico (may be negative)
       # we disable the virtual generator for this load adjustment both by
       # setting the shiftable fraction to 0 and by setting annual availability
-      # to 0.
+      # to 0 (we set that here rather than in model_tag_values because leaving
+      # parameter_values empty causes PG warnings)
       fraction_shiftable: 0.0
-      parameter_values: {} # prevent warnings from PG
+      parameter_values:
+        # add dummy value that will be overridden by PG to avoid warnings from PG
+        # about empty parameter_values
+        New_Build: -1
   2030:
     us_exports:
       fraction_shiftable: 0.0
-      parameter_values: {}
+      parameter_values:
+        New_Build: -1
   # also see load_growth settings in scenario_settings

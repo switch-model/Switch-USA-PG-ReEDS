@@ -33,11 +33,15 @@ settings_management:
           2024:
             load_growth:
               fraction_shiftable: 1.0
-              parameter_values: {} # prevent warnings from PG
+              parameter_values:
+                # add dummy value that will be overridden by PG to avoid
+                # warnings from PG about empty parameter_values
+                New_Build: -1
           2030:
             load_growth:
               fraction_shiftable: 1.0
-              parameter_values: {}
+              parameter_values:
+                New_Build: -1
       none: null
 
     load_growth_flexibility:
