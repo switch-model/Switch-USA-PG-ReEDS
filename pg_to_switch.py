@@ -87,10 +87,11 @@ root_logger.addHandler(handler)
 
 # set pudl to use the root logger, so its messages only show up once
 pudllog = logging.getLogger("catalystcoop")
-pudllog.handlers.clear()     # drop library-attached handlers
-pudllog.propagate = True     # let it flow to root only
+pudllog.handlers.clear()  # drop library-attached handlers
+pudllog.propagate = True  # let it flow to root only
 
-# TODO: change print() output below to logger.info
+logger = logging.getLogger("pg_to_switch")
+
 # TODO: maybe stop using coloredlogs and just color warnings directly instead; also omit name and omit levelname except for warning and higher.
 
 if not sys.warnoptions:
@@ -208,10 +209,10 @@ def operational_files(
 
         # load curves for the period (1 row per hour/timepoint, possibly multi
         # year; 1 column per region/zone)
-        print("Gathering load data.")  # can be slow
+        logger.info("Gathering load data.")  # can be slow
         period_lc = make_final_load_curves(pg_engine, year_settings)
 
-        print("Extracting generator variability data.")
+        logger.info("Extracting generator variability data.")
         period_variability = make_generator_variability(period_gens)
         # Assign resource names instead of numbers from '0' to 'n'.
         period_variability.columns = period_gens["Resource"]
@@ -234,7 +235,7 @@ def operational_files(
             num_clusters = year_settings["time_domain_periods"]
             include_peak_day = year_settings.get("include_peak_day", True)
             days_in_group = year_settings["time_domain_days_per_period"]
-            print(
+            logger.info(
                 f"Clustering to {num_clusters} {days_in_group}-day timeseries"
                 f"{' including coincident peak' if include_peak_day else ''} ({model_year})."
             )
@@ -252,7 +253,7 @@ def operational_files(
                     "variable_resources_only", True
                 ),
             )
-            print("Finished clustering timeseries.")
+            logger.info("Finished clustering timeseries.")
             period_lc_sampled = results["load_profiles"]
             period_variability_sampled = results["resource_profiles"]
 
@@ -437,8 +438,8 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
     try:
         gbp["build_year"] = gbp["build_year"].astype(int)
     except:
-        print(
-            "WARNING: there are non-integer or missing build years in gen_build_predetermined.csv"
+        logger.warning(
+            "There are non-integer or missing build years in gen_build_predetermined.csv"
         )
 
     gbp.to_csv(out_folder / "gen_build_predetermined.csv", index=False, na_rep=".")
@@ -1028,12 +1029,12 @@ def infer_build_years(df):
     built_mw, rnorm_mw = scipy.optimize.nnls(in_service_flag, df["Existing_Cap_MW"])
     built_mwh, rnorm_mwh = scipy.optimize.nnls(in_service_flag, df["Existing_Cap_MWh"])
     if rnorm_mw > 0:
-        print(
-            f"WARNING: MW construction schedule for {df['Resource'].iloc[0]} cannot match reported capacity"
+        logger.warning(
+            f"MW construction schedule for {df['Resource'].iloc[0]} cannot match reported capacity"
         )
     if rnorm_mwh > 0:
-        print(
-            f"WARNING: MWh construction schedule for {df['Resource'].iloc[0]} cannot match reported capacity"
+        logger.warning(
+            f"MWh construction schedule for {df['Resource'].iloc[0]} cannot match reported capacity"
         )
 
     result = pd.DataFrame(
@@ -1255,8 +1256,8 @@ def other_tables(
             financials_table[name] = first_year_settings[name]
         else:
             financials_table[name] = default
-            print(
-                f"\nNo {name} setting found (usually in switch_params.yml); "
+            logger.warning(
+                f"No {name} setting found (usually in switch_params.yml); "
                 f"using default value of {default}."
             )
     financials_table.to_csv(out_folder / "financials.csv", index=False)
@@ -1397,9 +1398,9 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
         print(cmd)
         print("=" * 80)
         exit_status = subprocess.run(cmd, shell=True).returncode
-        if exit_status != 0:
-            print(f"\nWARNING: script exited with status {exit_status}")
         print("=" * 80 + "\n")
+        if exit_status != 0:
+            logger.warning(f"The previous script exited with status {exit_status}")
 
 
 from powergenome.generators import load_ipm_shapefile
@@ -1749,7 +1750,7 @@ def scenario_files(results_folder, case_settings, myopic):
         )
         with open(scen_file, "w") as f:
             f.writelines(f"{line}\n" for line in lines)
-        print(f"created {short_fn(scen_file)}")
+        logger.info(f"created {short_fn(scen_file)}")
 
 
 def short_fn(filename, target=None):
@@ -1951,11 +1952,14 @@ def main(
         # run all years together within each case
         to_run = list(case_settings.items())
 
-    print("\nPreparing models for the following case(s) and year(s):")
+    lines = []
+    lines.append("=" * 60)
+    lines.append("Preparing models for the following case(s) and year(s):")
     for c, scen_settings_dict in to_run:
         all_years = scen_settings_dict.keys()
-        print(f"{c}: {', '.join(str(y) for y in all_years)}")
-    print()
+        lines.append(f"{c}: {', '.join(str(y) for y in all_years)}")
+    lines.append("=" * 60)
+    logger.info("\n".join(lines))
     # %%
     """
     #%%
@@ -1969,7 +1973,11 @@ def main(
         # c is case_id for this case
         # scen_settings_dict has all settings for this case, organized by year
         all_years = scen_settings_dict.keys()
-        print(f"\nstarting case {c} ({', '.join(str(y) for y in all_years)})")
+        logger.info(
+            "-" * 60
+            + f"\nstarting case {c} ({', '.join(str(y) for y in all_years)})\n"
+            + "-" * 60
+        )
         out_folder = results_folder / year_name(all_years) / c
         out_folder.mkdir(parents=True, exist_ok=True)
 
