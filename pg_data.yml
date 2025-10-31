@@ -95,7 +95,7 @@ download_files: []
 # <setting_folder>/env.yml, where <setting_folder> is the key below
 env.yml:
   # Aug 2025 (ReEDS/ATB 2024):
-  PowerGenome-examples-reeds-ba/ReEDS-BA/settings: 
+  pg/settings: 
     PUDL_DB: pg_data/pudl.2025_08.sqlite.zip
     PG_DB: pg_data/pg_misc_tables_efs_2025.3.sqlite
     EFS_DATA: pg_data/efs_files_utc

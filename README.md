@@ -62,9 +62,24 @@ can skip ahead to the next section.
 ## Windows
 
 Download and run the Miniforge installer from
-[https://conda-forge.org/download/]. We recommend selecting the option to "Add
-Miniforge3 to my PATH environment variable" despite the warning. Otherwise
-conda and Python won't be able to be found from the VS Code terminal pane later.
+[https://conda-forge.org/download/]. You may ignore the options to "Add
+Miniforge3 to my PATH environment variable" and "Register Miniforge3 as my
+default Python".
+
+After installing Miniforge, open VS Code, then choose File > Open Folder... and
+choose your home folder, `C:\Users\<yourname>`. Then choose Terminal > New
+Terminal, which will open a command prompt in your home folder. Then type these
+commands in the terminal pane. These will make the conda environment manager
+available within the command line environment:
+
+```
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+.\miniforge3\condabin\conda init --all
+```
+
+Then close the terminal pane by clicking the trash can icon next to the name of
+the terminal on the right side (you may need to hover your cursor over the name
+to get it to appear).
 
 ## Linux/macOS
 
@@ -99,8 +114,8 @@ Or you could avoid the login and emails by installing a Miniconda .pkg file from
 Open VS Code if it is not open already. 
 
 Choose File > Open Folder... and open the parent folder where you want to place
-this repository. e.g., if you open Documents, the steps below will create a
-folder for the study called Switch-USA-PG-ReEDS inside the Documents folder.
+this repository. e.g., if you want the model to be stored in
+a Switch-USA-PG-ReEDS folder inside Documents, open Documents now.
 
 Open a new terminal pane: Terminal > New Terminal
 
@@ -111,7 +126,6 @@ Run these commands in the terminal pane:
 conda update -y -n base -c conda-forge conda
 
 # Create Switch/PowerGenome Python environment (may take a few minutes to solve environment)
-# On Windows this will give a file error but still work correctly
 conda env create -n switch-pg-reeds --env-spec environment.yml --file https://github.com/switch-model/Switch-USA-PG-ReEDS/raw/refs/heads/main/environment.yml
 
 # Activate the new environment
@@ -119,22 +133,29 @@ conda activate switch-pg-reeds
  
 # clone the Switch-USA-PG-ReEDS repository and PowerGenome submodule
 git clone https://github.com/switch-model/Switch-USA-PG-ReEDS --recurse-submodules --depth=1
-cd Switch-USA-PG-ReEDS
 
 # install PowerGenome from the local sub-repository
+cd Switch-USA-PG-ReEDS
 cd PowerGenome
 pip install -e .
-cd ..
 ```
 
-Close the current VS Code window. Then choose File > Open, navigate to the
-Switch-USA-PG-ReEDS folder you just created and choose "Open". You can repeat
-this step anytime you want to work with this repository in the future.
+Next choose File > Open Folder..., navigate to the Switch-USA-PG-ReEDS folder
+you just created and choose "Open" or "Select Folder". You can repeat this step
+anytime you want to work with this repository in the future. (You may now close 
+the window you previously had open on the parent folder.)
 
-Set VS Code to use the switch-pg-reeds conda environment for future work: 
+Set VS Code to use the switch-pg-reeds conda environment for any future work in
+this directory:
+
 - Press shift-ctrl-P (Windows) or shift-command-P (Mac). 
 - Choose `Python: Select Interpreter`.
 - Select the switch-pg-reeds environment.
+
+If no environments appear when you choose `Python: Select Interpreter`, go to
+File > Preferences > Settings (on Windows) or Code > Settings... > Settings (on
+macOS), then search for "locator" and change `Python: Locator` from "native" to
+"js". Then try the `Python: Select Interpreter` command again.
 
 # Download and patch PowerGenome input data and configure PowerGenome to use it
 
@@ -142,6 +163,7 @@ In VS Code, choose Terminal > New Terminal, then run these commands in the
 terminal pane (inside the Switch-USA-PG-ReEDS directory):
 
 ```
+# next line is not needed if prompt already says (switch-pg-reeds)
 conda activate switch-pg-reeds
 
 python download_pg_data.py
@@ -289,6 +311,11 @@ You can solve one case for one year like this:
 cd switch
 switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
 ```
+
+(If you are using PowerShell in Windows, you will need to type `switch.exe` to
+avoid a conflict with its built-in `switch` command. You can get around this by
+going to File > Preferences > Settings and changing "Terminal Integrated Default
+Profile: Windows" to "Command Prompt".)
 
 This works well for foresight cases or single-period cases, which only have one
 model to solve per case. However, for the myopic cases, it is necessary to solve

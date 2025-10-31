@@ -57,27 +57,29 @@ def main(filter=[]):
             f.close()
             os.remove(test_file)
 
-    for dest, url in settings["download_gdrive_folders"].items():
+    setting_items = lambda k: (settings.get(k) or {}).items()
+
+    for dest, url in setting_items("download_gdrive_folders"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
             files = gdown.download_folder(url, output=dest)
             for filename in files:
                 unzip_if_needed(filename)
 
-    for dest, url in settings["download_gdrive_files"].items():
+    for dest, url in setting_items("download_gdrive_files"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
             filename = gdown.download(url, fuzzy=True, output=dest)
             unzip_if_needed(filename)
 
-    for dest, url in settings["download_files"].items():
+    for dest, url in setting_items("download_files"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
             urllib.request.urlretrieve(url, dest)
             unzip_if_needed(dest)
 
     # create model_dir/env.yml
-    for model_dir, model_settings in settings["env.yml"].items():
+    for model_dir, model_settings in setting_items("env.yml"):
         yml_file = os.path.join(model_dir, "env.yml")
         print(f"\ncreating {yml_file}")
         with open(yml_file, "w") as f:
