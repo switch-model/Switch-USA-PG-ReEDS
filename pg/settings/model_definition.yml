@@ -309,6 +309,9 @@ regional_capacity_reserves:
 # planning reserve margins instead.
 cap_res_network_derate_default: 1.0
 
+# turn off PowerGenome 0.7.0 warning
+interest_compound_method: discrete
+
 ######################################################################################
 # MODEL OUTPUTS
 
