@@ -203,17 +203,24 @@ days (case ID `s20_1`, `s20_1_flat` and `s20_1_decarb`). Cases ending with
 
 # Generate Switch inputs
 
-To setup one model case for one year for testing, you can run this command in the VS Code terminal pane (after running `conda activate switch-pg-reeds` if needed):
+To setup one model case for one year for testing, you can run this command in
+the VS Code terminal pane (after running `conda activate switch-pg-reeds` if
+needed):
 
 ```
 # setup one example case (specify case-id and year)
+
 # (s20_1 uses our standard assumptions and 20x1 day time sampling)
+python pg_to_switch.py pg/settings switch/in/ --case-id s20_1 --year 2030
+
+# (p1 uses all weather years (2006-13) as a single timeseries, which can't
+# be solved but is relatively quick to generate and useful for inspection)
 python pg_to_switch.py pg/settings switch/in/ --case-id s20_1 --year 2030
 ```
 
 The `pg_to_switch.py` script uses settings from the first directory you specify
 (`pg/settings`) and places Switch model input files below the second directory
-you specify (`switch/in/`).
+you specify (`switch/in/`), e.g., in `switch/in/2030/s20_1/`.
 
 To generate data for a specific model case, use `--case-id <case_name>`. To
 generate data for multiple cases, use `--case-id <case_1> --case-id <case_2>`,
@@ -240,69 +247,16 @@ and `switch/mip_modules/prepare_next_stage.py`).
 genx/in`, then `run_powergenome_multiple -sf pg/settings -rf genx/in -c s20_1`.
 They will stored in `genx/in`.)
 
-## Generate Switch inputs on high performance computing (HPC) cluster
-
-On an HPC system that uses the slurm scheduling manager, the cases can be setup
-in parallel as follows:
-
-```
-sbatch pg_to_switch.slurm MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --myopic
-sbatch --array=1-2 pg_to_switch.slurm MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --case-id base_20_week --case-id current_policies_20_week
-```
-
-The `pg_to_switch.slurm` batch definition will run multiple copies of the
-`pg_to_switch.py` script in an array with the arguments provided. It passes the
-task ID of each job within the array (by default elements 1-24) as a
-`--case-index` argument to the `pg_to_switch.py` script, which causes
-`pg_to_switch.py` to just setup that one case number from among all cases
-identified on the command line. You can adjust the `--array=n-m` at the start
-and `--case-id` arguments later in the line to choose which cases to prepare,
-e.g. this will just setup `base_short_retire`:
-
-```
-sbatch --array=1 pg_to_switch.slurm MIP_results_comparison/case_settings/26-zone/settings-atb2023 switch/26-zone/in/ --myopic --case-id base_short_retire
-```
-
-As an alternative, you can run `sbatch setup_cases.slurm`, which will run
-`setup_cases.sh`. This will prepare all the cases one by one using a single
-machine.
-
-## Generate inputs from ReEDS data
-
-First, put these entries in `pg_data.yml`:
-
-```
-  pg_data/PowerGenome Data Files/pg_misc_tables_efs_2025.3.sqlite.zip: https://drive.google.com/file/d/1TR-bQ0vnE3pgNsl0opk03PFiPBkGIMB3/view?usp=sharing
-  ...
-  PG_DB: pg_data/PowerGenome Data Files/pg_misc_tables_efs_2025.3.sqlite  # ReEDS compatible, May 2025
-```
-
-Then run `python download_pg_data.py misc_tables`.
-
-Then get ReEDS-BA settings:
-
-```
-git clone --branch reeds-ba --single-branch https://github.com/PowerGenome/PowerGenome-examples.git
-```
-
-Generate model inputs:
-
-```
-# sampled case, not currently working; see options in 
-# PowerGenome-examples/ReEDS-BA/extra_inputs/scenario_inputs.csv
-python pg_to_switch.py PowerGenome-examples/ReEDS-BA/settings switch/reeds/in/ --case-id s1
-
-# all-hours case (7 years!)
-python pg_to_switch.py PowerGenome-examples/ReEDS-BA/settings switch/reeds/in/ --case-id p1
-```
-
 # Run Switch
 
-You can solve one case for one year like this:
+You can solve individual cases like this:
 
 ```
 cd switch
+# all-weather-years (not actually solvable)
 switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
+# 20 x 1-day sample timeseries (good test case)
+switch solve --inputs-dir in/2030/s20)1 --outputs-dir out/2030/s20_1
 ```
 
 (If you are using PowerShell in Windows, you will need to type `switch.exe` to
@@ -408,3 +362,37 @@ expected near-term coal plant closures from [Global Energy
 Monitor](https://globalenergymonitor.org/projects/global-coal-plant-tracker/download-data/)
 and uses them to update retirement dates in the local copy of EIA 860m data
 maintained by PowerGenome.
+
+# Generating Switch inputs on high performance computing (HPC) cluster
+
+On an HPC system that uses the slurm scheduling manager, the cases can be setup
+in parallel as follows:
+
+```
+# generate all the cases (up to 24 unique ones) defined in scenario_inputs.csv
+sbatch pg_to_switch.slurm pg/settings switch/in/ --myopic
+
+# generate two specific cases (--array argument tells which items from the 
+# --case-id list to run)
+sbatch --array=1-2 pg_to_switch.slurm pg/settings switch/in/ --case-id p1 --case-id s20_1 --myopic
+```
+
+The `--myopic` flag is used here to ensure that the 2024 and 2030 cases 
+are setup as separate models.
+
+The `pg_to_switch.slurm` batch definition will run multiple copies of the
+`pg_to_switch.py` script in an array with the arguments provided. It passes the
+task ID of each job within the array (by default elements 1-24) as a
+`--case-index` argument to the `pg_to_switch.py` script, which causes
+`pg_to_switch.py` to just setup that one case number from among all cases
+identified on the command line. You can adjust the `--array=n-m` at the start
+and `--case-id` arguments later in the line to choose which cases to prepare,
+e.g. this will just setup `s20_1`:
+
+```
+sbatch --array=1 pg_to_switch.slurm pg/settings switch/in/ --case-id s20_1 --myopic
+```
+
+As an alternative, you can run `sbatch setup_cases.slurm`, which will run
+`setup_cases.sh`. This will prepare all the cases one by one using a single
+machine.
