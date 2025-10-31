@@ -69,8 +69,12 @@ download_gdrive_files:
   # profiles from Vibrant Clean Energy for 2012 previously used for those sites. ReV converts
   # meteorological data from Wind Toolkit and NSRDB into power production profiles.
   # These need some repairs after downloading; see patch_pg_existing_resource_groups.py
-  pg_data/resource_groups/ReEDS-cpas.zip: https://drive.google.com/file/d/1bZQPwEsgL11g_KWeniJ41YZhUMEpcVKW/view?usp=drive_link
-  pg_data/resource_groups/existing_resource_groups_20250513.zip: https://drive.google.com/file/d/1ZXvHnJxftjgWzeF_HXB0uxw3l2cIQsbW/view?usp=drive_link
+  # pg_data/resource_groups/ReEDS-cpas.zip: https://drive.google.com/file/d/1bZQPwEsgL11g_KWeniJ41YZhUMEpcVKW/view?usp=drive_link
+  # pg_data/resource_groups/existing_resource_groups_20250513.zip: https://drive.google.com/file/d/1ZXvHnJxftjgWzeF_HXB0uxw3l2cIQsbW/view?usp=drive_link
+  # versions of the two files above, patched by patch_pg_existing_resource_groups.py (stored in https://drive.google.com/drive/folders/11rzMZSKyV4lq6Td6TPvvHfdI9WC4neLL?usp=drive_link)
+  pg_data/resource_groups/ReEDS-cpas-fixed.zip: https://drive.google.com/file/d/1R7UejNF0C0yEMEKDSQp74fo4BZkzyBq8/view?usp=drive_link
+  pg_data/resource_groups/existing_resource_groups_20250513-fixed.zip: https://drive.google.com/file/d/1UWyQ5w-46FZWaPjzpaTBVpTtgiFH-ajT/view?usp=drive_link
+  
   # All of the *_rev_profiles.parquet and *_site_mapping.parquet files in the top level of this Gooogle Drive
   pg_data/profiles/solar_site_mapping_20240801.parquet: https://drive.google.com/file/d/18sfwsJzsuiHcwQETobnyzzMCqxKS4n4Z/view?usp=drive_link
   pg_data/profiles/solar_rev_profiles_20240801.parquet: https://drive.google.com/open?id=1ZiVzQVDR60Hy5mRe-i-bmlXb-670kCcu&usp=drive_copy

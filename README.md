@@ -166,25 +166,18 @@ terminal pane (inside the Switch-USA-PG-ReEDS directory):
 # next line is not needed if prompt already says (switch-pg-reeds)
 conda activate switch-pg-reeds
 
+# download upstream data used by PowerGenome
 python download_pg_data.py
-python patch_pg_existing_resource_groups.py
-```
 
-After this, manually update several .csv data files in `pg_data` as noted in the
-output from the `patch_pg_existing_resource_groups.py` script. This may be
-easiest to do with a spreadsheet program. (In the future we may post the patched
-versions of the input files on our own Google Drive and update pg_data.yml to
-download those directly.)
-
-In the VS Code terminal pane, run the command below to create the custom load profiles used for this study (too large to store on github):
-
-```
+# create the custom load profiles used for this study (too large to store on 
+# github)
 python make_study_loads.py
 ```
 
-If you prefer to use the ReEDS standard loads instead, you can skip this step
-and instead comment out `regional_load_fn` in `pg/settings/demand.yml/` and set
-`load_source_table_name: load_curves_nrel_reeds` in the same file.
+If you prefer to use the ReEDS standard loads instead of the our load growth
+schedule, you can the last command above and instead comment out
+`regional_load_fn` in `pg/settings/demand.yml/` and set `load_source_table_name:
+load_curves_nrel_reeds` in the same file.
 
 # Notes about PowerGenome scenario configuration
 
@@ -317,122 +310,18 @@ avoid a conflict with its built-in `switch` command. You can get around this by
 going to File > Preferences > Settings and changing "Terminal Integrated Default
 Profile: Windows" to "Command Prompt".)
 
-This works well for foresight cases or single-period cases, which only have one
-model to solve per case. However, for the myopic cases, it is necessary to solve
-each year in turn and chain the results forward to the next stage. The chaining
-can be done by adding `--include-module mip_modules.prepare_next_stage` to the
-command line for all but the last stage and adding `--input-aliases
-gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv
-gen_build_costs.csv=gen_build_costs.chained.base_short.csv
-transmission_lines.csv=transmission_lines.chained.base_short.csv` for all but
-the first stage. (The `prepare_next_stage` module prepares alternative inputs
-for the next stage that include the construction plan from the current stage.
-Then the `--input-aliases` flag tells Switch to use those alternative inputs.)
+(to add: solving batches of cases, customizing scenarios, possibly multi-year
+and/or myopic cases, based on
+https://github.com/switch-model/Switch-USA-PG/blob/main/README.md)
 
-So you _could_ solve the myopic version of the `base_short` model with these
-commands (but there's a better option, see below):
+# Updating local copy of the repository
 
-```
-cd switch
-switch solve --inputs-dir 26-zone/in/2027/base_short --outputs-dir 26-zone/out/2027/base_short  --include-module mip_modules.prepare_next_stage
-switch solve --inputs-dir 26-zone/in/2030/base_short --outputs-dir 26-zone/out/2030/base_short  --include-module mip_modules.prepare_next_stage --input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv
-switch solve --inputs-dir 26-zone/in/2035/base_short --outputs-dir 26-zone/out/2035/base_short  --include-module mip_modules.prepare_next_stage --input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv
-switch solve --inputs-dir 26-zone/in/2040/base_short --outputs-dir 26-zone/out/2040/base_short  --include-module mip_modules.prepare_next_stage --input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv
-switch solve --inputs-dir 26-zone/in/2045/base_short --outputs-dir 26-zone/out/2045/base_short  --include-module mip_modules.prepare_next_stage --input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv
-switch solve --inputs-dir 26-zone/in/2050/base_short --outputs-dir 26-zone/out/2050/base_short  --input-aliases gen_build_predetermined.csv=gen_build_predetermined.chained.base_short.csv gen_build_costs.csv=gen_build_costs.chained.base_short.csv transmission_lines.csv=transmission_lines.chained.base_short.csv
-```
-
-To simplify solving myopic models, `pg_to_switch.py` creates scenario definition
-files in the `switch/26-zone/in` directory, with names like
-`scenarios_<case_name>.txt`. The `switch solve-scenarios` command can use these
-to solve all the steps in sequence. (Each one contains the command line flags
-needed for each stage of the model, and `swtich solve-scenarios` solves each one
-in turn.) So you can solve the reference case (`base_52_week`) with this
-command:
-
-```
-cd switch
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_foresight.txt
-```
-
-The `pg_to_switch.py` command also creates scenario definition files for some
-alternative cases that share the same inputs directory as the standard cases,
-but use alternative versions of some input files (currently only the carbon
-price file). The definitions for these can also be found in `26-zone/in/`, and
-they can be solved the same way as the standard cases, e.g.,
-`switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_co2_50.txt`.
-You can also look inside these to see the extra flags used setup these cases.
-
-To run all the cases for the MIP study, you can use the following commands:
-
-```
-cd switch
-
-# myopic cases
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_20_week.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_co2_50.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_co2_1000.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_commit.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_no_ccs.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_retire.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_tx_0.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_tx_15.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_52_week_tx_50.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_current_policies_20_week.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_current_policies_52_week.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_current_policies_52_week_commit.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_current_policies_52_week_retire.txt
-
-# foresight cases
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_base_20_week_foresight.txt
-switch solve-scenarios --scenario-list 26-zone/in/scenarios_current_policies_20_week_foresight.txt
-```
-
-Note: If you ever need to manually create next-stage inputs from a previous
-stage's outputs, you can run a command like this:
-
-```
-cd switch
-# prepare 2035 inputs from 2030 model (specify 2030 inputs and outputs directories)
-python -m mip_modules.prepare_next_stage 26-zone/in/2030/base_short 26-zone/out/2030/base_short
-# or:
-python mip_modules/prepare_next_stage.py 26-zone/in/2030/base_short 26-zone/out/2030/base_short
-```
-
-# Prepare result summaries for comparison
-
-After solving the models, run these commands to prepare standardized results and
-copy them to the `MIP_results_comparison` sub-repository.
-
-```
-cd MIP_results_comparison
-git pull
-cd ../switch
-python save_mip_results.py
-cd ../MIP_results_comparison
-git add .
-git commit -m 'new Switch results'
-git push
-```
-
-TODO: maybe move all of this into a switch module so it runs automatically when
-each case finishes
-
-# Updating repository with upstream changes
-
-To update this repository and all the submodules (PowerGenome and
-MIP_results_comparison), use
+To update this repository and the PowerGenome submodule with the latest code
+from github, use
 
 ```
 git pull --recurse-submodules
 ```
-
-To update a submodule, `cd` into the relevant directory and run `git pull`. Then
-run `git add <submodule_dir>` and `git commit` in the main Switch-USA-PG
-directory to save the updated submodules in the Switch-USA-PG repository. This
-will save pointers in Switch-USA-PG showing which commit we are using in each
-submodule.
 
 # Replicating this repository
 
@@ -462,16 +351,19 @@ written automatically by `make_emission_policies.py`, discussed below.
 
 The most important category of external data are the standard PowerGenome inputs
 and resource profiles created by Greg Schivley. These are documented in
-pg_data.yml and downloaded by the `download_pg_data.py` script. Upon download,
-these files have some errors, which are patched by
-`patch_pg_existing_resource_groups.py` or manually by users, based on notes
-printed from that script.
+pg_data.yml and downloaded by the `download_pg_data.py` script. 
 
-In addition to the inputs from Greg Schivley, pg_data.yml points to a "retro"
-version of the PUDL database (mostly from EIA) that Matthias Fripp created by
-copying data from the August 2025 edition of PUDL into a new sqlite database
-with the PUDL schema used before December 2023. The `make_retro_pudl_data.py`
-script does this. See that script for additional information.
+As noted in pg_data.yml, some of the files in the resource_groups folder had errors 
+when downloaded from Greg Schivley's Google Drive, so we patched them with
+`patch_pg_existing_resource_groups.py` and then a few manually (as noted
+in that script), and uploaded the patched folders to Matthias Fripp's Google
+Drive for downloading by `download_pg_data.py`.
+
+Similarly, pg_data.yml points to a "retro" version of the PUDL database (mostly
+from EIA) that Matthias Fripp created by copying data from the August 2025
+edition of PUDL into a new sqlite database with the PUDL schema used before
+December 2023. The `make_retro_pudl_data.py` script does this. See that script
+for additional information.
 
 After downloading the main data for PowerGenome, scripts were used to create
 various categories of additional input data for PowerGenome, as discussed below.

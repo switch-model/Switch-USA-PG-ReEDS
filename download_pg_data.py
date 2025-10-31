@@ -25,13 +25,15 @@ def unzip_if_needed(filename):
             else:
                 # use zip file name as outer subdir
                 dest = os.path.splitext(filename)[0]
-            if os.path.exists(dest):
-                os.remove(dest)
+                if os.path.exists(dest):
+                    os.remove(dest)
             zip_ref.extractall(dest, members=names)
         os.remove(filename)
     else:
         pass
 
+def make_parent(dest):
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
 
 def main(filter=[]):
     with open("pg_data.yml", "r") as f:
@@ -62,6 +64,7 @@ def main(filter=[]):
     for dest, url in setting_items("download_gdrive_folders"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
+            make_parent(dest)
             files = gdown.download_folder(url, output=dest)
             for filename in files:
                 unzip_if_needed(filename)
@@ -69,12 +72,14 @@ def main(filter=[]):
     for dest, url in setting_items("download_gdrive_files"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
+            make_parent(dest)
             filename = gdown.download(url, fuzzy=True, output=dest)
             unzip_if_needed(filename)
 
     for dest, url in setting_items("download_files"):
         if not filter or any(f in dest for f in filter):
             print(f"\nretrieving {dest}")
+            make_parent(dest)
             urllib.request.urlretrieve(url, dest)
             unzip_if_needed(dest)
 
