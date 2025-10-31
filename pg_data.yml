@@ -104,7 +104,7 @@ download_files: []
 env.yml:
   # Aug 2025 (ReEDS/ATB 2024):
   pg/settings: 
-    PUDL_DB: pg_data/pudl.2025_08.sqlite.zip
+    PUDL_DB: pg_data/pudl.2025_08.sqlite
     PG_DB: pg_data/pg_misc_tables_efs_2025.3.sqlite
     EFS_DATA: pg_data/efs_files_utc
     DISTRIBUTED_GEN_DATA: pg_data/NREL-dist-gen
