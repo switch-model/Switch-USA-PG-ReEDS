@@ -363,7 +363,7 @@ Monitor](https://globalenergymonitor.org/projects/global-coal-plant-tracker/down
 and uses them to update retirement dates in the local copy of EIA 860m data
 maintained by PowerGenome.
 
-# Generating Switch inputs on high performance computing (HPC) cluster
+# Generating Switch inputs on a high performance computing (HPC) cluster
 
 On an HPC system that uses the slurm scheduling manager, the cases can be setup
 in parallel as follows:

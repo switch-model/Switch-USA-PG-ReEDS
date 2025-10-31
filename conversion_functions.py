@@ -37,13 +37,15 @@ def final_key(d: dict):
 def final_value(d: dict):
     return next(reversed(d.values()))
 
+
 class LogFormatter(coloredlogs.ColoredFormatter):
     """
     Shows a colored log message with a hanging indent.
     Assumes the message is the last element in the log line.
     """
+
     # precompiled regex for ANSI escape sequences
-    ANSI_ESCAPE_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+    ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
     def __init__(self, width=90, **kwargs):
         args = dict(
@@ -51,25 +53,27 @@ class LogFormatter(coloredlogs.ColoredFormatter):
             # fmt="%(levelname)s: %(message)s (%(name)s)",
             # fmt="%(name)s %(shortlevelname)s%(message)s",
             fmt="%(name)s %(message)s",
-            level_styles={'warning': {'color': 'red'}, 'info': {'color': None}},
-            field_styles={'name': {'color': 'blue'}},
+            level_styles={"warning": {"color": "red"}, "info": {"color": None}},
+            field_styles={"name": {"color": "blue"}},
         )
         args.update(kwargs)
         super().__init__(**args)
         self.width = width
 
-    def fill_by_paragraph(self, text, initial_indent='', subsequent_indent='', **kwargs):
+    def fill_by_paragraph(
+        self, text, initial_indent="", subsequent_indent="", **kwargs
+    ):
         paras = []
         for line in text.splitlines():
-            if paras: # after first line
+            if paras:  # after first line
                 initial_indent = subsequent_indent
             if line.strip():
                 paras.append(
                     textwrap.fill(
-                        line, 
-                        initial_indent=initial_indent, 
-                        subsequent_indent=subsequent_indent, 
-                        **kwargs
+                        line,
+                        initial_indent=initial_indent,
+                        subsequent_indent=subsequent_indent,
+                        **kwargs,
                     )
                 )
             else:
@@ -81,7 +85,7 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         # return super().format(record)
 
         if len(record.name) > 24 and "." in record.name:
-            name_parts = record.name.split('.')
+            name_parts = record.name.split(".")
             record.name = f"{name_parts[0]}.-.{name_parts[-1]}".ljust(24)
         else:
             record.name = record.name.ljust(24)
@@ -94,7 +98,7 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         if not msg:
             return colored_message
 
-        if record.levelname != 'INFO':
+        if record.levelname != "INFO":
             # insert the levelname as part of the message (for attention
             # and coloring)
             new_msg = record.levelname + ": " + msg
@@ -104,11 +108,11 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         # # wrap the message if currently single line
         # if not "\n" in msg:
         # Calculate visible prefix length, ignoring ANSI codes
-        plain_message = self.ANSI_ESCAPE_RE.sub('', colored_message)
+        plain_message = self.ANSI_ESCAPE_RE.sub("", colored_message)
         prefix_len = plain_message.find(msg)
         if prefix_len < 0:
             return colored_message
-        
+
         indent = " " * prefix_len
         # Wrap the uncolored message, then reinsert into colored text; limit
         # second-line indent to no more than 40 (could use 25 to stay aligned
@@ -120,8 +124,9 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         # Remove the first-line indent
         wrapped = wrapped[prefix_len:]
         colored_message = colored_message.replace(msg, wrapped, 1)
-        
+
         return colored_message
+
 
 def switch_fuel_cost_table(
     aeo_fuel_region_map, fuel_prices, regions, scenario, year_list
