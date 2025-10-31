@@ -3,6 +3,7 @@
 # TODO: calculate interest_rate from gen_info.WACC and maybe similar info for transmission lines if not provided (avoid need for a custom switch.yml)
 # TODO (maybe): remove FLEX generators in gen_tables() and convert to custom demand response info
 # TODO: get gen_forced_outage_rate from equivalent GenX column, not custom column for Switch
+# TODO: speed up "concatenated columns" loop and RMSE calculation in powergenome.time_reduction
 
 import sys
 import os

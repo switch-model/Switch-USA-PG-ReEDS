@@ -182,7 +182,7 @@ eia_for_gem = {g: e for (e, g), w in weights.items() if w == 1}
 # all seem to be cases where the EIA plant is now marked as natural gas, not coal)
 missing_candidates = set(eia["eia_row"]) - set(eia_rows)
 if eia_shortfall or missing_candidates:
-    print(f"Unmatched EIA rows")
+    print(f"Unmatched EIA rows:")
     for (e, g), d in zip(pairs, c_w):
         if e in eia_shortfall:
             alt_match = f" (-> eia {eia_for_gem[g]})" if g in eia_for_gem else ""

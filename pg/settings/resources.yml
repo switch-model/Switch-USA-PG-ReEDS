@@ -15,9 +15,11 @@
 eia_data_years:
   - 2024
 
-# get more recent status info for existing generators
-# next file will be automatically downloaded from https://www.eia.gov/electricity/data/eia860m/
-# (xls/ or archive/xls/) and cached within the powergenome installation
+# Get more recent status info for existing generators. The file below will be
+# automatically downloaded from https://www.eia.gov/electricity/data/eia860m/
+# (xls/ or archive/xls/) and cached within the powergenome installation. If you
+# change this setting, you should run `update_coal_closures.py` before running
+# PowerGenome.
 eia_860m_fn: july_generator2025.xlsx
 
 # URL from which to download the Global Energy Monitor Global Coal Plant Tracker workbook

@@ -169,8 +169,11 @@ conda activate switch-pg-reeds
 # download upstream data used by PowerGenome
 python download_pg_data.py
 
-# create the custom load profiles used for this study (too large to store on 
-# github)
+# apply expected coal plant retirements to the EIA 860m workbook
+python update_coal_closures.py
+
+# create the custom load profiles used for this study 
+# (too large to store on github)
 python make_study_loads.py
 ```
 
