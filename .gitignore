@@ -9,6 +9,11 @@
 !PowerGenome/
 !PowerGenome/**
 
+# include growth_rates/*.csv
+!growth_rates/
+growth_rates/*
+!growth_rates/*.csv
+
 # user-specific configuration
 env.yml
 
