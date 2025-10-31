@@ -73,19 +73,17 @@ from conversion_functions import (
     final_key,
     final_value,
     km_per_mile,
+    LogFormatter,
 )
 
 # turn on info-level logging with colored messages at the root level
 # (this uses a simplified version of pudl's colored-logging approach)
 # logging.basicConfig(level=logging.INFO, format="%(message)s")
 root_logger = logging.getLogger()
-coloredlogs.install(
-    fmt="[%(levelname)7s] %(name)s %(message)s",
-    level="INFO",
-    logger=root_logger,
-    level_styles={'warning': {'color': 'red'}, 'info': {'color': None}},
-    field_styles={'levelname': {'color': None}, 'name': {'color': 'blue'}}
-)
+root_logger.setLevel("INFO")
+handler = logging.StreamHandler()
+handler.setFormatter(LogFormatter())
+root_logger.addHandler(handler)
 
 # set pudl to use the root logger, so its messages only show up once
 pudllog = logging.getLogger("catalystcoop")
