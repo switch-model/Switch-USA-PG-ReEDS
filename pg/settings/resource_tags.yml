@@ -285,6 +285,10 @@ model_tag_values:
     # all wind technologies are subject to a national growth limit (this could
     # be moved to sceanrio_settings to turn it off for some cases)
     Wind: 1
+  MaxCapTag_Ban:
+    # 0 by default, but we also specify 0 to avoid a warning from PowerGenome
+    "": 0
+
 
 
 

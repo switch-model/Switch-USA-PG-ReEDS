@@ -51,6 +51,20 @@ settings_management:
         model_tag_values:
           Can_Retire:
             "": 0
+    resource_limits:
+      none: null   # default
+      low_gas:
+          MaxCapTag_Ban:
+            # technology name for new gas, but not existing/planned
+            NaturalGas : 1
+      high_gas:
+          MaxCapTag_Ban:
+            # tech names used for new build non-gas techs, but not existing/planned
+            UtilityPV : 1
+            OffShoreWind: 1
+            LandbasedWind: 1
+            Nuclear_Nuclear: 1
+            Battery Storage: 1
 
     policies:
       current: null # use default settings
