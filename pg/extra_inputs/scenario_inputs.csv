@@ -1,8 +1,8 @@
 ﻿case_id,year,time_series,load_growth_flexibility,load_growth,allow_retirement,policies,resource_limits
-p1,2024,full,none,none,yes,current,none
-p1,2030,full,firm,icf,yes,current,none
-p1_low_gas,2030,full,firm,icf,yes,current,low_gas
-p1_high_gas,2030,full,firm,icf,yes,current,high_gas
+p1,2024,p1,none,none,yes,current,none
+p1,2030,p1,firm,icf,yes,current,none
+p1_low_gas,2030,p1,firm,icf,yes,current,low_gas
+p1_high_gas,2030,p1,firm,icf,yes,current,high_gas
 s4,2030,s4,firm,icf,yes,current,none
 s10,2024,s10,none,none,yes,current,none
 s10,2030,s10,firm,icf,yes,current,none
@@ -13,4 +13,3 @@ s20_1,2024,s20_1,firm,icf,yes,current,none
 s20_1,2030,s20_1,firm,icf,yes,current,none
 s20_1_flat,2030,s20_1,none,none,yes,current,none
 s20_1_decarb,2030,s20_1,firm,icf,yes,decarb,none
-

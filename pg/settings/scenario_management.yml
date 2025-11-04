@@ -12,8 +12,11 @@
 settings_management:
   all_years:
     time_series:
-      full:
+      p1:
         reduce_time_domain: false
+        # no need to add extreme day when there's only one time sample
+        model_adjustment_scripts:
+          Add extreme day: null
       s4:
         time_domain_periods: 4
       s10:
@@ -21,10 +24,6 @@ settings_management:
       s20_1:
         time_domain_periods: 20
         time_domain_days_per_period: 1
-      p1:
-        # no need to add extreme day when there's only one time sample
-        model_adjustment_scripts:
-          Add extreme day: null
     load_growth:
       icf:
         # add the load growth and mark it as shiftable; but shifting
