@@ -485,19 +485,15 @@ def gen_info_file(
     graph_color_tables(out_folder, gen_info)
 
     ########
-    # identify generators eligible for ESR, min_cap and max_cap programs
-    # note: these will be removed in other_tables if the programs aren't in effect
+    # create lists of generators participating in ESR (RPS/CES), min_cap and
+    # max_cap programs. note: these will be removed in other_tables if the
+    # programs aren't in effect
     prog_info = [
         # PowerGenome prefix, output prefix, output file
         ("ESR", "RPS", "rps_generators.csv"),
         ("MinCapTag", "MIN_CAP", "min_cap_generators.csv"),
         ("MaxCapTag", "MAX_CAP", "max_cap_generators.csv"),
     ]
-    # create rps_generators.csv: list of generators participating in ESR (RPS/CES) programs
-    # TODO: substitute these vars into the strings and code below, then rename them
-    # something better
-    # TODO: refactor the commented out code above starting with ESR_col to use the
-    # columns collected here (or all the first tags from req_info)
     all_prog_cols = []
     for pg_prefix, PROG, out_file in prog_info:
         prog_cols = [col for col in gen_info.columns if col.startswith(f"{pg_prefix}_")]
@@ -1173,7 +1169,7 @@ def other_tables(
 
         # create carbon_policies.csv (possibly empty), an all-region cap for use
         # with switch_model.policies.carbon_policies or
-        # mip_modules.carbon_policies
+        # stud_modules.carbon_policies
         co2_cap = co2_cap_long.query('CO2_PROGRAM == "ETS 1"')
         co2_cap_all_regions = (
             co2_cap.groupby("PERIOD")
@@ -1724,7 +1720,7 @@ def scenario_files(results_folder, case_settings, myopic):
         if myopic:
             if year != max(case_settings[case].keys()):
                 # chain investment choices forward to next stage
-                line += "--include-module mip_modules.prepare_next_stage "
+                line += "--include-module study_modules.prepare_next_stage "
             if year != min(case_settings[case].keys()):
                 # use investment choices chained from previous stage
                 line += (
@@ -1806,6 +1802,7 @@ def main(
     pg_unit_bug: bool = False,
     case_index: int = -1,
 ):
+    # %%
     """Create inputs for the Switch model using PowerGenome data
 
     Example usage:
@@ -1838,7 +1835,6 @@ def main(
         case, second prepares the second, etc. Index starts from 1 for the first
         case.
     """
-    # %%
     cwd = Path.cwd()
     results_folder = cwd / results_folder
     results_folder.mkdir(parents=True, exist_ok=True)

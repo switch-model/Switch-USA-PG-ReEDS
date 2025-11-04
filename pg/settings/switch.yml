@@ -26,6 +26,8 @@ model_adjustment_scripts:
     script: ../../add_reserve_info.py
   Add extreme day:
     script: ../../add_extreme_days.py
+    # run after all the others, because it creates a new directory copied
+    # from the main one
     order: 10
 
 # price to pay to go beyond carbon caps in emission_policies_fn (which may be

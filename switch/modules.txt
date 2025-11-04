@@ -17,12 +17,12 @@ switch_model.transmission.transport.dispatch
 switch_model.transmission.local_td
 switch_model.balancing.operating_reserves.areas
 switch_model.balancing.operating_reserves.spinning_reserves
-mip_modules.carbon_policies_regional
-# mip_modules.min_capacity_constraint
-mip_modules.rps_regional
-mip_modules.trans_path_expansion_limit
-mip_modules.planning_reserves_extreme_days
-mip_modules.gen_om_by_period
+study_modules.carbon_policies_regional
+# study_modules.min_capacity_constraint
+study_modules.rps_regional
+study_modules.trans_path_expansion_limit
+study_modules.planning_reserves_extreme_days
+study_modules.gen_om_by_period
 # apply annual operating limits to data center backup gens
-mip_modules.gen_annual_availability_limits
-# mip_modules.save_dual_costs
+study_modules.gen_annual_availability_limits
+# study_modules.save_dual_costs
