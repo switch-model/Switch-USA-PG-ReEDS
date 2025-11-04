@@ -1384,16 +1384,24 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
     base_dir = settings_path if settings_path.is_dir() else settings_path.parent
 
     scripts = first_value(scen_settings_dict).get("model_adjustment_scripts") or {}
-    for desc, options in scripts.items():
+    # explicitly sort the scripts because PowerGenome sorts entries by length of
+    # key, which usually won't be right; this also allows scenario_settings
+    # to insert scripts at any position in the run order
+    script_info = sorted(scripts.items(), key=lambda x: x[1].get("order", 5))
+    for desc, options in script_info:
         if (options or {}).get("script") is None:
             # Script not specified for this scenario
             continue
-        cmd = (
-            f'"{sys.executable}" '
-            # normalize path without resolving symlinks
-            f'"{os.path.normpath(base_dir / options["script"])}" '
-            f'"{short_fn(out_folder)}" {options.get("args", "")}'
+        cmd = shlex.join(
+            [
+                sys.executable,
+                # drop ../., etc. from path but don't resolve symlinks
+                os.path.normpath(base_dir / options["script"]),
+                str(short_fn(out_folder)),
+            ]
         )
+        if options.get("args"):
+            cmd += options["args"]  # should be pre-quoted/escaped as needed
         print("\n" + "-" * 80)
         print(f"Running '{desc}' script:")
         print(cmd)
@@ -1401,7 +1409,9 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
         exit_status = subprocess.run(cmd, shell=True).returncode
         print("=" * 80 + "\n")
         if exit_status != 0:
-            logger.warning(f"The previous script exited with status {exit_status}")
+            logger.warning(
+                f"The previous script exited with error status {exit_status}"
+            )
 
 
 from powergenome.generators import load_ipm_shapefile
@@ -1774,7 +1784,6 @@ def short_fn(filename, target=None):
 """
 #%%
 # settings for testing
-# settings_file = "MIP_results_comparison/case_settings/26-zone/settings"
 settings_file = "pg/settings"
 results_folder = "/tmp/test"
 case_id = ["p1"] # p1, s4 or s20_1

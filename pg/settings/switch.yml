@@ -21,10 +21,12 @@ model_adjustment_scripts:
   # description of script:  # can set to ~ for a scenario to bypass this script
   #   script: ../../path/to/script.py
   #   arguments: (optional) --additional_arguments "to pass" --to 'script'
+  #   order: (optional, default 5) 3  # order to run script in
   Add reserve info:
     script: ../../add_reserve_info.py
   Add extreme day:
     script: ../../add_extreme_days.py
+    order: 10
 
 # price to pay to go beyond carbon caps in emission_policies_fn (which may be
 # zero for a simple tax). Note: pg_to_switch.py is currently setup to use the

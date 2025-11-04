@@ -178,7 +178,7 @@ python make_study_loads.py
 ```
 
 If you prefer to use the ReEDS standard loads instead of the our load growth
-schedule, you can the last command above and instead comment out
+schedule, you can skip the last command above and instead comment out
 `regional_load_fn` in `pg/settings/demand.yml/` and set `load_source_table_name:
 load_curves_nrel_reeds` in the same file.
 
