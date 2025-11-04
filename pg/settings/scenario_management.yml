@@ -16,7 +16,7 @@ settings_management:
         reduce_time_domain: false
         # no need to add extreme day when there's only one time sample
         model_adjustment_scripts:
-          Add extreme day: null
+          Add extreme day: ~
       s4:
         time_domain_periods: 4
       s10:
@@ -41,38 +41,38 @@ settings_management:
               fraction_shiftable: 1.0
               parameter_values:
                 New_Build: -1
-      none: null
+      none: ~
 
     load_growth_flexibility:
-      none: null # no effect, useful for historical cases 
-      firm: null # use default settings from flexible_load.yml
-      flex_001: # allow 0.001 availability for demand response virtual generator
+      none: ~    # no effect, useful for historical cases 
+      firm: ~    # use default settings from flexible_load.yml
+      flex_001:  # allow 0.001 availability for demand response virtual generator
         model_tag_values:
           gen_max_annual_availability:
             load_growth: 0.001
     allow_retirement:
-      yes: null # allowed for thermal plants after 2024 by default
-      no: # disable retirement for all plants in all years
+      yes: ~    # allowed for thermal plants after 2024 by default
+      no:       # disable retirement for all plants in all years
         model_tag_values:
           Can_Retire:
             "": 0
     resource_limits:
-      none: null   # default
+      none: ~      # default
       low_gas:
-          MaxCapTag_Ban:
-            # technology name for new gas, but not existing/planned
-            NaturalGas : 1
+        MaxCapTag_Ban:
+          # technology name for new gas, but not existing/planned
+          NaturalGas: 1
       high_gas:
-          MaxCapTag_Ban:
-            # tech names used for new build non-gas techs, but not existing/planned
-            UtilityPV : 1
-            OffShoreWind: 1
-            LandbasedWind: 1
-            Nuclear_Nuclear: 1
-            Battery Storage: 1
+        MaxCapTag_Ban:
+          # tech names used for new build non-gas techs, but not existing/planned
+          UtilityPV: 1
+          OffShoreWind: 1
+          LandbasedWind: 1
+          Nuclear_Nuclear: 1
+          Battery Storage: 1
 
     policies:
-      current: null # use default settings
+      current: ~    # use default settings
       decarb:
         # national carbon tax at 200, to see what would be cheapest way to decarbonize
         emission_policies_fn: emission_policies_decarb.csv
@@ -82,7 +82,7 @@ settings_management:
     all_cases:
       # disable new-build for historical case
       atb_new_gen: []
-      atb_modifiers: null
+      atb_modifiers: ~
       # never allow retirement in 2024
       model_tag_values:
         Can_Retire:

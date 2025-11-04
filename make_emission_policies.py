@@ -66,11 +66,15 @@ max_wind_growth_tag = "MaxCapTag_WindGrowth"
 # keep files small and uncluttered
 possible_model_years = list(range(2024, 2030)) + list(range(2030, 2050 + 1, 5))
 
-# setup yaml parser to preserve quotes and disable aliasing (cross-referencing)
-# of duplicate data; also preserves comments by default.
+# setup yaml parser to preserve quotes, disable aliasing (cross-referencing) of
+# duplicate data and write None as ~ (not 'null'); also preserves comments by
+# default.
 ym = ruamel.yaml.YAML()
 ym.preserve_quotes = True
 ym.representer.ignore_aliases = lambda x: True
+ym.representer.add_representer(
+    type(None), lambda self, data: self.represent_scalar("tag:yaml.org,2002:null", "~")
+)
 
 # useful for sorting dataframes by region number instead of alphabetically
 region_sort = dict(by="region", key=lambda r: r.str[1:].astype(int))
