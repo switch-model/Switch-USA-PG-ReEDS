@@ -17,11 +17,14 @@ settings_management:
         # no need to add extreme day when there's only one time sample
         model_adjustment_scripts:
           Add extreme day: ~
+      s1x1:
+        time_domain_periods: 1
+        time_domain_days_per_period: 1
       s4:
         time_domain_periods: 4
       s10:
         time_domain_periods: 10
-      s20_1:
+      s20x1:
         time_domain_periods: 20
         time_domain_days_per_period: 1
     load_growth:
