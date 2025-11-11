@@ -6,7 +6,8 @@
 !pg/**
 !switch/
 !switch/*
-!switch/*_modules/*
+switch/in/
+switch/out/
 !PowerGenome/
 !PowerGenome/**
 

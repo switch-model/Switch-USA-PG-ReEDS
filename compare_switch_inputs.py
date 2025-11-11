@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory() as td:
                     continue
                 print(f"copying {old_file}")
                 if name.endswith(".csv"):
-                    df = pd.read_csv(old_file, na_values=".")
+                    df = pd.read_csv(old_file, na_values=".", keep_default_na=False)
                     # patch some missing values to simplify comparisons
                     if name == "gen_info.csv":
                         df.loc[

@@ -13,7 +13,12 @@
 # --solver gurobi --solver-options-string "method=2 crossover=0"
 # try to improve performance with numerical issues
 # see https://docs.gurobi.com/projects/optimizer/en/current/concepts/numericguide/numeric_parameters.html#secnumericparameters
+
+# standard gurobi from conda
 --solver gurobi --solver-options-string "method=2 crossover=0 NumericFocus=2 ScaleFlag=2 BarHomogeneous=1"
+
+# gurobi solver from ampl
+# --solver gurobi --solver-io nl --solver-options-string "tech:outlev=1 alg:method=2 bar:crossover=0 alg:numericfocus=2 pre:scale=2 bar:homog=1"
 
 # --solver "/Applications/copt71/bin/coptampl" --solver-options-string "lp:method=2 lp:crossover=0 tech:outlev=1"
 # --solver appsi_highs --solver-options-string "solver=ipm parallel=on run_crossover=off threads=10"

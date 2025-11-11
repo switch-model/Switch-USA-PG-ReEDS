@@ -16,7 +16,8 @@ the same time. Users should then look for inconsistencies in the data used for
 these two constraints.
 """
 
-from switch_model.utilities import make_iterable
+import os
+from switch_model.utilities import make_iterable, rewrap
 import pyomo.environ as pyo
 
 relax_var_prefix = "Relax"
@@ -103,7 +104,7 @@ def post_solve(m, outputs_dir):
                 # get the matching relaxation variable
                 relax_var = getattr(m, relax_var_name(constraint, direction))
                 val = relax_var[key].value
-                if val is not None and val >= 1e-9:
+                if val is not None and val >= 1e-6:
                     # We could use name = c.name here, but it is slow to
                     # access constraints later in the model (see
                     # https://github.com/Pyomo/pyomo/issues/2560). Using repr()
@@ -119,19 +120,35 @@ def post_solve(m, outputs_dir):
     # info to see them. This is because these are diagnostic messages, not
     # errors, and because it prevents chatter from the test suite.
     if unsatisfied_constraints:
-        for name, val in unsatisfied_constraints:
-            m.logger.info("")
-            m.logger.info(f"WARNING: Constraint {name} violated by {val:.4g} units.")
+        with open(os.path.join(outputs_dir, "unsatisfied_constraints.csv")) as f:
+            f.write("constraint,violation\n")
+            m.logger.info("\nWARNING: some constraints were violated:")
+            for name, val in unsatisfied_constraints:
+                f.write(f'"{name}",{val}\n')
+                m.logger.info(f"{name} violated by {val:.4g} units.")
     else:
         m.logger.info(
-            "\nCongratulations, the model is feasible. To obtain the optimal\n"
-            f"solution, please solve again without using the {__name__} module."
+            "\n"
+            + rewrap(
+                f"""
+                The model is feasible. To obtain the optimal solution, solve
+                again without using the {__name__} module.
+                """
+            )
         )
 
     m.logger.info(
-        f"\nNOTE: Module {__name__} was used for this run.\n"
-        "This minimizes violations of constraints, ignoring financial costs. Results from\n"
-        "this run (other than constraint violations) should not be used for analysis.\n"
+        "\n"
+        + rewrap(
+            f"""
+            NOTE: Module {__name__} was used for this run.
+
+            This minimizes violations of constraints, ignoring financial costs.
+            Results from this run (other than constraint violations) should not
+            be used for analysis.
+            """
+        )
+        + "\n"
     )
 
 

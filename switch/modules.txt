@@ -4,7 +4,9 @@ switch_model.financials
 switch_model.balancing.load_zones
 switch_model.energy_sources.properties
 switch_model.generators.core.build
-switch_model.generators.core.dispatch
+# switch_model.generators.core.dispatch
+# patched version
+study_modules.generators_core_dispatch
 switch_model.reporting
 # switch_model.generators.core.no_commit
 switch_model.generators.core.commit.operate

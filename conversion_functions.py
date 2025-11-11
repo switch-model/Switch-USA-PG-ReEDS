@@ -2,19 +2,14 @@
 Functions to convert data from PowerGenome for use with Switch
 """
 
-from statistics import mean, mode
+import statistics
 import math
-import logging
 import textwrap
 import re
 
 from typing import List, Tuple
-import numpy as np
 import pandas as pd
-import scipy
 import coloredlogs
-
-from powergenome.time_reduction import kmeans_time_clustering
 
 km_per_mile = 1.60934
 
@@ -85,10 +80,14 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         # return super().format(record)
 
         if len(record.name) > 24 and "." in record.name:
+            # use abbreviated version of the name
             name_parts = record.name.split(".")
-            record.name = f"{name_parts[0]}.-.{name_parts[-1]}".ljust(24)
-        else:
-            record.name = record.name.ljust(24)
+            record.name = f"{name_parts[0]}.-.{name_parts[-1]}"
+
+        # justify to 24 chars and trim to 24 chars, to maintain neat alignment
+        # (can skip the trim, in which case the message text blocks will shift
+        # right when the name is long, which doesn't look great)
+        record.name = record.name.ljust(24)[:24]
 
         # color the message as normal, then add the level name to the msg part
         # if needed
@@ -1432,7 +1431,7 @@ def balancing_areas(
     for region in regions:
         region_df = plant_region_df.loc[plant_region_df["region"] == region]
         # take the most common balancing authority (assumption)
-        bal_aut = mode(region_df["balancing_authority_code_eia"].to_list())
+        bal_aut = statistics.mode(region_df["balancing_authority_code_eia"].to_list())
         zone_b_a_list.append([region, bal_aut])
     zone_b_a_list.append(["_ALL_ZONES", "."])  # Last line in the REAM inputs
     ZONE_BALANCING_AREAS = pd.DataFrame(
