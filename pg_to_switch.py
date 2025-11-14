@@ -509,6 +509,45 @@ def gen_info_file(
             }
         )
         prog_gens_long = prog_gens_long[[f"{PROG}_PROGRAM", f"{PROG}_GEN"]]
+        if out_file == "rps_generators.csv":
+            # Consolidate X, X_bundled and X_unbundled rows.
+            # This is done by dropping the tag from RPS_PROGRAM and treating
+            # each row as if it sets a named variable to 1 ('local',
+            # 'send_unbundled_recs' or 'send_bundled_recs'). Then a pivot brings
+            # those up to become columns for the final table.
+            prog_gens_long["var"] = "local"  # default meaning of each row
+            # value will be 1 for whatever type of variable is used; we force to "Int64"
+            # type here, so NaNs introduced by .pivot won't convert it to a float
+            prog_gens_long["value"] = 1
+            prog_gens_long["value"] = prog_gens_long["value"].astype("Int64")
+            for tag in ["bundled", "unbundled"]:
+                mask = prog_gens_long["RPS_PROGRAM"].str.endswith("_" + tag)
+                prog_gens_long.loc[mask, "RPS_PROGRAM"] = prog_gens_long[
+                    "RPS_PROGRAM"
+                ].str[: -len(tag) - 1]
+                prog_gens_long.loc[mask, "var"] = f"send_{tag}_recs"
+            prog_gens_long = (
+                prog_gens_long.pivot(
+                    columns="var", values="value", index=["RPS_PROGRAM", "RPS_GEN"]
+                )
+                .reset_index()
+                .drop(columns=["local"])
+                .fillna(0)
+            )
+
+            # Another way to do the same thing:
+            # prog_gens_long = prog_gens_long.assign(
+            #     base=prog_gens_long["RPS_PROGRAM"].str.replace(r"_(?:bundled|unbundled)$", "", regex=True),
+            #     send_bundled_recs=prog_gens_long["RPS_PROGRAM"].str.endswith("_bundled"),
+            #     send_unbundled_recs=prog_gens_long["RPS_PROGRAM"].str.endswith("_unbundled")
+            # )
+            # prog_gens_long = (
+            #     df.groupby(["base", "RPS_GEN"], as_index=False)
+            #     .agg(send_bundled_recs=("send_bundled_recs", "any"),
+            #         send_unbundled_recs=("send_unbundled_recs", "any"),
+            #         create_local_recs=("create_local_recs", "any"))   # drop if you don't need "local"
+            #     .rename(columns={"base": "RPS_PROGRAM"})
+
         prog_gens_long.to_csv(out_folder / out_file, index=False)
 
     ########
@@ -1192,39 +1231,69 @@ def other_tables(
     # create rps_requirements.csv with clean energy standards / RPS requirements
     dfs = [
         # start with a dummy data frame with standard columns
-        pd.DataFrame(columns=["RPS_PROGRAM", "PERIOD", "load_zone", "rps_share"])
+        pd.DataFrame(
+            columns=[
+                "RPS_PROGRAM",
+                "LOAD_ZONE",
+                "PERIOD",
+                "rps_share",
+                "unbundled_rec_limit_fraction",
+            ]
+        )
     ]
     # gather data across years
     for model_year, scen_settings in scen_settings_dict.items():
         if "emission_policies_fn" in scen_settings:
             energy_share_req = create_policy_req(scen_settings, col_str_match="ESR")
+            urec_limit = create_policy_req(scen_settings, col_str_match="UREC_Limit")
+            if energy_share_req is not None and urec_limit is None:
+                # make a dummy to avoid errors later
+                urec_limit = pd.DataFrame(columns=["Region_description"])
         else:
             energy_share_req = None  # (could also be returned by create_policy_req)
         if energy_share_req is not None:
             ESR_col = [col for col in energy_share_req.columns if col.startswith("ESR")]
+            UREC_col = [
+                col for col in energy_share_req.columns if col.startswith("UREC_Limit")
+            ]
             energy_share_long = pd.melt(
-                energy_share_req, id_vars=["Region_description"], value_vars=ESR_col
+                energy_share_req.rename(columns={"Region_description": "LOAD_ZONE"}),
+                id_vars=["LOAD_ZONE"],
+                value_vars=ESR_col,
+                var_name="RPS_PROGRAM",
+                value_name="rps_share",
+            ).dropna(subset="rps_share")
+            urec_limit_long = pd.melt(
+                urec_limit.rename(columns={"Region_description": "LOAD_ZONE"}),
+                id_vars=["LOAD_ZONE"],
+                value_vars=UREC_col,
+                var_name="RPS_PROGRAM",
+                value_name="unbundled_rec_limit_fraction",
+            ).dropna(subset="unbundled_rec_limit_fraction")
+            # drop the UREC_Limit prefix
+            urec_limit_long["RPS_PROGRAM"] = urec_limit_long["RPS_PROGRAM"].str[
+                len("UREC_Limit_") :
+            ]
+            # use unbundled_rec_limit_fraction if available
+            energy_share_long = energy_share_long.merge(
+                urec_limit_long, on=["RPS_PROGRAM", "LOAD_ZONE"], how="left"
             )
             energy_share_long["PERIOD"] = model_year
-            energy_share_long = energy_share_long.rename(
-                columns={
-                    "variable": "RPS_PROGRAM",
-                    "Region_description": "load_zone",
-                    "value": "rps_share",
-                }
-            )
             # drop the zero-value and nan rows (no policy in effect)
             energy_share_long.loc[energy_share_long["rps_share"] == 0, "rps_share"] = (
-                float("nan")
+                pd.NA
             )
             energy_share_long = energy_share_long.dropna(subset=["rps_share"])
             # use standard columns in standard order
             energy_share_long = energy_share_long[dfs[0].columns]
+
             dfs.append(energy_share_long)
 
     # aggregate across years
     energy_share_long = pd.concat(dfs, axis=0)
-    energy_share_long.to_csv(out_folder / "rps_requirements.csv", index=False)
+    energy_share_long.to_csv(
+        out_folder / "rps_requirements.csv", index=False, na_rep="."
+    )
 
     # remove any generator assignments for inactive ESR programs
     try:
@@ -1383,7 +1452,7 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
     # explicitly sort the scripts because PowerGenome sorts entries by length of
     # key, which usually won't be right; this also allows scenario_settings
     # to insert scripts at any position in the run order
-    script_info = sorted(scripts.items(), key=lambda x: x[1].get("order", 5))
+    script_info = sorted(scripts.items(), key=lambda x: (x[1] or {}).get("order", 5))
     for desc, options in script_info:
         if (options or {}).get("script") is None:
             # Script not specified for this scenario
@@ -1398,10 +1467,10 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
         )
         if options.get("args"):
             cmd += options["args"]  # should be pre-quoted/escaped as needed
-        print("\n" + "-" * 80)
+        print("\n" + "=" * 80)
         print(f"Running '{desc}' script:")
         print(cmd)
-        print("=" * 80)
+        print("-" * 80)
         exit_status = subprocess.run(cmd, shell=True).returncode
         print("=" * 80 + "\n")
         if exit_status != 0:
@@ -1787,7 +1856,7 @@ year = [2030]  # 2024 or 2030
 myopic = True
 pg_unit_bug = False
 case_index = -1
-#%%
+#%% [skip]
 """
 
 
@@ -1966,12 +2035,12 @@ def main(
         lines.append(f"{c}: {', '.join(str(y) for y in all_years)}")
     lines.append("=" * 60)
     logger.info("\n".join(lines))
-    # %%
+    # %% [skip]
     """
     #%%
     # values for testing
     c, scen_settings_dict = to_run[0]
-    #%%
+    #%% [skip]
     """
     # Run through the different cases and save files in a new folder for each.
     for c, scen_settings_dict in to_run:
@@ -2009,12 +2078,13 @@ def main(
         # Set object attribute indicating if the PG unit retirement data bug should be
         # replicated.
         gc.pg_unit_bug = pg_unit_bug
-        # %%
 
         # gc.fuel_prices already spans all years. We assume any added fuels show
         # up in the last year of the study. Then add_user_fuel_prices() adds them
         # to all years of the study (it only accepts one price for all years).
         all_fuel_prices = add_user_fuel_prices(final_year_settings, gc.fuel_prices)
+
+        # %%
 
         # generate Switch input tables from the PowerGenome settings/data
         generator_and_load_files(

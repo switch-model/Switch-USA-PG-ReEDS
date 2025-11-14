@@ -1,21 +1,9 @@
 # %% #####################################
 # setup
-
-"""
-create extra_inputs/current_emission_policies.csv
-with current state and regional level clean energy
-standards and carbon limits
-
-output file has structure
-case_id,year,region,ESR_1,ESR_2,CO_2_Cap_Zone_1,CO_2_Max_Mtons_1,CO_2_Max_tons_MWh_1
-all,2030,NENGREST,0.529,0.289,1,8.59,-1
-all,2030,NENG_CT,0.634,0,1,2.31,-1
-all,2030,NENG_ME,0.819,0,1,1.29,-1
-"""
-
 print("Loading libraries")
 import sys, os, re, fnmatch
 from pathlib import Path
+from collections import defaultdict
 
 import pandas as pd
 import ruamel.yaml
@@ -216,7 +204,21 @@ def update_model_tag_names(new_tags, prefix=None):
 
 # %% #####################################
 # ESR target
-# columns: case_id,year,region,ESR_1,ESR_2
+# columns: case_id,year,region,ESR_1,ESR_2,UREC_Limit_ESR_1,UREC_Limit_ESR_2
+# note: UREC_Limit columns are an extension for Switch and will probably be
+# ignored when creating GenX inputs
+
+"""
+create extra_inputs/current_emission_policies.csv
+with current state and regional level clean energy
+standards and carbon limits
+
+output file has structure 
+case_id,year,region,ESR_1,ESR_2,CO_2_Cap_Zone_1,CO_2_Max_Mtons_1,CO_2_Max_tons_MWh_1,UREC_Limit_ESR_1,UREC_Limit_ESR_2
+all,2030,NENGREST,0.529,0.289,1,8.59,-1
+all,2030,NENG_CT,0.634,0,1,2.31,-1
+all,2030,NENG_ME,0.819,0,1,1.29,-1
+"""
 
 esr_dfs = []
 for prog in ["ces", "rps"]:
@@ -238,6 +240,19 @@ for prog in ["ces", "rps"]:
     frac = frac.query("target > 0")
     esr_dfs.append(frac)
 
+    # add limits on out-of-state fractions for URECs as if they were a different
+    # ESR (starting with "UREC_Limit_")
+    oos_limit = pd.read_csv(
+        "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/state_policies/oosfrac.csv"
+    ).set_index("*st")["value"]
+    oos = (
+        frac.assign(program="UREC_Limit_" + frac["program"])
+        .assign(target=frac["st"].map(oos_limit))
+        .dropna(subset="target")
+    )
+    esr_dfs.append(oos)
+
+
 esr_long = pd.concat(esr_dfs).merge(region_info[["st", "region"]], on="st")
 esr_wide = esr_long.pivot(index=["year", "region"], values="target", columns="program")
 esr_wide = esr_wide[sorted(esr_wide.columns)]
@@ -252,20 +267,21 @@ esr_wide = esr_wide[sorted(esr_wide.columns)]
 # plus everything labeled NUCLEAR, HYDRO, CCS or CANADA, except those listed in
 # https://github.com/NREL/ReEDS-2.0/blob/main/inputs/state_policies/techs_banned_ces.csv
 # (see https://github.com/NREL/ReEDS-2.0/blob/92e8fa7cc9f870006ca2df52d98fd11f1db68dbe/b_inputs.gms#L3087)
-# TODO: finer-scale CES rules later in the file, based on emission rates of technologies
 # After gathering eligible ReEDS technologies, we convert them to PG technology terms
 # to generate the eligibility flags (as a .yml file)
+# TODO: finer-scale CES rules later in the file, based on emission rates of technologies
 techs = pd.read_csv(
     "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/tech-subset-table.csv"
 )
 techs = techs.rename(columns={techs.columns[0]: "reeds_tech"})
 
+# fmt: off
 # convert tech ranges like dr_shed_1*dr_shed_2 into separate rows
 pat = re.compile(r"^(?P<prefix>.+?)_(?P<start>\d+)\*(?P=prefix)_(?P<stop>\d+)$")
-
-
 def expand_label(s: str) -> list[str]:
-    # convert "tech_x_1*tech_x_3" into ["tech_x_1", "tech_x_2", "tech_x_3"]
+    """
+    convert "tech_x_1*tech_x_3" into ["tech_x_1", "tech_x_2", "tech_x_3"]
+    """
     m = pat.match(s)
     if not m:
         return [s]  # no range; keep as-is
@@ -273,6 +289,7 @@ def expand_label(s: str) -> list[str]:
     start = int(m.group("start"))
     stop = int(m.group("stop"))
     return [f"{pre}_{i}" for i in range(start, stop + 1)]
+# fmt: on
 
 
 techs["reeds_tech_list"] = techs["reeds_tech"].apply(expand_label)
@@ -316,17 +333,53 @@ prog_rules = {
     "ces": (ce_techs, [rps_ban, ces_ban]),
 }
 
+# Build dicts showing which states can send RECs to each state on a bundled or unbundled basis
+# allowed trade between states (0=none, 1=bundled+unbundled, 2=bundled)
+# trade direction is col (ast) -> row (st)
+# see https://github.com/NREL/ReEDS-2.0/blob/92e8fa7cc9f870006ca2df52d98fd11f1db68dbe/b_inputs.gms#L3034)
+# note: the table allows trade from each state to itself, but we treat that as local, so ignore
+trade_table = pd.read_csv(
+    "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/state_policies/rectable.csv",
+)
+trade_partners = trade_table.melt(
+    id_vars="st", var_name="ast", value_name="trade"
+).query("st != ast and trade > 0")
+bundled_partners = defaultdict(list)
+unbundled_partners = defaultdict(list)
+for r in trade_partners.itertuples():
+    bundled_partners[r.st].append(r.ast)
+    if r.trade == 1:
+        unbundled_partners[r.st].append(r.ast)
+
+# build dataframes with eligible techs for each state/program, incl. REC trade
 el_dfs = []
 for st, grp in esr_long[["st", "prog"]].drop_duplicates().groupby("st"):
-    # make dataframes with eligible techs for each state/program
     for idx, st, prog in grp.itertuples():
         techs, bans = prog_rules[prog]
         # filter out unwanted techs for this st
         for ban in bans:
             techs = techs[~techs.isin(ban.get(st, []))]
-        el_dfs.append(
-            pd.DataFrame({"st": st, "program": f"ESR_{st}_{prog}", "reeds_tech": techs})
+        local_techs = pd.DataFrame(
+            {"st": st, "program": f"ESR_{st}_{prog}", "reeds_tech": techs}
         )
+        el_dfs.append(local_techs)
+        # add trade partners (create rows indicating that the same techs in a partner state
+        # can ship recs to a version of this program with "_bundled" or "_unbundled" appended,
+        # e.g., techs that would be eligible for ESR_CA_rps but are in AZ are
+        # marked eligible for ESR_CA_rps_bundled and ESR_CA_rps_unbundled)
+        # note: "X_bundled" and "X_unbundled" columns are an extension for Switch;
+        # they will probably be automatically omitted from GenX outputs since they
+        # don't have a corresponding requirement target (and trade will not be possible)
+        for tag, partners in [
+            ("bundled", bundled_partners[st]),
+            ("unbundled", unbundled_partners[st]),
+        ]:
+            for ast in partners:
+                techs = local_techs.copy()
+                techs["st"] = ast
+                techs["program"] += "_" + tag
+                el_dfs.append(techs)
+
 esr_el = pd.concat(el_dfs, ignore_index=True)
 
 esr_el = esr_el.merge(pg_reeds_tech_map, on="reeds_tech")
@@ -552,11 +605,19 @@ for file, cdf in [
 #           max_mw: 14000
 
 wb = load_860m(settings)
-wind = wb["operating"].query('energy_source_code_1 == "WND" and operating_year >= 2015')
+wind = wb["operating"].query('energy_source_code_1 == "WND"')
 max_wind_growth = float(
-    wind.groupby("operating_year")["winter_capacity_mw"].sum().max()
+    wind.query("operating_year >= 2015")
+    .groupby("operating_year")["winter_capacity_mw"]
+    .sum()
+    .max()
 )
-baseline_wind = float(wind.query("operating_year <= 2024")["winter_capacity_mw"].sum())
+# TODO: maybe have different baselines for each future year as retirements roll through?
+baseline_wind = float(
+    wind.query("operating_year <= 2024 and planned_retirement_year.isna()")[
+        "winter_capacity_mw"
+    ].sum()
+)
 
 # write caps to the settings_management yaml entry in format above
 ss = read_yaml(yaml_files["scenario_settings"])

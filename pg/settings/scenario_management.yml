@@ -108,7 +108,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 88266.6
+          max_mw: 151941.5
   2025:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -127,7 +127,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 102754.6
+          max_mw: 166429.5
   2026:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -152,7 +152,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 117242.6
+          max_mw: 180917.5
   2027:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -177,7 +177,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 131730.6
+          max_mw: 195405.5
   2028:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -205,7 +205,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 146218.6
+          max_mw: 209893.5
   2029:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -236,7 +236,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 160706.6
+          max_mw: 224381.5
   2030:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -270,7 +270,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 175194.6
+          max_mw: 238869.5
   2035:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -304,7 +304,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 247634.6
+          max_mw: 311309.5
   2040:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -338,7 +338,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 320074.6
+          max_mw: 383749.5
   2045:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -372,7 +372,7 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 392514.6
+          max_mw: 456189.5
   2050:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -406,4 +406,4 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 464954.6
+          max_mw: 528629.5

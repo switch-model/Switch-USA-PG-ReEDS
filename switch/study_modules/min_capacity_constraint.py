@@ -48,11 +48,14 @@ def define_components(m):
 
     # enforce constraint on total installed capacity in each program in each period
     def rule(m, pr, pe):
+        min_capacity_requirement = m.min_cap_mw[pr, pe]
+        if min_capacity_requirement == 0:
+            # avoid errors when there are no generators and no minimum cap
+            return Constraint.Skip
 
         build_capacity = sum(
             m.GenCapacity[g, pe] for g in m.GENS_IN_MIN_CAP_PROGRAM[pr]
         )
-        min_capacity_requirement = m.min_cap_mw[pr, pe]
 
         # define and return the constraint
         return build_capacity >= min_capacity_requirement

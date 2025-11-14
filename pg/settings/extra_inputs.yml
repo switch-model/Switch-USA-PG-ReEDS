@@ -18,7 +18,11 @@ emission_policies_fn: emission_policies_current.csv
 capacity_limit_spur_fn: resource_capacity_spur.csv # Max capacity and spur line distance for each renewable resource
 demand_segments_fn: demand_segments_voll.csv
 misc_gen_inputs_fn: misc_gen_inputs.csv
-user_transmission_costs: network_costs_ReEDS.csv
+# original version (network_costs_ReEDS.csv) matches reeds_ba_tx_NARIS2024_avg.csv
+# but we use reeds_ba_tx_REFS2009_avg.csv, which has some additional lines that
+# get dropped because of this, so we use a quick-patched version (dump in the 
+# missing lines and assign average params to them)
+user_transmission_costs: network_costs_ReEDS_patched_for_REFS2009.csv
 # the reeds_ba_tx_NARIS_avg data don't have enough transmission to serve p119
 # during certain timepoints in a 2024 model, so we use REFS2009 instead. see
 # cryptic documentation at

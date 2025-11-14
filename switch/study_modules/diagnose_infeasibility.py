@@ -120,12 +120,13 @@ def post_solve(m, outputs_dir):
     # info to see them. This is because these are diagnostic messages, not
     # errors, and because it prevents chatter from the test suite.
     if unsatisfied_constraints:
-        with open(os.path.join(outputs_dir, "unsatisfied_constraints.csv")) as f:
+        m.logger.info("\nWARNING: some constraints were violated:")
+        for name, val in unsatisfied_constraints:
+            m.logger.info(f"{name} violated by {val} units")
+        with open(os.path.join(outputs_dir, "unsatisfied_constraints.csv"), "w") as f:
             f.write("constraint,violation\n")
-            m.logger.info("\nWARNING: some constraints were violated:")
             for name, val in unsatisfied_constraints:
                 f.write(f'"{name}",{val}\n')
-                m.logger.info(f"{name} violated by {val:.4g} units.")
     else:
         m.logger.info(
             "\n"
@@ -141,11 +142,10 @@ def post_solve(m, outputs_dir):
         "\n"
         + rewrap(
             f"""
-            NOTE: Module {__name__} was used for this run.
-
-            This minimizes violations of constraints, ignoring financial costs.
-            Results from this run (other than constraint violations) should not
-            be used for analysis.
+            NOTE: Module {__name__} was used for this run. This minimizes
+            violations of constraints, ignoring financial costs. Results from
+            this run (other than constraint violations) should not be used for
+            analysis.
             """
         )
         + "\n"
