@@ -258,8 +258,8 @@ You can solve individual cases like this:
 cd switch
 # all-weather-years (not actually solvable)
 switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
-# 20 x 1-day sample timeseries (good test case)
-switch solve --inputs-dir in/2030/s20)1 --outputs-dir out/2030/s20x1
+# 4 x 1-day sample timeseries (good test case)
+switch solve --inputs-dir in/2030/s4x1 --outputs-dir out/2030/s4x1
 ```
 
 (If you are using PowerShell in Windows, you will need to type `switch.exe` to
