@@ -407,19 +407,31 @@ renewables_clusters:
 # chars on Windows and OneDrive
 shorten_cluster_cache_paths: true
 
-# The atb_modifers parameter is used here to add a VOM cost to battery technologies. PNNL
-# reports a 0.03 cents per kWh VOM, which is split between Var_OM_Cost_per_MWh and
-# Var_OM_Cost_per_MWh_In (https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-28866.pdf).
-# Because Var_OM_Cost_per_MWh_In is not part of the ATB database the value should be set
-# directly rather than using a list of [operator, value]. Operators ("add", "mul",
-# "truediv", and "sub") can only be used to modify values that exist in the ATB database.
+# The atb_modifers parameter is used here to Operators ("add", "mul", "truediv",
+# and "sub") can only be used to modify values that exist in the ATB database
+# (try `select distinct param technology_costs_nrelatb;` in the database pointed
+# to by PG_DB setting). Values that are not part of the ATB database the value
+# should be set directly rather than using a list of [operator, value].
 atb_modifiers:
   batteries:
     technology: Utility-Scale Battery Storage
     tech_detail: Lithium Ion
+    # PNNL reports a $0.3/MWh VOM, which is split between Var_OM_Cost_per_MWh
+    # and Var_OM_Cost_per_MWh_In (end of 3.1.6 in
+    # https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-28866.pdf).
     Var_OM_Cost_per_MWh: [add, 0.15]
-    Var_OM_Cost_per_MWh_In: 0.15
-  # Switch CC and CT baseline costs from ATB to GridLab regression for 2030 read
+    Var_OM_Cost_per_MWh_In: 0.15  # not in database, so set directly
+    # 30% federal ITC applies to batteries and geothermal
+    capex_mw: [mul, 0.7]
+    capex_mwh: [mul, 0.7]
+
+  geothermal:
+    technology: Geothermal  # not currently present in ATB
+    tech_detail: "*"
+    # 30% federal ITC applies to batteries and geothermal
+    capex_mw: [mul, 0.7]
+
+  # Change CC and CT baseline costs from ATB to GridLab regression for 2030 read
   # from Figures 2-3 of
   # https://gridlab.org/portfolio-item/gas-tubine-cost-report/ We use absolute
   # dollars/MW (presumed to be approx 2024$ and later subject to inflation(?))

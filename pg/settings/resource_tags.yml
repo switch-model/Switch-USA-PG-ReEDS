@@ -359,13 +359,13 @@ model_tag_values:
     # no spinning reserves from the dummy generators created for the exports
     us_exports: 0
   Can_Retire:
-    # Allow economic retirement of existing thermal plants (may pick up some new
+    # Allow economic retirement of existing fossil plants (may pick up some new
     # ones, too, but that shouldn't matter, since they can't retire the year
     # they are built.)
     Biomass: 1
     Coal: 1
     Natural Gas: 1
-    Nuclear: 1
+    Nuclear: 0
     peaker: 1
     Petroleum: 1
   MaxCapTag_WindGrowth:

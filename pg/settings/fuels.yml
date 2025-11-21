@@ -99,3 +99,168 @@ fuel_emission_factors:
   naturalgas: 0.05306
   coal: 0.09552 # EIA value for electric power sector
   distillate: 0.07315
+
+# Apply NYMEX gas prices for 2030 as of November 2025
+# We calculate NYMEX weighted average for 2030, then convert to 2024$, then
+# lookup EIA AEO 2025 gas price and calculate the ratio:
+# - 2024 monthly gas consumption (Bcf) from Table 2 (ngm02vmall.xls) at https://www.eia.gov/naturalgas/monthly/:
+#   1136.992, 912.712, 919.206, 879.88, 1047.675, 1238.441, 1527.648, 1496.49, 1222.596, 1070.511, 987.483, 1036.809
+# - 2030 monthly NYMEX gas futures settlement prices ($/MMBtu) as of 11/20/25 from
+#   https://www.cmegroup.com/markets/energy/natural-gas/natural-gas.settlements.html:
+#   4.603, 4.308, 3.688, 3.215, 3.172, 3.305, 3.45, 3.507, 3.492, 3.579, 3.789, 4.225
+# - CPI in Sept 2025 from https://data.bls.gov/timeseries/CUUR0000SA0 (series used by PowerGenome): 324.8
+# - mean CPI in 2024 from https://data.bls.gov/timeseries/CUUR0000SA0 (method and series used by PowerGenome): 313.69 
+#   (also see powergenome/data/cpi_data)
+# - weighted average 2030 NYMEX gas price, Nov 2025 dollars: $4.014/MMBtu
+# - weighted average 2030 NYMEX gas price, 2024 dollars: $3.877/MMBtu
+# - AEO 2025 reference HH gas price for 2030, 2024 dollars: $3.08/MMBtu
+#   - from https://www.eia.gov/outlooks/aeo/data/browser/#/?id=1-AEO2025&region=0-0&cases=ref2025&start=2023&end=2050&f=Q&linechart=~ref2025-d032025a.44-1-AEO2025&ctype=linechart&sourcekey=0: 
+# - NYMEX/2025Ref Henry Hub multiplier: 1.259
+# (note: We should probably use either a simple average from NYMEX instead of
+# weighted average or else weight it by total natural gas sales in the US each
+# month, not sales for electricity production. It's not clear whether the annual
+# Henry Hub gas prices reported in AEO are meant to be simple average over
+# months of the year or volumetric average as sold. It may be a simple average
+# and then the AEO regional tables translate that into costs per unit of gas
+# consumed for electricity production in each region.) 
+
+# Changed to simpler form: 
+# Simple mean Henry Hub price for Oct 2020-Sep 2025 in 2024$ (using CPI-U deflator): 3.901
+# AEO 2025 reference HH gas price for 2030 in 2024$: $3.08/MMBtu
+# ratio: 1.267
+regional_fuel_adjustments:
+  p1: {naturalgas: [mul, 1.267]}
+  p2: {naturalgas: [mul, 1.267]}
+  p3: {naturalgas: [mul, 1.267]}
+  p4: {naturalgas: [mul, 1.267]}
+  p5: {naturalgas: [mul, 1.267]}
+  p6: {naturalgas: [mul, 1.267]}
+  p7: {naturalgas: [mul, 1.267]}
+  p8: {naturalgas: [mul, 1.267]}
+  p9: {naturalgas: [mul, 1.267]}
+  p10: {naturalgas: [mul, 1.267]}
+  p11: {naturalgas: [mul, 1.267]}
+  p12: {naturalgas: [mul, 1.267]}
+  p13: {naturalgas: [mul, 1.267]}
+  p14: {naturalgas: [mul, 1.267]}
+  p15: {naturalgas: [mul, 1.267]}
+  p16: {naturalgas: [mul, 1.267]}
+  p17: {naturalgas: [mul, 1.267]}
+  p18: {naturalgas: [mul, 1.267]}
+  p19: {naturalgas: [mul, 1.267]}
+  p20: {naturalgas: [mul, 1.267]}
+  p21: {naturalgas: [mul, 1.267]}
+  p22: {naturalgas: [mul, 1.267]}
+  p23: {naturalgas: [mul, 1.267]}
+  p24: {naturalgas: [mul, 1.267]}
+  p25: {naturalgas: [mul, 1.267]}
+  p26: {naturalgas: [mul, 1.267]}
+  p27: {naturalgas: [mul, 1.267]}
+  p28: {naturalgas: [mul, 1.267]}
+  p29: {naturalgas: [mul, 1.267]}
+  p30: {naturalgas: [mul, 1.267]}
+  p31: {naturalgas: [mul, 1.267]}
+  p32: {naturalgas: [mul, 1.267]}
+  p33: {naturalgas: [mul, 1.267]}
+  p34: {naturalgas: [mul, 1.267]}
+  p35: {naturalgas: [mul, 1.267]}
+  p36: {naturalgas: [mul, 1.267]}
+  p37: {naturalgas: [mul, 1.267]}
+  p38: {naturalgas: [mul, 1.267]}
+  p39: {naturalgas: [mul, 1.267]}
+  p40: {naturalgas: [mul, 1.267]}
+  p41: {naturalgas: [mul, 1.267]}
+  p42: {naturalgas: [mul, 1.267]}
+  p43: {naturalgas: [mul, 1.267]}
+  p44: {naturalgas: [mul, 1.267]}
+  p45: {naturalgas: [mul, 1.267]}
+  p46: {naturalgas: [mul, 1.267]}
+  p47: {naturalgas: [mul, 1.267]}
+  p48: {naturalgas: [mul, 1.267]}
+  p49: {naturalgas: [mul, 1.267]}
+  p50: {naturalgas: [mul, 1.267]}
+  p51: {naturalgas: [mul, 1.267]}
+  p52: {naturalgas: [mul, 1.267]}
+  p53: {naturalgas: [mul, 1.267]}
+  p54: {naturalgas: [mul, 1.267]}
+  p55: {naturalgas: [mul, 1.267]}
+  p56: {naturalgas: [mul, 1.267]}
+  p57: {naturalgas: [mul, 1.267]}
+  p58: {naturalgas: [mul, 1.267]}
+  p59: {naturalgas: [mul, 1.267]}
+  p60: {naturalgas: [mul, 1.267]}
+  p61: {naturalgas: [mul, 1.267]}
+  p62: {naturalgas: [mul, 1.267]}
+  p63: {naturalgas: [mul, 1.267]}
+  p64: {naturalgas: [mul, 1.267]}
+  p65: {naturalgas: [mul, 1.267]}
+  p66: {naturalgas: [mul, 1.267]}
+  p67: {naturalgas: [mul, 1.267]}
+  p68: {naturalgas: [mul, 1.267]}
+  p69: {naturalgas: [mul, 1.267]}
+  p70: {naturalgas: [mul, 1.267]}
+  p71: {naturalgas: [mul, 1.267]}
+  p72: {naturalgas: [mul, 1.267]}
+  p73: {naturalgas: [mul, 1.267]}
+  p74: {naturalgas: [mul, 1.267]}
+  p75: {naturalgas: [mul, 1.267]}
+  p76: {naturalgas: [mul, 1.267]}
+  p77: {naturalgas: [mul, 1.267]}
+  p78: {naturalgas: [mul, 1.267]}
+  p79: {naturalgas: [mul, 1.267]}
+  p80: {naturalgas: [mul, 1.267]}
+  p81: {naturalgas: [mul, 1.267]}
+  p82: {naturalgas: [mul, 1.267]}
+  p83: {naturalgas: [mul, 1.267]}
+  p84: {naturalgas: [mul, 1.267]}
+  p85: {naturalgas: [mul, 1.267]}
+  p86: {naturalgas: [mul, 1.267]}
+  p87: {naturalgas: [mul, 1.267]}
+  p88: {naturalgas: [mul, 1.267]}
+  p89: {naturalgas: [mul, 1.267]}
+  p90: {naturalgas: [mul, 1.267]}
+  p91: {naturalgas: [mul, 1.267]}
+  p92: {naturalgas: [mul, 1.267]}
+  p93: {naturalgas: [mul, 1.267]}
+  p94: {naturalgas: [mul, 1.267]}
+  p95: {naturalgas: [mul, 1.267]}
+  p96: {naturalgas: [mul, 1.267]}
+  p97: {naturalgas: [mul, 1.267]}
+  p98: {naturalgas: [mul, 1.267]}
+  p99: {naturalgas: [mul, 1.267]}
+  p100: {naturalgas: [mul, 1.267]}
+  p101: {naturalgas: [mul, 1.267]}
+  p102: {naturalgas: [mul, 1.267]}
+  p103: {naturalgas: [mul, 1.267]}
+  p104: {naturalgas: [mul, 1.267]}
+  p105: {naturalgas: [mul, 1.267]}
+  p106: {naturalgas: [mul, 1.267]}
+  p107: {naturalgas: [mul, 1.267]}
+  p108: {naturalgas: [mul, 1.267]}
+  p109: {naturalgas: [mul, 1.267]}
+  p110: {naturalgas: [mul, 1.267]}
+  p111: {naturalgas: [mul, 1.267]}
+  p112: {naturalgas: [mul, 1.267]}
+  p113: {naturalgas: [mul, 1.267]}
+  p114: {naturalgas: [mul, 1.267]}
+  p115: {naturalgas: [mul, 1.267]}
+  p116: {naturalgas: [mul, 1.267]}
+  p117: {naturalgas: [mul, 1.267]}
+  p118: {naturalgas: [mul, 1.267]}
+  p119: {naturalgas: [mul, 1.267]}
+  p120: {naturalgas: [mul, 1.267]}
+  p121: {naturalgas: [mul, 1.267]}
+  p122: {naturalgas: [mul, 1.267]}
+  p123: {naturalgas: [mul, 1.267]}
+  p124: {naturalgas: [mul, 1.267]}
+  p125: {naturalgas: [mul, 1.267]}
+  p126: {naturalgas: [mul, 1.267]}
+  p127: {naturalgas: [mul, 1.267]}
+  p128: {naturalgas: [mul, 1.267]}
+  p129: {naturalgas: [mul, 1.267]}
+  p130: {naturalgas: [mul, 1.267]}
+  p131: {naturalgas: [mul, 1.267]}
+  p132: {naturalgas: [mul, 1.267]}
+  p133: {naturalgas: [mul, 1.267]}
+  p134: {naturalgas: [mul, 1.267]}
+
