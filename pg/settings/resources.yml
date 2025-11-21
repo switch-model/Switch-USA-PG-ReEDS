@@ -22,11 +22,10 @@ eia_data_years:
 # PowerGenome.
 eia_860m_fn: july_generator2025.xlsx
 
-# URL from which to download the Global Energy Monitor Global Coal Plant Tracker workbook
-# See https://globalenergymonitor.org/projects/global-coal-plant-tracker/download-data/ to
-# get a URL emailed.
-
-GEM_coal_tracker_url: https://globalenergymonitor.org/wp-content/uploads/2025/07/Global-Coal-Plant-Tracker-July-2025.xlsx
+# Global Energy Monitor, Global Coal Plant Tracker, July 2025 release.
+# (released under CC-By 4.0)
+# See https://globalenergymonitor.org/projects/global-coal-plant-tracker/download-data/
+GEM_coal_tracker_fn: Global-Coal-Plant-Tracker-July-2025.xlsx
 
 # CAPACITY TYPE
 capacity_col: winter_capacity_mw

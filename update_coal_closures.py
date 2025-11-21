@@ -1,3 +1,4 @@
+from pathlib import Path
 import openpyxl
 import pandas as pd
 import numpy as np
@@ -19,14 +20,10 @@ eia_860m_fn = settings.get("eia_860m_fn")
 if not eia_860m_fn:
     raise ValueError(f"No `eia_860m_fn` parameter defined in {settings_dir}")
 
-GEM_coal_tracker_url = settings.get("GEM_coal_tracker_url")
-if not GEM_coal_tracker_url:
-    raise ValueError(
-        f"No `GEM_coal_tracker_url` parameter defined in {settings_dir}. "
-        "See https://globalenergymonitor.org/projects/global-coal-plant-tracker/download-data/ "
-        "for a download link."
-    )
-
+# GEM_coal_tracker_url = settings.get("GEM_coal_tracker_url")
+GEM_coal_tracker_file = (
+    Path(settings["input_folder"]) / "Global-Coal-Plant-Tracker-July-2025.xlsx"
+)
 
 # Force re-download of the EIA workbook (will also force re-creation of
 # the cached "operating" worksheet next time PowerGenome runs)
@@ -53,7 +50,7 @@ eia = eia[eia["Technology"].str.contains("Coal")]
 eia = eia[eia["Nameplate Capacity (MW)"] >= 30]
 
 # get data from GEM coal closures workbook
-gem = pd.read_excel(GEM_coal_tracker_url, sheet_name="Units")
+gem = pd.read_excel(GEM_coal_tracker_file, sheet_name="Units")
 gem["gem_row"] = gem.index + 2  # 0->1 and skip header
 gem = gem[gem["Country/Area"] == "United States"].copy()
 # strip out extra "timepoint 1" notations
