@@ -213,12 +213,13 @@ needed):
 ```
 # setup one example case (specify case-id and year)
 
-# (s20x1 uses our standard assumptions and 20x1 day time sampling)
+# s20x1 uses our standard assumptions and 20x1 day time sampling;
+# use s4x1 if you need a smaller and faster model for testing.
 python pg_to_switch.py pg/settings switch/in/ --case-id s20x1 --year 2030
 
 # (p1 uses all weather years (2006-13) as a single timeseries, which can't
 # be solved but is relatively quick to generate and useful for inspection)
-python pg_to_switch.py pg/settings switch/in/ --case-id s20x1 --year 2030
+python pg_to_switch.py pg/settings switch/in/ --case-id p1 --year 2030
 ```
 
 The `pg_to_switch.py` script uses settings from the first directory you specify
@@ -256,10 +257,10 @@ You can solve individual cases like this:
 
 ```
 cd switch
-# all-weather-years (not actually solvable)
-switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
 # 4 x 1-day sample timeseries (good test case)
 switch solve --inputs-dir in/2030/s4x1 --outputs-dir out/2030/s4x1
+# all-weather-years (not actually solvable)
+switch solve --inputs-dir in/2030/p1 --outputs-dir out/2030/p1
 ```
 
 (If you are using PowerShell in Windows, you will need to type `switch.exe` to
