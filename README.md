@@ -169,6 +169,14 @@ conda activate switch-pg-reeds
 # download upstream data used by PowerGenome
 python download_pg_data.py
 
+# if you've previously run pg_to_switch.py in this directory, run 
+# one of these commands to clear the cluster cache and use the 
+# newer resource groups:
+# macOS / Linux:
+rm -rf pg/extra_inputs/cluster_assignments
+# Windows:
+rmdir /s /q pg\extra_inputs\cluster_assignments
+
 # apply expected coal plant retirements to the EIA 860m workbook
 python update_coal_closures.py
 
