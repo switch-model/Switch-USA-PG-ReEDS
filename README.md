@@ -284,7 +284,8 @@ git pull --recurse-submodules
 
 The data used in this study fall into two categories:
 
-- Settings and data stored in this github repository (https://github.com/switch-model/Switch-USA-PG-ReEDS)
+- Settings and data stored in this github repository itself
+  (https://github.com/switch-model/Switch-USA-PG-ReEDS)
 - External data downloaded or created by the scripts discussed above
 
 This section provides some information on the origin of these. Users do not need
@@ -297,28 +298,33 @@ or modify this workflow.
 
 The settings files (`pg/` directory of this repository) were originally prepared
 by Greg Schivley in May 2025 and uploaded to a reeds-ba branch of the
-PowerGenome/PowerGenome-examples repository. Matthias Fripp downloaded them from
+PowerGenome/PowerGenome-examples repository. Matthias Fripp downloaded them to
+`pg/`from
 https://github.com/PowerGenome/PowerGenome-examples/tree/reeds-ba/ReEDS-BA and
-manually added settings to pg/settings/*.yml to customize it for this study. It
-is probably best to think of the *.yml files as being custom-written to define
-the inputs that are wanted for this particular study. Parts of these are also
-written automatically by `make_emission_policies.py`, discussed below.
+manually added or changed settings in pg/settings/*.yml to define inputs for
+this study. Parts of these files are also written automatically by
+`make_emission_policies.py`, discussed below.
 
 ## External data
 
-The most important category of external data are the standard PowerGenome inputs
-and resource profiles created by Greg Schivley. These are documented in
+The most important category of external data are the standard PowerGenome input
+data and resource profiles created by Greg Schivley. These are documented in
 pg_data.yml and downloaded by the `download_pg_data.py` script. 
 
-As noted in pg_data.yml, some of the files in the resource_groups folder had errors 
+As noted in pg_data.yml, several files in the resource_groups folder had errors
 when downloaded from Greg Schivley's Google Drive, so we patched them with
-`patch_pg_existing_resource_groups.py` and then a few manually (as noted
-in that script), and uploaded the patched folders to Matthias Fripp's Google
-Drive for downloading by `download_pg_data.py`.
+`patch_pg_resource_groups.py` and uploaded the patched folders to Matthias
+Fripp's Google Drive for downloading by `download_pg_data.py`. If you would like
+to re-create these files directly from Greg Schivley's versions, you can just
+run `python patch_pg_resource_groups.py`. That will download data from Greg
+Schivley's Google Drive and use it to create
+`pg_data/existing_resource_groups-patched/` and `pg_data/ReEDS-cpas-patched/`.
+(In this case, you can remove references to these folders from the
+`download_gdrive_files` section of `pg_data.yml`.)
 
-Similarly, pg_data.yml points to a "retro" version of the PUDL database (mostly
-from EIA) that Matthias Fripp created by copying data from the August 2025
-edition of PUDL into a new sqlite database with the PUDL schema used before
+Similarly, `pg_data.yml` points to a "retro" version of the PUDL database
+(mostly from EIA) that Matthias Fripp created by copying data from the August
+2025 edition of PUDL into a new sqlite database with the PUDL schema used before
 December 2023. The `make_retro_pudl_data.py` script does this. See that script
 for additional information.
 
@@ -344,8 +350,8 @@ ensure that borders were correct). **International exports** come from EIA
 interchange data via PUDL. This model treats them as additional loads in the
 exporting zone.
 
-**Clean energy standards (CES), Renewable Portfolio Standards (RPS),
-minimum/maximum capacity requirements and carbon policies.** The
+**Clean energy standards (CES), Renewable Portfolio Standards (RPS),**
+**minimum/maximum capacity requirements and carbon policies.** The
 `make_emission_policies.py` script implements these by reading rules from the
 ReEDS repository on github.com and creating several files and .yml sections with
 equivalent terms in the pg/settings and pg/extra_inputs directories. This also

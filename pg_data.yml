@@ -58,27 +58,18 @@ download_gdrive_folders:
 # retrieve individual files from Google Drive
 # note: .zip files will be replaced by their expanded version
 download_gdrive_files:
-  # new pudl data using the sqlite schema from before 2023-12 and earlier, created by make_retro_pudl_data.py
+  # "retro" pudl data using the sqlite schema from before 2023-12 with data from 2025-08, created by make_retro_pudl_data.py
   pg_data/pudl.2025_08.sqlite.zip: https://drive.google.com/file/d/1jYg9mqBx7rG22r_HHEJoZxNK0wgmnhCl/view?usp=drive_link
   # shared by Greg Schivley via slack 2025-05-12 (ReEDS compatible)
   pg_data/pg_misc_tables_efs_2025.3.sqlite.zip: https://drive.google.com/file/d/1TR-bQ0vnE3pgNsl0opk03PFiPBkGIMB3/view?usp=sharing
   # standard PowerGenome data
   pg_data/efs_files_utc.zip: https://drive.google.com/file/d/1dWA35bQpPksnSb6auybMbrIqyaBG6wBM/view?usp=drive_link
-  # standard PowerGenome data (IPM basis)
-  # pg_data/cambium_dg_data.zip: https://drive.google.com/file/d/1nbhWwOsNeOtcUew9Mn4QGuAtCsZo0VZ2/view?usp=drive_link
-  # Remaining files are for ReEDS zones from https://drive.google.com/drive/folders/1SDj2XuS-GYRpsWto5i1yICOYP-xENskk 
+  # Files below are for ReEDS zones from https://drive.google.com/drive/folders/1SDj2XuS-GYRpsWto5i1yICOYP-xENskk 
   # (shared by Greg Schivley via Slack 2025-05-13). 
   # Greg Schivley created these profiles in May 2025 by applying NREL's ReV tool to sites previously
   # identified using Princeton's longstanding screening and interconnection tools. These replace
   # profiles from Vibrant Clean Energy for 2012 previously used for those sites. ReV converts
   # meteorological data from Wind Toolkit and NSRDB into power production profiles.
-  # These need some repairs after downloading; see patch_pg_existing_resource_groups.py
-  # pg_data/resource_groups/ReEDS-cpas.zip: https://drive.google.com/file/d/1bZQPwEsgL11g_KWeniJ41YZhUMEpcVKW/view?usp=drive_link
-  # pg_data/resource_groups/existing_resource_groups_20250513.zip: https://drive.google.com/file/d/1ZXvHnJxftjgWzeF_HXB0uxw3l2cIQsbW/view?usp=drive_link
-  # versions of the two files above, patched by patch_pg_existing_resource_groups.py (stored in https://drive.google.com/drive/folders/11rzMZSKyV4lq6Td6TPvvHfdI9WC4neLL?usp=drive_link)
-  pg_data/resource_groups/ReEDS-cpas-fixed.zip: https://drive.google.com/file/d/1R7UejNF0C0yEMEKDSQp74fo4BZkzyBq8/view?usp=drive_link
-  pg_data/resource_groups/existing_resource_groups_20250513-fixed.zip: https://drive.google.com/file/d/1UWyQ5w-46FZWaPjzpaTBVpTtgiFH-ajT/view?usp=drive_link
-  
   # All of the *_rev_profiles.parquet and *_site_mapping.parquet files in the top level of this Gooogle Drive
   pg_data/profiles/solar_site_mapping_20240801.parquet: https://drive.google.com/file/d/18sfwsJzsuiHcwQETobnyzzMCqxKS4n4Z/view?usp=drive_link
   pg_data/profiles/solar_rev_profiles_20240801.parquet: https://drive.google.com/open?id=1ZiVzQVDR60Hy5mRe-i-bmlXb-670kCcu&usp=drive_copy
@@ -89,7 +80,12 @@ download_gdrive_files:
   # NREL dist gen data (referenced from settings/distributed_gen.yml)
   pg_data/NREL-dist-gen/nrel_reeds_distr_pv_2025.2.0.parquet: https://drive.google.com/open?id=1YTs6TS09CJzIh9CwjefXfZfIEzAEvLH2&usp=drive_copy
   pg_data/NREL-dist-gen/nrel_ba_unity_pop_weight.csv: https://drive.google.com/open?id=1C4DkMHFaN1RLfopAQWXlRuoaw3bAL_dc&usp=drive_copy
-
+  # Patched versions of resource group folders; see patch_pg_resource_groups.py
+  # and "replication" section of README.md for more info. (stored in 
+  # https://drive.google.com/drive/folders/11rzMZSKyV4lq6Td6TPvvHfdI9WC4neLL?usp=drive_link)
+  pg_data/resource_groups/ReEDS-cpas-patched.zip: https://drive.google.com/file/d/1dlFY9GqWf8gvMfk8o1niucZFeGXq0FEZ/view?usp=drive_link
+  pg_data/resource_groups/existing_resource_groups-patched.zip: https://drive.google.com/file/d/1z-Cyumft3PXO6JJj7_iYm1x8HAWRIlUE/view?usp=drive_link
+  
 # retrieve individual files from urls, possibly expanding into folders
 # note: .zip files will be replaced by their expanded version, likely
 # using the internal file name instead of the one given here

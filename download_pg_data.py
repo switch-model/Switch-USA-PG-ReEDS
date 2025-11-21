@@ -8,7 +8,7 @@ ones that contain any word specified on the command line, if any, e.g.,
 python download_pg_data.py misc_tables
 """
 
-import sys, zipfile, platform, urllib
+import sys, zipfile, platform, urllib, shutil
 from pathlib import Path
 import gdown, yaml
 
@@ -25,22 +25,26 @@ def unzip_if_needed(filename):
                 # contains one file or one directory; expand in place
                 dest = filepath.parent
             else:
-                # use zip file name as outer subdir
-                dest = filepath.with_suffix(' ')
-                if dest.exists():
+                # use zip file name as outer subdir (replace if already exists)
+                dest = filepath.with_suffix("")
+                if dest.is_file():
                     dest.unlink()
+                elif dest.is_dir():
+                    shutil.rmtree(dest)
             zip_ref.extractall(dest, members=names)
         filepath.unlink()
 
+
 def make_parent(dest):
     Path(dest).parent.mkdir(parents=True, exist_ok=True)
+
 
 def main(filter=[]):
     with open("pg_data.yml", "r") as f:
         settings = yaml.safe_load(f)
 
     # Warn about Windows limit on filenames if needed
-    maximum_path_length = settings.get('maximum_path_length', 0)
+    maximum_path_length = settings.get("maximum_path_length", 0)
     if platform.system == "Windows" and maximum_path_length:
         test_file = Path("x" * maximum_path_length).resolve()
         if len(str(test_file)) > 260:
