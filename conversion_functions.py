@@ -208,26 +208,26 @@ def switch_fuel_cost_table(aeo_fuel_region_map, fuel_prices, regions, year_list)
     """
 
     ref_df = fuel_prices.copy()
-    ref_df = ref_df.loc[
-        ref_df["scenario"].isin(scenario)
-    ]  # use reference scenario for now
     ref_df = ref_df[ref_df["year"].isin(year_list)]
     ref_df = ref_df.drop(["full_fuel_name", "scenario"], axis=1)
 
-    # loop through aeo_fuel_regions.
-    # for each of the ipm regions in the aeo_fuel, duplicate the fuel_prices table while adding ipm column
-    fuel_cost = pd.DataFrame(columns=["year", "price", "fuel", "region", "load_zone"])
-    data = list()
-    for region in aeo_fuel_region_map.keys():
-        df = ref_df.copy()
-        # lookup all fuels available in this region or with no region specified
-        # (generally user-defined fuels added earlier)
-        df = df[df["region"].isin({region, ""})]
-        for ipm in aeo_fuel_region_map[region]:
-            ipm_region = ipm
-            df["load_zone"] = ipm_region
-            fuel_cost = fuel_cost.append(df)
-    #     fuel_cost = fuel_cost.append(data)
+    # Model zones appear as AEO regions if regional_fuel_adjustments is used,
+    # so we add that as a lookup option
+    aeo_zone_map = aeo_fuel_region_map.copy()
+    aeo_zone_map.update(
+        {a: [a] for a in ref_df["region"].unique() if a not in aeo_zone_map}
+    )
+    # Treat aeo_region "" (generally user-defined fuels added earlier) as
+    # applying to all zones.
+    aeo_zone_map[""] = sorted(
+        {z for zones in aeo_fuel_region_map.values() for z in zones}
+    )
+
+    # Duplicate rows from the fuel_prices table for each model zone in that
+    # aeo_region.
+    ref_df["load_zone"] = ref_df["region"].map(aeo_zone_map)
+    fuel_cost = ref_df.explode("load_zone", ignore_index=True)
+
     fuel_cost.rename(columns={"year": "period", "price": "fuel_cost"}, inplace=True)
     fuel_cost = fuel_cost[["load_zone", "fuel", "period", "fuel_cost"]]
     fuel_cost["period"] = fuel_cost["period"].astype(int)
@@ -507,6 +507,10 @@ def infer_gen_energy_source(gen_info, settings):
     def split_fuel(row):
         if row.Fuel.startswith(row.aeo_region + "_"):
             return row.Fuel[len(row.aeo_region) + 1 :]
+        elif row.Fuel.startswith(row.region + "_"):
+            # when users specify `regional_fuel_adjustments`, the model region
+            # is added to the fuel name instead of the AEO region
+            return row.Fuel[len(row.region) + 1 :]
         else:
             return None
 

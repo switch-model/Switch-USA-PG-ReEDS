@@ -112,7 +112,6 @@ def fuel_files(
         fuel_region_map,
         fuel_prices,
         regions,
-        scenario=["reference", "user"],
         year_list=planning_years,
     )
 
@@ -132,10 +131,8 @@ testing: just use variables as-is from main()
 """
 
 
-def generator_and_load_files(
+def generator_fuel_and_load_files(
     gc: GeneratorClusters,
-    all_fuel_prices,
-    pudl_engine: sa.engine,
     scen_settings_dict: dict[dict],
     out_folder: Path,
     pg_engine: sa.engine,
@@ -155,13 +152,32 @@ def generator_and_load_files(
 
     out_folder.mkdir(parents=True, exist_ok=True)
     first_year_settings = first_value(scen_settings_dict)
+    final_year_settings = final_value(scen_settings_dict)
 
     # get tables of generators, organized by model_year or build_year
     # (model_year shows generators active in a particular model year, used for
     # gathering operational data like variable capacity factors; build_year
     # shows gens built in a particular year, used to gather construction data
     # like capital cost and capacity built)
-    gens_by_model_year, gens_by_build_year = gen_tables(gc, scen_settings_dict)
+    gens_by_model_year, gens_by_build_year, fuel_prices = gen_tables(
+        gc, scen_settings_dict
+    )
+
+    # fuel_prices spans all years. We assume any added fuels show up in the last
+    # year of the study. Then add_user_fuel_prices() adds them to all years of
+    # the study (it only accepts one price for all years). note: fuel_prices
+    # (from gc.fuel_prices) has to be accessed after calling
+    # generator_and_load_files() because that calls gc.create_all_generators(),
+    # which selects fuel prices from the right scenarios based on
+    # settings['aeo_fuel_scenarios'], applies
+    # settings['regional_fuel_adjustments'] and filters down to the fuels needed
+    # for the study (prior to that, gc.fuel_prices has all possible
+    # fuel/scenario combinations from EIA, without these adjustments.) But it
+    # (and add_user_fuel_prices()) also has to be called before gen_info_file,
+    # because that needs a complete list of fuels in order to identify non-fuel
+    # energy sources for some generators.
+    all_fuel_prices = add_user_fuel_prices(final_year_settings, fuel_prices)
+    possible_fuels = list(all_fuel_prices["fuel"].unique())
 
     #########
     # create Switch input files from these tables
@@ -174,11 +190,20 @@ def generator_and_load_files(
     # turn off age-based retirement.
     # We have to send the fuel prices so it can check which gens use a real fuel
     # and which don't, because PowerGenome gives a heat rate for all of them.
-    gen_info_file(first_year_settings, gens_by_model_year, all_fuel_prices, out_folder)
+    gen_info_file(first_year_settings, gens_by_model_year, possible_fuels, out_folder)
 
     # balancing_tables(first_year_settings, pudl_engine, all_gen_units, out_folder)
 
     gen_build_predetermined_file(gens_by_build_year, out_folder)
+
+    fuel_files(
+        fuel_prices=all_fuel_prices,
+        planning_years=list(scen_settings_dict.keys()),
+        regions=final_year_settings["model_regions"],
+        fuel_region_map=final_year_settings["aeo_fuel_region_map"],
+        fuel_emission_factors=final_year_settings["fuel_emission_factors"],
+        out_folder=out_folder,
+    )
 
     operational_files(
         scen_settings_dict,
@@ -448,7 +473,7 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
 def gen_info_file(
     settings,
     gens_by_model_year: pd.DataFrame,
-    fuel_prices: pd.DataFrame,
+    possible_fuels: List,
     out_folder: Path,
 ):
     # consolidate to one row per generator cluster (we assume data is the same
@@ -459,11 +484,9 @@ def gen_info_file(
 
     gen_info = gen_info_table(gens, settings)
 
-    fuels = fuel_prices["fuel"].unique()
-
     # Drop the heat rate that PowerGenome provides for many non-fuel-using generators
     # TODO: check if this is still true and remove this or move to gen_info_table()
-    non_fuel_mask = ~gen_info["gen_energy_source"].isin(fuels)
+    non_fuel_mask = ~gen_info["gen_energy_source"].isin(possible_fuels)
     gen_info.loc[
         non_fuel_mask,
         "gen_full_load_heat_rate",
@@ -932,7 +955,7 @@ def gen_tables(gc, scen_settings_dict):
         gens_by_build_year["new_build"] & gens_by_build_year["Existing_Cap_MW"].notna()
     ).sum() == 0, "Some new-build generators have Existing_Cap_MW assigned."
 
-    return gens_by_model_year, gens_by_build_year
+    return gens_by_model_year, gens_by_build_year, gc.fuel_prices
 
 
 def set_retirement_age(df, settings):
@@ -2078,29 +2101,13 @@ def main(
         # replicated.
         gc.pg_unit_bug = pg_unit_bug
 
-        # gc.fuel_prices already spans all years. We assume any added fuels show
-        # up in the last year of the study. Then add_user_fuel_prices() adds them
-        # to all years of the study (it only accepts one price for all years).
-        all_fuel_prices = add_user_fuel_prices(final_year_settings, gc.fuel_prices)
-
         # %%
-
         # generate Switch input tables from the PowerGenome settings/data
-        generator_and_load_files(
+        generator_fuel_and_load_files(
             gc,
-            all_fuel_prices,
-            pudl_engine,
             scen_settings_dict,
             out_folder,
             pg_engine,
-        )
-        fuel_files(
-            fuel_prices=all_fuel_prices,
-            planning_years=list(scen_settings_dict.keys()),
-            regions=final_year_settings["model_regions"],
-            fuel_region_map=final_year_settings["aeo_fuel_region_map"],
-            fuel_emission_factors=final_year_settings["fuel_emission_factors"],
-            out_folder=out_folder,
         )
         load_zones_file(
             final_year_settings,
