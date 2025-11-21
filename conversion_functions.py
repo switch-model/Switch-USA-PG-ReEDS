@@ -127,9 +127,70 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         return colored_message
 
 
-def switch_fuel_cost_table(
-    aeo_fuel_region_map, fuel_prices, regions, scenario, year_list
-):
+class LogFormatterTwoLine(coloredlogs.ColoredFormatter):
+    """
+    Shows a colored log message with module name on first line then message
+    (possibly prefixed with WARNING:) on subsequent lines, wrapped to 90 chars.
+    """
+
+    def __init__(self, width=90, **kwargs):
+        args = dict(
+            fmt="%(name)s\n%(message)s\n",
+            level_styles={"warning": {"color": "red"}, "info": {"color": None}},
+            field_styles={"name": {"color": "blue"}},
+        )
+        args.update(kwargs)
+        super().__init__(**args)
+        self.width = width
+
+    def fill_by_paragraph(
+        self, text, initial_indent="", subsequent_indent="", **kwargs
+    ):
+        paras = []
+        for line in text.splitlines():
+            if paras:  # after first line
+                initial_indent = subsequent_indent
+            if line.strip():
+                paras.append(
+                    textwrap.fill(
+                        line,
+                        initial_indent=initial_indent,
+                        subsequent_indent=subsequent_indent,
+                        **kwargs,
+                    )
+                )
+            else:
+                paras.append("")
+        return "\n".join(paras)
+
+    def format(self, record):
+        # color the message as normal, then add the level name to the msg part
+        # if needed
+
+        # add colon to name here so it will be colored
+        record.name += ":"
+
+        colored_message = super().format(record)
+        msg = record.getMessage()
+
+        if not msg:
+            return colored_message
+
+        new_msg = msg
+        if record.levelname != "INFO":
+            # insert the levelname as part of the message (for attention
+            # and coloring)
+            new_msg = record.levelname + ": " + new_msg
+
+        # wrap the message if currently single line
+        new_msg = self.fill_by_paragraph(new_msg)
+
+        colored_message = colored_message.replace(msg, new_msg, 1)
+
+        return colored_message
+
+
+def switch_fuel_cost_table(aeo_fuel_region_map, fuel_prices, regions, year_list):
     """
     Create the fuel_cost input file based on REAM Scenario 178.
     Inputs:

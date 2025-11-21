@@ -74,8 +74,9 @@ from conversion_functions import (
     final_key,
     final_value,
     km_per_mile,
-    LogFormatter,
 )
+
+from conversion_functions import LogFormatterTwoLine as LogFormatter
 
 # turn on info-level logging with colored messages at the root level
 # (this uses a simplified version of pudl's colored-logging approach)
@@ -92,8 +93,6 @@ pudllog.handlers.clear()  # drop library-attached handlers
 pudllog.propagate = True  # let it flow to root only
 
 logger = logging.getLogger("pg_to_switch")
-
-# TODO: maybe stop using coloredlogs and just color warnings directly instead; also omit name and omit levelname except for warning and higher.
 
 if not sys.warnoptions:
     import warnings
