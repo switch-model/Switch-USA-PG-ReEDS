@@ -312,7 +312,8 @@ PowerGenome/PowerGenome-examples repository. Matthias Fripp downloaded them to
 https://github.com/PowerGenome/PowerGenome-examples/tree/reeds-ba/ReEDS-BA and
 manually added or changed settings in pg/settings/*.yml to define inputs for
 this study. Parts of these files are also written automatically by
-`make_emission_policies.py`, discussed below.
+`make_emission_policies.py` and `make_hist5_fuel_price_forecast.py`, discussed
+below.
 
 ## External data
 
@@ -374,6 +375,14 @@ These are the files and sections created by this script:
   - `scenario_management.yml/settings_management/[various years]/all_cases`: levels for minimum and maximum capacity requirements
   - `regional_resource_tags.yml`: generator eligibility for state RPS, CES and minimum-capacity programs
     - eligibility for max-capacity programs (the national wind ban (`MaxCapTag_WindGrowth`) and an optional ban on individual technologies (`MaxCapTag_Ban`)) are specified manually in `model_definition.yml/generator_columns`, `resource_tags.yml/model_tag_values` and possibly `scenario_management.yml/settings_management/` as needed.
+
+**"hist5" fuel price forecasts**. The `make_hist5_fuel_price_forecast.py` script
+retrieves historical fuel prices by state for 2020-23 (eventually 2024) using
+the EIA open data API, then converts them to 2024 dollars and averages to create
+a "persistence" forecast for later years. This is placed in the user_fuel_price
+key if the user chooses a case with `fuel_price_forecast` equal to 'hist5' in
+pg/settings/extra_inputs/scenario_inputs.csv. Currently all the scenarios are
+set to use this flag.
 
 **Coal plant closures**. The `update_coal_closures.py` script retrieves data on
 expected near-term coal plant closures from [Global Energy

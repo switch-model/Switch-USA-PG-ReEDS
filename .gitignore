@@ -25,6 +25,9 @@ pg/extra_inputs/*.zip
 # local cluster caches
 pg/extra_inputs/cluster_assignments
 
+# API keys
+*api_key.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
