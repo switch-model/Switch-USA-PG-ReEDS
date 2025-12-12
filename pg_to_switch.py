@@ -1479,21 +1479,25 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
         if (options or {}).get("script") is None:
             # Script not specified for this scenario
             continue
-        cmd = shlex.join(
-            [
-                sys.executable,
-                # drop ../., etc. from path but don't resolve symlinks
-                os.path.normpath(base_dir / options["script"]),
-                str(short_fn(out_folder)),
-            ]
-        )
+        cmd = [
+            sys.executable,
+            # drop ../., etc. from path but don't resolve symlinks
+            os.path.normpath(base_dir / options["script"]),
+            str(short_fn(out_folder)),
+        ]
         if options.get("args"):
-            cmd += options["args"]  # should be pre-quoted/escaped as needed
+            # note: args should be quoted/escaped in posix-compliant style if needed
+            cmd += shlex.split(options["args"])
         print("\n" + "=" * 80)
         print(f"Running '{desc}' script:")
-        print(cmd)
+        if os.name == "nt":
+            # show the script with Windows-style quoting if needed
+            print(subprocess.list2cmdline(cmd))
+        else:
+            # show the script with posix quoting if needed
+            print(shlex.join(cmd))
         print("-" * 80)
-        exit_status = subprocess.run(cmd, shell=True).returncode
+        exit_status = subprocess.run(cmd, shell=False).returncode
         print("=" * 80 + "\n")
         if exit_status != 0:
             logger.warning(
@@ -2100,6 +2104,12 @@ def main(
         # Set object attribute indicating if the PG unit retirement data bug should be
         # replicated.
         gc.pg_unit_bug = pg_unit_bug
+
+        # uncomment to debug interactively at this point
+        # print("Run this whole script in Interactive pane, then run")
+        # print("import save_vars; save_vars.load_frame()")
+        # print("to troubleshoot in VS Code editor.")
+        # import save_vars; save_vars.save_frame(); breakpoint()
 
         # %%
         # generate Switch input tables from the PowerGenome settings/data
