@@ -20,10 +20,18 @@ import numpy as np
 import scipy
 import sqlalchemy as sa
 import typer
-import coloredlogs
 
-import pandas as pd
-from powergenome.generators import GeneratorClusters, create_plant_gen_id
+from powergenome.generators import (
+    GeneratorClusters,
+    create_plant_gen_id,
+    load_ipm_shapefile,
+    inflation_price_adjustment,
+)
+
+from powergenome.transmission import (
+    agg_transmission_constraints,
+    transmission_line_distance,
+)
 from powergenome.util import (
     build_scenario_settings,
     init_pudl_connection,
@@ -34,7 +42,6 @@ from powergenome.util import (
 from powergenome.load_profiles import make_final_load_curves
 from powergenome.time_reduction import kmeans_time_clustering
 from powergenome.eia_opendata import add_user_fuel_prices
-from powergenome.generators import *
 from powergenome.external_data import (
     make_generator_variability,
     load_demand_segments,
@@ -48,6 +55,9 @@ from powergenome.GenX import (
     min_cap_req,
     max_cap_req,
     create_regional_cap_res,
+    network_line_loss,
+    network_max_reinforcement,
+    add_cap_res_network,
 )
 
 from conversion_functions import (
@@ -132,10 +142,12 @@ testing: just use variables as-is from main()
 
 
 def generator_fuel_and_load_files(
-    gc: GeneratorClusters,
     scen_settings_dict: dict[dict],
     out_folder: Path,
+    pudl_engine: sa.engine,
+    pudl_out: any,
     pg_engine: sa.engine,
+    pg_unit_bug: bool,
 ):
     """
     Steps:
@@ -160,12 +172,16 @@ def generator_fuel_and_load_files(
     # shows gens built in a particular year, used to gather construction data
     # like capital cost and capacity built)
     gens_by_model_year, gens_by_build_year, fuel_prices = gen_tables(
-        gc, scen_settings_dict
+        scen_settings_dict,
+        pudl_engine,
+        pudl_out,
+        pg_engine,
+        pg_unit_bug,
     )
 
-    # fuel_prices spans all years. We assume any added fuels show up in the last
-    # year of the study. Then add_user_fuel_prices() adds them to all years of
-    # the study (it only accepts one price for all years). note: fuel_prices
+    # fuel_prices spans all years. We assume any user-added fuels show up in the
+    # last year of the study. Then add_user_fuel_prices() adds them to all years
+    # of the study (it only accepts one price for all years). note: fuel_prices
     # (from gc.fuel_prices) has to be accessed after calling
     # generator_and_load_files() because that calls gc.create_all_generators(),
     # which selects fuel prices from the right scenarios based on
@@ -234,10 +250,10 @@ def operational_files(
 
         # load curves for the period (1 row per hour/timepoint, possibly multi
         # year; 1 column per region/zone)
-        logger.info("Gathering load data.")  # can be slow
+        logger.info(f"Gathering load data for {model_year}")  # can be slow
         period_lc = make_final_load_curves(pg_engine, year_settings)
 
-        logger.info("Extracting generator variability data.")
+        logger.info("Extracting generator variability data for {model_year}")
         period_variability = make_generator_variability(period_gens)
         # Assign resource names instead of numbers from '0' to 'n'.
         period_variability.columns = period_gens["Resource"]
@@ -586,7 +602,7 @@ def gen_info_file(
     ]
     # drop existing generators that are retired by this time
     gen_om_by_period = gens_by_model_year.query(
-        "Existing_Cap_MW.notna() or new_build"
+        "Existing_Cap_MW > 0 or new_build"
     ).copy()
     # add Var_OM_Cost_per_MWh_In to Var_OM_Cost_per_MWh for storage generators
     mask = gen_om_by_period["Var_OM_Cost_per_MWh_In"].notna()
@@ -690,7 +706,13 @@ testing: use gc and scen_settings_dict from main()
 """
 
 
-def gen_tables(gc, scen_settings_dict):
+def gen_tables(
+    scen_settings_dict,
+    pudl_engine,
+    pudl_out,
+    pg_engine,
+    pg_unit_bug,
+):
     """
     Return dataframes showing all generator clusters that can be operated in
     each model_year and that can be built in each build_year. gens_by_model_year
@@ -713,24 +735,40 @@ def gen_tables(gc, scen_settings_dict):
 
     Note: this changes all the generator-related attributes of gc.
     """
-    # we save and restore gc.settings, but calling gc.create_all_generators()
-    # has unknown side effects on gc, including updating all the
-    # generator-related attributes.
-    orig_gc_settings = gc.settings
     gen_dfs = []
     unit_dfs = []
+    fuel_price_dfs = []
     """
     # testing:
     year_settings = first_value(scen_settings_dict)
     """
-    for year_settings in scen_settings_dict.values():
+    for model_year, year_settings in scen_settings_dict.items():
+        logger.info(f"Assembling generator data for model year {model_year}")
 
         """
         # testing (if previously called gc.create_all_generators()):
         gen_df = gc.all_resources.copy()
         """
-        gc.settings = year_settings
+        # Retrieve gc for this case and year.
+        # Starting Aug. 2024, we always set the multi_period flag, to ensure
+        # that PowerGenome uses the same generators for all periods (i.e., all
+        # generators in the database), which ensures that the time clustering
+        # ends up the same for all periods. This is consistent with how GenX
+        # used PowerGenome for MIP.
+        gc = GeneratorClusters(
+            pudl_engine,
+            pudl_out,
+            pg_engine,
+            year_settings,
+            multi_period=True,
+        )
+        # Indicate if the PG unit retirement data bug should be replicated
+        gc.pg_unit_bug = pg_unit_bug
+
         gen_df = gc.create_all_generators().copy()
+
+        # store fuel prices for later reference
+        fuel_price_dfs.append(gc.fuel_prices.copy())
 
         # identify existing and new-build for reference later
         gen_df["existing"] = gen_df["New_Build"] <= 0
@@ -815,8 +853,6 @@ def gen_tables(gc, scen_settings_dict):
         eia_unit_info = eia_build_info(gc)
         unit_df = gen_df.merge(eia_unit_info, on="Resource", how="left")
         unit_dfs.append(unit_df)
-
-    gc.settings = orig_gc_settings
 
     gens_by_model_year = pd.concat(gen_dfs, ignore_index=True)
     units_by_model_year = pd.concat(unit_dfs, ignore_index=True)
@@ -955,7 +991,15 @@ def gen_tables(gc, scen_settings_dict):
         gens_by_build_year["new_build"] & gens_by_build_year["Existing_Cap_MW"].notna()
     ).sum() == 0, "Some new-build generators have Existing_Cap_MW assigned."
 
-    return gens_by_model_year, gens_by_build_year, gc.fuel_prices
+    # Return fuel prices from the first year of the study. This gets fuels for
+    # any plants that reach the start of the study, which is safer than only
+    # using the ones that reach the last period. It also gets prices for those
+    # fuels for all years. But should we merge these across years in case some
+    # fuels only show up for plants that appear late in the study? Also see
+    # notes in generator_fuel_and_load_files(), which calls this function.
+    fuel_prices = fuel_price_dfs[0]
+
+    return gens_by_model_year, gens_by_build_year, fuel_prices
 
 
 def set_retirement_age(df, settings):
@@ -1503,21 +1547,6 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
             logger.warning(
                 f"The previous script exited with error status {exit_status}"
             )
-
-
-from powergenome.generators import load_ipm_shapefile
-from powergenome.GenX import (
-    network_line_loss,
-    network_max_reinforcement,
-    network_reinforcement_cost,
-    add_cap_res_network,
-)
-from powergenome.transmission import (
-    agg_transmission_constraints,
-    transmission_line_distance,
-)
-from powergenome.util import init_pudl_connection, load_settings, check_settings
-from statistics import mean
 
 
 def transmission_tables(scen_settings_dict, out_folder, pg_engine):
@@ -2085,26 +2114,6 @@ def main(
         first_year_settings = first_value(scen_settings_dict)
         final_year_settings = final_value(scen_settings_dict)
 
-        # Retrieve gc for this case, using settings for first year so we get all
-        # plants that survive up to that point (using last year would exclude
-        # plants that retire during the study).
-        # Starting Aug. 2024, we always set the multi_period flag, to ensure
-        # that PowerGenome uses the same generators for all periods (i.e., all
-        # generators in the database), which ensures that the time clustering
-        # ends up the same for all periods. This is consistent with how GenX
-        # used PowerGenome for MIP.
-        gc = GeneratorClusters(
-            pudl_engine,
-            pudl_out,
-            pg_engine,
-            first_year_settings,
-            multi_period=True,
-        )
-
-        # Set object attribute indicating if the PG unit retirement data bug should be
-        # replicated.
-        gc.pg_unit_bug = pg_unit_bug
-
         # uncomment to debug interactively at this point
         # print("Run this whole script in Interactive pane, then run")
         # print("import save_vars; save_vars.load_frame()")
@@ -2114,10 +2123,12 @@ def main(
         # %%
         # generate Switch input tables from the PowerGenome settings/data
         generator_fuel_and_load_files(
-            gc,
             scen_settings_dict,
             out_folder,
+            pudl_engine,
+            pudl_out,
             pg_engine,
+            pg_unit_bug,
         )
         load_zones_file(
             final_year_settings,

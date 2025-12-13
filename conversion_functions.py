@@ -13,6 +13,13 @@ import coloredlogs
 
 km_per_mile = 1.60934
 
+# list of (month, day) numbers in a standard year
+dates_in_year = [
+    (m + 1, d + 1)
+    for m, daycount in enumerate([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
+    for d in range(daycount)
+]
+
 
 # convenience functions to get first/final keys/values from dicts
 # (e.g., first year in a dictionary organized by years)
@@ -629,7 +636,7 @@ def fuel_market_tables(fuel_prices, aeo_fuel_region_map, scenario):
 
 
 def ts_tp_pg_kmeans(
-    representative_point: pd.DataFrame,
+    representative_point: pd.Series,
     point_weights: List[int],
     days_per_period: int,
     planning_year: int,
@@ -639,24 +646,45 @@ def ts_tp_pg_kmeans(
 
     Parameters
     ----------
-    representative_point : pd.DataFrame
-        The representative periods used. Single column dataframe with col name "slot"
+    representative_point : pd.Series
+        IDs of representative periods used. Each ID must have form "pN", e.g.,
+        "p43", where N is a period number, counting from N=1 for the first week
+        of some historical calendar year and possibly rotating through multiple
+        years
     point_weights : List[int]
-        The weight assigned to each period. Equal to the number of periods in the year
-        that each period represents.
+        The weight assigned to each period. Equal to the number of periods in
+        the year that each period represents.
     days_per_period : int
-        How long each period lasts in days
-    planning_periods : List[int]
-        A list of the planning years
-    planning_period_start_years : List[int]
-        A list of the start year for each planning period, used to calculate the number
-        of years in each period
+        How long each period lasts in days (typically 1-7 days)
+    planning_year : int
+        Current planning year
+    planning_start_year : int
+        The start year for this planning period, used to calculate the number of
+        years in the period
 
     Returns
     -------
     pd.DataFrame, pd.DataFrame
         A tuple of the timeseries and timepoints dataframes
     """
+    # assign year, repetition number, month and day for each representative point
+    try:
+        period_idx = representative_point.str[1:].astype("int64") - 1
+    except:
+        raise ValueError(
+            f"representative_point ID must have form pN where N identifies "
+            f"a period number within a block of one or more calendar years, "
+            "e.g., 'p67'"
+        )
+    # identify starting hour for each period within n-year historical block
+    period_start_hour = period_idx * days_per_period * 24
+    hours_per_period = days_per_period * 24
+    # figure out how many historical years (repetitions) there are
+    # (or at least the highest rep we'll see)
+    rep_count = (period_start_hour.max() + hours_per_period - 1) // 8760 + 1
+    rep_digits = int(math.log10(rep_count)) + 1
+    planning_yrs = planning_year - planning_start_year + 1
+
     ts_data = {
         "timeseries": [],
         "ts_period": [],
@@ -665,26 +693,43 @@ def ts_tp_pg_kmeans(
         "ts_scale_to_period": [],
     }
     tp_data = {
+        "timepoint_id": [],
         "timestamp": [],
         "timeseries": [],
     }
-    planning_yrs = planning_year - planning_start_year + 1
-    for p, weight in zip(representative_point, point_weights):
-        num_hours = days_per_period * 24
+    for p, weight, group_start_hour in zip(
+        representative_point, point_weights, period_start_hour
+    ):
         ts = f"{planning_year}_{p}"
         ts_data["timeseries"].append(ts)
         ts_data["ts_period"].append(planning_year)
         ts_data["ts_duration_of_tp"].append(1)
-        ts_data["ts_num_tps"].append(num_hours)
+        ts_data["ts_num_tps"].append(hours_per_period)
         ts_data["ts_scale_to_period"].append(weight * planning_yrs)
 
-        tp_data["timestamp"].extend([f"{ts}_{i}" for i in range(num_hours)])
-        tp_data["timeseries"].extend([ts for i in range(num_hours)])
+        for h in range(hours_per_period):
+            # which hour is this within the historical block?
+            hist_hour = group_start_hour + h
+            # What month, day and year-repetition is this? Assume year blocks
+            # are 8760 hours (standard for PowerGenome as of 2025 and index is
+            # 1-based; will cause small date error if leap years are added)
+            rep_num, hour_of_year = divmod(hist_hour, 8760)
+            day_of_year, hour_of_day = divmod(hour_of_year, 24)
+            month, day_of_month = dates_in_year[day_of_year]
+            # default timepoint ID:
+            # 2030030100 = year 2030, month 03, day 01, hour 00
+            tp = f"{planning_year:04d}{month:02d}{day_of_month:02d}{hour_of_day:02d}"
+            if rep_count > 1:
+                # multiple years of weather history; insert 1-based repetition number
+                # 203002030100 = year 2030, repetition 02, month 03, day 01, hour 00
+                tp = f"{tp[:4]}{rep_num+1:0{rep_digits}d}{tp[4:]}"
+            tp_data["timeseries"].append(ts)
+            tp_data["timepoint_id"].append(tp)
+            tp_data["timestamp"].append(tp)
 
     timeseries = pd.DataFrame(ts_data)
     timepoints = pd.DataFrame(tp_data)
-    timepoints["timepoint_id"] = timepoints.index + 1
-    timepoints = timepoints[["timepoint_id", "timestamp", "timeseries"]]
+
     return timeseries, timepoints
 
 

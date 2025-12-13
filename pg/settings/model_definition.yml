@@ -155,8 +155,8 @@ target_usd_year: 2024
 # - model_first_planning_year: The first year of each planning period. Capex for
 # new-build generators from ATB are an average of costs from first to last (inclusive).
 # Generators scheduled to retire before model_first_planning_year will be omitted.
-model_year: [2024, 2030]
-model_first_planning_year: [2024, 2030]
+model_year: [2024, 2029, 2030, 2035]
+model_first_planning_year: [2024, 2029, 2030, 2031]
 
 # HOURS OFFSET FROM UTC
 # All time profile data are stored in UTC. Provide an offset for the model timezone.

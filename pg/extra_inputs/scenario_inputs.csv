@@ -16,4 +16,6 @@ s20x1_decarb,2030,s20x1,firm,icf,yes,decarb,none,hist5
 s1x1,2024,s1x1,firm,icf,yes,current,none,hist5
 s1x1,2030,s1x1,firm,icf,yes,current,none,hist5
 s4x1,2024,s4x1,firm,icf,yes,current,none,hist5
+s4x1,2029,s4x1,firm,icf,yes,current,none,hist5
 s4x1,2030,s4x1,firm,icf,yes,current,none,hist5
+s4x1,2035,s4x1,firm,icf,yes,current,none,hist5

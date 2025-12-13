@@ -44,7 +44,17 @@ settings_management:
                 # add dummy value that will be overridden by PG to avoid
                 # warnings from PG about empty parameter_values
                 New_Build: -1
+          2029:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                New_Build: -1
           2030:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                New_Build: -1
+          2035:
             load_growth:
               fraction_shiftable: 1.0
               parameter_values:
@@ -65,19 +75,26 @@ settings_management:
           Can_Retire:
             "": 0
     resource_limits:
-      none: ~      # default
-      low_gas:
-        MaxCapTag_Ban:
-          # technology name for new gas, but not existing/planned
-          NaturalGas: 1
-      high_gas:
-        MaxCapTag_Ban:
-          # tech names used for new build non-gas techs, but not existing/planned
-          UtilityPV: 1
-          OffShoreWind: 1
-          LandbasedWind: 1
-          Nuclear_Nuclear: 1
-          Battery Storage: 1
+      none: ~ # default
+      high_gas: # currently unused, see define_scenarios.py instead
+        model_tag_values:
+          MaxCapTag_Ban:
+            # tech names used for new-build non-gas techs, but not existing/planned
+            UtilityPV: 1
+            OffShoreWind: 1
+            LandbasedWind: 1
+            Nuclear_Nuclear: 1
+            Battery Storage: 1
+      low_gas: # currently unused, see define_scenarios.py instead
+        model_tag_values:
+          MaxCapTag_Ban:
+            # technology name for new gas, but not existing/planned
+            NaturalGas: 1
+      increased_ambition:
+        model_tag_values:
+          MaxCapTag_Ban:
+            # technology name for new gas, but not existing/planned
+            NaturalGas: 1
 
     policies:
       current: ~    # use default settings
