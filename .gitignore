@@ -8,6 +8,8 @@
 !switch/*
 switch/in/
 switch/out/
+!adjust/
+!adjust/**
 !PowerGenome/
 !PowerGenome/**
 

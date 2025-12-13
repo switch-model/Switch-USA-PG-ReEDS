@@ -5,7 +5,11 @@ gen_info_extra_columns:
   gen_can_provide_spinning_reserves: gen_can_provide_spinning_reserves
 
 # financial terms (should be real, i.e., net of inflation)
-# TODO: take the average of various technologies from PowerGenome
+# TODO: take the average of various technologies from PowerGenome / NREL ATB
+# 6.4% real (9.6% nominal) cost of capital is based on Lazard 2025 assumptions
+# of 60% debt at 8% and 40% equity at 12% and 3% inflation in 2024-25.
+# 5% real (8.3% nominal) is close to the NREL ATB average across techs
+# (https://atb.nrel.gov/electricity/2024/financial_cases_&_methods#:~:text=LCOE%20by%20technology%20and%20financial%20assumptions%20case)
 interest_rate: 0.05
 discount_rate: 0.03
 
@@ -21,22 +25,28 @@ model_adjustment_scripts:
   # description of script:  # can set to ~ for a scenario to bypass this script
   #   script: ../../path/to/script.py
   #   arguments: (optional) --additional_arguments "to pass" --to 'script'
-  #   order: (optional, default 5) 3  # order to run script in
+  #   order: 3  # order to run script in (optional, default 5)
   Add reserve info:
-    script: ../../add_reserve_info.py
+    script: ../../adjust/add_reserve_info.py
+    order: 1
   Add extreme day:
-    script: ../../add_extreme_days.py
+    script: ../../adjust/add_extreme_days.py
     # run after all the others, because it creates a new directory copied
     # from the main one
     order: 10
+  Define scenarios:
+    script: ../../adjust/define_scenarios.py
+    # run after add_extreme_days; will look for both regular and _prm
+    # versions of model directory and create different files in them
+    order: 11
 
 # price to pay to go beyond carbon caps in emission_policies_fn (which may be
 # zero for a simple tax). Note: pg_to_switch.py is currently setup to use the
 # same price for all carbon programs
 # TODO: see which flags GenX used to implement this in MIP and use those
-# $35 is based on the average of California ($35.21) and 
+# $33.43 is based on the average of California ($35.21) and
 # Washington (31.64) in 2024
 # https://icapcarbonaction.com/en/ets/usa-california-cap-and-trade-program
 # https://icapcarbonaction.com/en/ets/usa-washington-cap-and-invest-program
-# also see  for which policies apply 
+# also see  for which policies apply
 carbon_cost_dollar_per_tco2: 33.43
