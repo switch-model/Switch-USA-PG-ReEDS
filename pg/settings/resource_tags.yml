@@ -341,6 +341,39 @@ model_tag_values:
     Wood/Wood Waste Biomass: 1
     Biomass: 1
     # distributed_gen: 1
+  gen_forced_outage_rate:
+    # TODO: find better estimates for batteries and maybe PV
+    # From NERC GADS statistical brochures: https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
+    # Conventional plants from NERC GADS Generating Unit Statistical Brochure 4 for 2020-24 (EFORd, all sizes)
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-conventional/generating-unit-statistical-brochures
+    Coal: 0.1019  # Coal Primary
+    Petroleum Liquids: 0.0876  # 0.0632 Diesel -> 20369 MW DFO fuel; 0.1458 Oil Primary -> 8522 MW all other fuels
+    Petroleum Coke: 0.0876  # Assume same as petroleum liquids
+    Natural Gas Steam Turbine: 0.1399  # Gas Primary
+    Nuclear: 0.0224  # Nuclear All Types
+    Combustion Turbine: 0.0986  # Gas Turbine
+    Combined Cycle: 0.0491  # Combined Cycle
+    Hydro: 0.0875  # Hydro
+    Pumped Storage: 0.0803  # Pumped Storage
+    Geothermal: 0.0452  # Geothermal
+    # Wind from NERC GADS Wind - Wind Metric Brochure for 2020-23 (1.B.12 (E-FOR) weighted by NMC): 
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-wind
+    # documentation: https://www.nerc.com/globalassets/programs/rapa/gads/wind/2025_gads_wind_dri.pdf
+    Wind: 0.06227
+    # Solar can eventually come from from NERC GADS Solar
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-solar
+    # Until GADS data are available we use 1% median FOR from https://www.nrel.gov/news/detail/program/2024/how-extreme-weather-and-system-aging-affect-the-us-photovoltaic-fleet#:~:text=Over%20the%202008%E2%80%932022%20time%20range%20studied%2C%20the,longer%20outages%20of%20two%20weeks%20or%20more.
+    Photovoltaic: 0.01
+    UtilityPV: 0.01
+    # We don't have a good source for batteries, so we use 5% recommendation from CESA (2021): https://efiling.energy.ca.gov/getdocument.aspx?tn=238987
+    Battery: 0.05
+    Batteries: 0.05 
+    Biomass: 0.1019 # assume same as coal
+    Other_peaker: 0.0986 # assume same as combustion turbine
+    distributed: 0  # assume reported production is actual (no derate)
+    Imports: 0 # use reported imports with no derate
+    load_growth: 0  # don't derate VPP since corresponding loads aren't derated (but maybe we should count some non-response?)
+    us_exports: 1  # this is a VPP corresponding to canceling scheduled US exports (load), which should never be used
   gen_max_annual_availability:
     # this is set for passthrough to gen_info.csv in switch.yml
     # "" will match all technologies; set to 1 by default, but override for the 
@@ -369,15 +402,30 @@ model_tag_values:
     peaker: 1
     Petroleum: 1
   MaxCapTag_WindGrowth:
-    # all wind technologies are subject to a national growth limit (this could
-    # be moved to sceanrio_settings to turn it off for some cases)
+    # all wind technologies are subject to a national limit on additions (this
+    # could be moved to scenario_settings to turn it off for some cases)
+    # make_emission_policies.py defines and documents the specific limit.
     Wind: 1
+  MaxCapTag_SolarGrowth:
+    # solar PV (existing and new) is subject to a national limit on additions
+    # (this could be moved to scenario_settings to turn it off for some cases)
+    # make_emission_policies.py defines and documents the specific limit.
+    Photovoltaic: 1
+    UtilityPV: 1
+  MaxCapTag_NuclearGrowth:
+    # nuclear (existing and new)
+    Nuclear: 1
+  MaxCapTag_GasTurbineSupply:
+    # all gas turbine technologies (new or planned/existing) are subject to a
+    # national limit on additions (this could be moved to scenario_settings to
+    # turn it off for some cases)
+    # make_emission_policies.py defines and documents the specific limit.
+    NaturalGas: 1 # new-build CC and CT
+    Natural Gas Fired Combined Cycle: 1  # existing/planned CC
+    Natural Gas Fired Combustion Turbine: 1  # existing/planned CT
   MaxCapTag_Ban:
     # 0 by default, but we also specify 0 to avoid a warning from PowerGenome
     "": 0
-
-
-
 
 
 

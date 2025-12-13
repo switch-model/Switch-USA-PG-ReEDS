@@ -163,150 +163,160 @@ model_first_planning_year: [2024, 2030]
 # US East cost is -5 Pacific is -8
 utc_offset: -5
 
-# apply 8.4% planning reserve margin in every region
-# This is what the system was able to reach in 2024 and roughly 
-# corresponds to NERC's historical default Reference Margin Level of 15% since we include 
-# T&D losses (5-7%) and they (probably) don't.
+# Apply a 2% planning reserve margin in every region. This is applied on top of
+# spinning reserves (3-5%), forced outages (2-8%) and T&D losses (~5%), so is
+# probably a little higher than NERC's historical default Reference Margin Level
+# of 15% (which is defined as the difference between customer load and available
+# capacity).
 # https://www.nerc.com/pa/RAPA/ra/Reliability%20Assessments%20DL/SRA_About_This_Report.pdf
+# We previously used an 8.4% margin for all regions, which was the most that
+# could be maintained everywhere on top of T&D losses and possibly spinning
+# reserves. But that became un-meetable in the 2024 model after including forced
+# outages, so we use 2% now to reach a reasonable level of reliability across
+# the board, slightly higher than 2024 in some cases and possibly slightly lower
+# in others. (This could be adjusted by iteration with a resource adequacy phase
+# until the reliability level is just right.)
+
 regional_capacity_reserves:
   CapRes_1:
-    p1: 0.084
-    p2: 0.084
-    p3: 0.084
-    p4: 0.084
-    p5: 0.084
-    p6: 0.084
-    p7: 0.084
-    p8: 0.084
-    p9: 0.084
-    p10: 0.084
-    p11: 0.084
-    p12: 0.084
-    p13: 0.084
-    p14: 0.084
-    p15: 0.084
-    p16: 0.084
-    p17: 0.084
-    p18: 0.084
-    p19: 0.084
-    p20: 0.084
-    p21: 0.084
-    p22: 0.084
-    p23: 0.084
-    p24: 0.084
-    p25: 0.084
-    p26: 0.084
-    p27: 0.084
-    p28: 0.084
-    p29: 0.084
-    p30: 0.084
-    p31: 0.084
-    p32: 0.084
-    p33: 0.084
-    p34: 0.084
-    p35: 0.084
-    p36: 0.084
-    p37: 0.084
-    p38: 0.084
-    p39: 0.084
-    p40: 0.084
-    p41: 0.084
-    p42: 0.084
-    p43: 0.084
-    p44: 0.084
-    p45: 0.084
-    p46: 0.084
-    p47: 0.084
-    p48: 0.084
-    p49: 0.084
-    p50: 0.084
-    p51: 0.084
-    p52: 0.084
-    p53: 0.084
-    p54: 0.084
-    p55: 0.084
-    p56: 0.084
-    p57: 0.084
-    p58: 0.084
-    p59: 0.084
-    p60: 0.084
-    p61: 0.084
-    p62: 0.084
-    p63: 0.084
-    p64: 0.084
-    p65: 0.084
-    p66: 0.084
-    p67: 0.084
-    p68: 0.084
-    p69: 0.084
-    p70: 0.084
-    p71: 0.084
-    p72: 0.084
-    p73: 0.084
-    p74: 0.084
-    p75: 0.084
-    p76: 0.084
-    p77: 0.084
-    p78: 0.084
-    p79: 0.084
-    p80: 0.084
-    p81: 0.084
-    p82: 0.084
-    p83: 0.084
-    p84: 0.084
-    p85: 0.084
-    p86: 0.084
-    p87: 0.084
-    p88: 0.084
-    p89: 0.084
-    p90: 0.084
-    p91: 0.084
-    p92: 0.084
-    p93: 0.084
-    p94: 0.084
-    p95: 0.084
-    p96: 0.084
-    p97: 0.084
-    p98: 0.084
-    p99: 0.084
-    p100: 0.084
-    p101: 0.084
-    p102: 0.084
-    p103: 0.084
-    p104: 0.084
-    p105: 0.084
-    p106: 0.084
-    p107: 0.084
-    p108: 0.084
-    p109: 0.084
-    p110: 0.084
-    p111: 0.084
-    p112: 0.084
-    p113: 0.084
-    p114: 0.084
-    p115: 0.084
-    p116: 0.084
-    p117: 0.084
-    p118: 0.084
-    p119: 0.084
-    p120: 0.084
-    p121: 0.084
-    p122: 0.084
-    p123: 0.084
-    p124: 0.084
-    p125: 0.084
-    p126: 0.084
-    p127: 0.084
-    p128: 0.084
-    p129: 0.084
-    p130: 0.084
-    p131: 0.084
-    p132: 0.084
-    p133: 0.084
-    p134: 0.084
+    p1: 0.020
+    p2: 0.020
+    p3: 0.020
+    p4: 0.020
+    p5: 0.020
+    p6: 0.020
+    p7: 0.020
+    p8: 0.020
+    p9: 0.020
+    p10: 0.020
+    p11: 0.020
+    p12: 0.020
+    p13: 0.020
+    p14: 0.020
+    p15: 0.020
+    p16: 0.020
+    p17: 0.020
+    p18: 0.020
+    p19: 0.020
+    p20: 0.020
+    p21: 0.020
+    p22: 0.020
+    p23: 0.020
+    p24: 0.020
+    p25: 0.020
+    p26: 0.020
+    p27: 0.020
+    p28: 0.020
+    p29: 0.020
+    p30: 0.020
+    p31: 0.020
+    p32: 0.020
+    p33: 0.020
+    p34: 0.020
+    p35: 0.020
+    p36: 0.020
+    p37: 0.020
+    p38: 0.020
+    p39: 0.020
+    p40: 0.020
+    p41: 0.020
+    p42: 0.020
+    p43: 0.020
+    p44: 0.020
+    p45: 0.020
+    p46: 0.020
+    p47: 0.020
+    p48: 0.020
+    p49: 0.020
+    p50: 0.020
+    p51: 0.020
+    p52: 0.020
+    p53: 0.020
+    p54: 0.020
+    p55: 0.020
+    p56: 0.020
+    p57: 0.020
+    p58: 0.020
+    p59: 0.020
+    p60: 0.020
+    p61: 0.020
+    p62: 0.020
+    p63: 0.020
+    p64: 0.020
+    p65: 0.020
+    p66: 0.020
+    p67: 0.020
+    p68: 0.020
+    p69: 0.020
+    p70: 0.020
+    p71: 0.020
+    p72: 0.020
+    p73: 0.020
+    p74: 0.020
+    p75: 0.020
+    p76: 0.020
+    p77: 0.020
+    p78: 0.020
+    p79: 0.020
+    p80: 0.020
+    p81: 0.020
+    p82: 0.020
+    p83: 0.020
+    p84: 0.020
+    p85: 0.020
+    p86: 0.020
+    p87: 0.020
+    p88: 0.020
+    p89: 0.020
+    p90: 0.020
+    p91: 0.020
+    p92: 0.020
+    p93: 0.020
+    p94: 0.020
+    p95: 0.020
+    p96: 0.020
+    p97: 0.020
+    p98: 0.020
+    p99: 0.020
+    p100: 0.020
+    p101: 0.020
+    p102: 0.020
+    p103: 0.020
+    p104: 0.020
+    p105: 0.020
+    p106: 0.020
+    p107: 0.020
+    p108: 0.020
+    p109: 0.020
+    p110: 0.020
+    p111: 0.020
+    p112: 0.020
+    p113: 0.020
+    p114: 0.020
+    p115: 0.020
+    p116: 0.020
+    p117: 0.020
+    p118: 0.020
+    p119: 0.020
+    p120: 0.020
+    p121: 0.020
+    p122: 0.020
+    p123: 0.020
+    p124: 0.020
+    p125: 0.020
+    p126: 0.020
+    p127: 0.020
+    p128: 0.020
+    p129: 0.020
+    p130: 0.020
+    p131: 0.020
+    p132: 0.020
+    p133: 0.020
+    p134: 0.020
 
-# turn off transmission derating (PG defaults to 0.95) because we are handling it via 
-# planning reserve margins instead.
+# turn off transmission derating (PG defaults to 0.95) because we are handling it via
+# planning reserve margins instead. (Well, actually we aren't really, but T&D losses
+# and ReEDS's assessment of firm transfer capability may be reasonable stand-ins.)
 cap_res_network_derate_default: 1.0
 
 # turn off PowerGenome 0.7.0 warning

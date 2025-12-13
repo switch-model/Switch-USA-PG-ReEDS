@@ -11,7 +11,8 @@ switch_model.reporting
 # switch_model.generators.core.no_commit
 switch_model.generators.core.commit.operate
 switch_model.generators.core.commit.fuel_use
-switch_model.generators.extensions.storage
+# switch_model.generators.extensions.storage
+study_modules.generators_extensions_storage
 switch_model.generators.extensions.hydro_system
 switch_model.energy_sources.fuel_costs.simple
 switch_model.transmission.transport.build
@@ -28,4 +29,5 @@ study_modules.planning_reserves_extreme_days
 study_modules.gen_om_by_period
 # apply annual operating limits to data center backup gens
 study_modules.gen_annual_availability_limits
-# study_modules.save_dual_costs
+# allow unserved load (one zone comes out infeasible in 2024)
+# switch_model.balancing.unserved_load
