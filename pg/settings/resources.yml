@@ -65,7 +65,6 @@ num_clusters:
   Other_peaker: 1
   Batteries: 1
 
-
 # Group these technologies
 group_technologies: True
 tech_groups:
@@ -84,7 +83,6 @@ regional_no_grouping: ~
 # Add code to ensure region names here are included above
 alt_num_clusters: ~
 
-
 # Derate the capacity of technologies that will be set as MUST_RUN in GenX by their
 # historical capacity factor.
 derate_techs:
@@ -93,8 +91,8 @@ derate_techs:
 
 # Default value to limit the years used to calculate capacity factors.
 # PUDL currently has generation data from 2011 through the most recent final release of 923/860.
-capacity_factor_default_year_filter: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
-
+capacity_factor_default_year_filter:
+  [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
 
 # LABEL SMALL HYDRO
 small_hydro: true
@@ -235,8 +233,6 @@ small_hydro_regions:
   - p133
   - p134
 
-
-
 # Factors for calculating hydro energy to power ratio in GenX. The default factors is
 # numeric and will be applied to all regions. The regional factors are a dictionary mapping
 # model region names to specific regional factors. The factors are multiplied by average
@@ -267,10 +263,9 @@ energy_storage_duration:
   Batteries: 4
   # 1 for flywheels, generally suitable for regulating reserve service
   Flywheels: 1
-  # in principle, CAES could have quite long storage, but the only one in service 
+  # in principle, CAES could have quite long storage, but the only one in service
   # in 2025 is 4 hours
   Natural Gas with Compressed Air Storage: 4
-
 
 # The year of NREL ATB data to use for matching existing generators (O&M costs)
 atb_existing_year: 2024
@@ -310,7 +305,7 @@ alt_resource_cap_recovery_years:
 
 # Use Class3 onshore wind, Class 3 for fixed offshore wind, and Class 12 for floating offshore wind
 # Format for each list item is <technology>, <tech_detail>, <cost_case>, <size>
-# We use Moderate case for most technologies but Advanced case for batteries because prices have 
+# We use Moderate case for most technologies but Advanced case for batteries because prices have
 # moved quickly since ATB 2024.
 # These settings are for 2035 and later; also see scenario_management.yml for
 # more restricted versions for earlier years (no new floating wind before 2030
@@ -324,17 +319,6 @@ atb_new_gen:
   - [UtilityPV, Class1, Moderate, 1]
   - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
   - [Nuclear, Nuclear - Large, Moderate, 1000]
-
-# unused?
-# new_resources:
-#   - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
-#   - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
-#   - [LandbasedWind, Class3, Moderate, 1]
-#   - [OffShoreWind, Class12, Moderate, 1]
-#   - [OffShoreWind, Class3, Moderate, 1]
-#   - [UtilityPV, Class1, Moderate, 1]
-#   - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
-#   - [Nuclear, Nuclear - Large, Moderate, 1000]
 
 # we define clusters for all techs in all years, but these will generate
 # warnings for years when they are not in atb_new_gen due to settings
@@ -426,13 +410,13 @@ atb_modifiers:
     # and Var_OM_Cost_per_MWh_In (end of 3.1.6 in
     # https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-28866.pdf).
     Var_OM_Cost_per_MWh: [add, 0.15]
-    Var_OM_Cost_per_MWh_In: 0.15  # not in database, so set directly
+    Var_OM_Cost_per_MWh_In: 0.15 # not in database, so set directly
     # 30% federal ITC applies to batteries and geothermal
     capex_mw: [mul, 0.7]
     capex_mwh: [mul, 0.7]
 
   geothermal:
-    technology: Geothermal  # not currently present in ATB
+    technology: Geothermal # not currently present in ATB
     tech_detail: "*"
     # 30% federal ITC applies to batteries and geothermal
     capex_mw: [mul, 0.7]
@@ -452,15 +436,6 @@ atb_modifiers:
     technology: NaturalGas
     tech_detail: Combustion Turbine (F-Frame)
     capex_mw: 1606000
-
-# Unused?
-# resource_modifiers:
-#   batteries:
-#     technology: Utility-Scale Battery Storage
-#     tech_detail: Lithium Ion
-#     Var_OM_Cost_per_MWh: [add, 0.15]
-#     Var_OM_Cost_per_MWh_In: 0.15
-
 
 # Copy and modify an existing ATB new generator. Set parameter to none (~) if not adding
 # any modified generators.
@@ -485,12 +460,13 @@ modified_atb_new_gen:
     new_technology: Imports
     new_tech_detail: "base"
     new_cost_case: "base"
-    size_mw: 500  # may not matter
+    size_mw: 500 # may not matter
     # zero out all costs
     capex_mw: 0
     fixed_o_m_mw: 0
     variable_o_m_mwh: 0
 
+  # example
   # NGCCS100:
   #   new_technology: NaturalGas
   #   new_tech_detail: CCS100
@@ -504,12 +480,9 @@ modified_atb_new_gen:
   #   fixed_o_m_mw: [add, 9670]
   #   variable_o_m_mwh: [mul, 1.076]
 
-modified_new_resources: ~
-
 ######################################################
 # MODIFY THESE PARAMETERS FOR NEW REGIONAL AGGREGATIONS
 ######################################################
-
 
 # Map user-regions to AEO Electricity Market Module (EMM) regions for cost multipliers
 # IPM regions have been pre-populated in the lists below, but any user defined regions
@@ -549,7 +522,6 @@ cost_multiplier_region_map:
 # ATB doesn't have a WACC for battery tech. Need to provide a value here.
 atb_battery_wacc: UtilityPV
 
-
 # Additional technologies can be specified in a csv file under data/additional_technologies
 # Provide the filename (no path needed) in the parameter below or "~" for none.
 # All technologies listed in the file will be included in the outputs unless they are
@@ -558,13 +530,11 @@ additional_technologies_fn: ~
 
 additional_new_gen: ~
 
-
 # Dictionary of lists with model region as key and ATB tech (string matching) in list.
 # It isn't necessary to include wind/solar resources here. If they aren't included in
 # the renewables_clusters parameter below, they won't be included in the final generators
 # dataframe.
 new_gen_not_available: ~
-
 
 # The keys in cost_multiplier_technology_map are technologies listed in EIA's capital
 # cost assumptions document. The 2020 version is available at
@@ -583,20 +553,54 @@ cost_multiplier_technology_map:
   USC with 30% CCS: [Coal_CCS30AvgCF, Coal_CCS30HighCF]
   USC with 90% CCS: [Coal_CCS90AvgCF, Coal_CCS90HighCF]
   CT - aeroderivative: []
-  CT - industrial frame: [NaturalGas_CTAvgCF, NaturalGas_CTHighCF, NaturalGas_Combustion Turbine (F-Frame)]
+  CT - industrial frame:
+    [
+      NaturalGas_CTAvgCF,
+      NaturalGas_CTHighCF,
+      NaturalGas_Combustion Turbine (F-Frame),
+    ]
   CC - single shaft: [NaturalGas_1-on-1 Combined Cycle (H-Frame)]
-  CC - multi shaft: [NaturalGas_CCAvgCF, NaturalGas_CCHighCF, NaturalGas_2-on-1 Combined Cycle (H-Frame)]
-  CC with 90% CCS: [NaturalGas_CCCCSAvgCF, NaturalGas_CCCCSHighCF, NGCCS100, NaturalGas_CCS100, NaturalGas_CCS100_low,NaturalGas_CCS100_high]
+  CC - multi shaft:
+    [
+      NaturalGas_CCAvgCF,
+      NaturalGas_CCHighCF,
+      NaturalGas_2-on-1 Combined Cycle (H-Frame),
+    ]
+  CC with 90% CCS:
+    [
+      NaturalGas_CCCCSAvgCF,
+      NaturalGas_CCCCSHighCF,
+      NGCCS100,
+      NaturalGas_CCS100,
+      NaturalGas_CCS100_low,
+      NaturalGas_CCS100_high,
+    ]
   Fuel cells: []
-  Advanced nuclear: [Nuclear_Nuclear, Nuclear_mid, Nuclear_low, Nuclear_high, Nuclear_Nuclear - Large]
+  Advanced nuclear:
+    [
+      Nuclear_Nuclear,
+      Nuclear_mid,
+      Nuclear_low,
+      Nuclear_high,
+      Nuclear_Nuclear - Large,
+    ]
   Biomass: [Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated]
   MSW - landfill gas: []
   Wind: [LandbasedWind_Class3]
   Wind offshore: [OffShoreWind_Class3, OffShoreWind_Class12]
   Solar thermal: [CSP]
-  Solar PV - tracking: [UtilityPV_Class1, CommPV, ResPV, Imports_base]  # Imports included just to avoid warnings
-  Battery storage: [Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration]
-  Geothermal: [Geothermal_HydroBinary, Geothermal_HydroFlash, Geothermal_NFEGSBinary, Geothermal_DeepEGSBinary, Geothermal_NFEGSFlash, Geothermal_DeepEGSFlash]
+  Solar PV - tracking: [UtilityPV_Class1, CommPV, ResPV, Imports_base] # Imports included just to avoid warnings
+  Battery storage:
+    [Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration]
+  Geothermal:
+    [
+      Geothermal_HydroBinary,
+      Geothermal_HydroFlash,
+      Geothermal_NFEGSBinary,
+      Geothermal_DeepEGSBinary,
+      Geothermal_NFEGSFlash,
+      Geothermal_DeepEGSFlash,
+    ]
   Conventional hydropower: [Hydropower]
 
 # Format for ATB is <technology>_<tech_detail>, all are Mid cost case
@@ -647,7 +651,6 @@ proposed_gen_heat_rates:
   Natural Gas Fired Combustion Turbine: 9.66 # ATB
   Natural Gas Internal Combustion Engine: 8.160 # AEO
 
-
 proposed_min_load:
   Natural Gas Fired Combined Cycle: 0.3 # From GE
   Natural Gas Fired Combustion Turbine: 0.3 # GE aero range is .15-.5, E3 has 0.3
@@ -662,7 +665,8 @@ proposed_min_load:
 # update the EIA 860m spreadsheet directly, as if it recorded closures from
 # Global Energy Monitor
 
-additional_retirements: ~
+additional_retirements:
+  ~
   # - [55853, 1, 2020]
   # - [55853, 2, 2020]
   # - [2442, 1, 2029] # Retire Four Corners before 2030
@@ -674,10 +678,10 @@ additional_retirements: ~
   # - [55177, B, 2031]
   # - [55177, ST1, 2031]
 
-# Any technologies given MaxCapTag_Ban=1 in resource_tags or
-# regional_resource_tags (possibly via settings_management for particular
-# scenarios) will be subject to the 0 MW limit below, i.e., banned
 MaxCapReq:
-    MaxCapTag_Ban:
-      description: banned technologies
-      max_mw: 0
+  # Any technologies given MaxCapTag_Ban=1 in resource_tags or
+  # regional_resource_tags (possibly via settings_management for particular
+  # scenarios) will be subject to the 0 MW limit below, i.e., banned
+  MaxCapTag_Ban:
+    description: banned technologies
+    max_mw: 0

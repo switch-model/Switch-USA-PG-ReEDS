@@ -148,7 +148,7 @@ transmission_investment_cost:
 tx_expansion_per_period: 0
 tx_expansion_mw_per_period: 0
 # PG default:
-# tx_expansion_per_period: 1.0 
+# tx_expansion_per_period: 1.0
 # tx_expansion_mw_per_period: 400
 
 # which column to read for existing transmission capacity (nonfirm_ttc_mw or

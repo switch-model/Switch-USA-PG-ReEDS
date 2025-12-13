@@ -36,7 +36,6 @@ def define_components(m):
             m.PR_ZONE_TS, rule=lambda m, z, ts: m.MaxPRMargin
         )
         prm_var = m.CurrentPRMargin
-
     elif m.options.maximize_prm_sum:
         m.PR_TS = Set(initialize=lambda m: unique_list(ts for z, ts in m.PR_ZONE_TS))
         m.MaxPRMarginTS = Var(m.PR_TS, within=Reals)
@@ -49,18 +48,10 @@ def define_components(m):
             rule=lambda m, z, ts: m.MaxPRMargin[z, ts]
             >= m.planning_reserve_margin[z, ts],
         )
-        # find largest possible total reserve margin across zones
-        # on a MW basis (useful for seeing where/when the reserve margin
-        # is binding and where it isn't)
-        # m.PRMSum = Expression(  # will become model objective in pre_solve()
-        #     rule=lambda m: sum(
-        #         m.MaxPRMargin[z, ts] * m.zone_demand_mw[z, tp]
-        #         for (z, ts) in m.PR_ZONE_TS
-        #         for tp in m.TPS_IN_TS[ts]
-        #     )
-        # )
+
         # will become model objective in pre_solve()
         m.PRMSum = Expression(rule=lambda m: sum(m.MaxPRMarginTS[ts] for ts in m.PR_TS))
+
         prm_var = m.MaxPRMargin
     else:
         prm_var = m.planning_reserve_margin
@@ -70,7 +61,7 @@ def define_components(m):
         def rule(m):
             if len(m.PR_ZONE_TS) == 0:
                 raise ValueError(
-                    "This module reauires reserve margin zones and timeseries "
+                    "This module requires reserve margin zones and timeseries "
                     "to be defined in planning_reserve_margin.csv."
                 )
 

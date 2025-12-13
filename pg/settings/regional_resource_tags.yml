@@ -5,7 +5,7 @@
 
 regional_tag_values:
   p1:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -112,7 +112,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p2:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -219,7 +219,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p3:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -326,7 +326,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p4:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -433,7 +433,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p5:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -542,7 +542,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p6:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -651,7 +651,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p7:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -760,7 +760,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p8:
-    ESR_AZ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -772,7 +772,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_CA_ces:                # managed by make_emission_policies.py
+    ESR_CA_ces: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -785,7 +785,7 @@ regional_tag_values:
       geothermal: 1
       ccs: 1
       nuclear: 1
-    ESR_CA_rps:                # managed by make_emission_policies.py
+    ESR_CA_rps: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -796,7 +796,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_OR_ces_bundled:        # managed by make_emission_policies.py
+    ESR_OR_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -811,7 +811,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_OR_rps_bundled:        # managed by make_emission_policies.py
+    ESR_OR_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -824,7 +824,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_OR_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_OR_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -832,7 +832,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p9:
-    ESR_AZ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -844,7 +844,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_CA_ces:                # managed by make_emission_policies.py
+    ESR_CA_ces: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -857,7 +857,7 @@ regional_tag_values:
       geothermal: 1
       ccs: 1
       nuclear: 1
-    ESR_CA_rps:                # managed by make_emission_policies.py
+    ESR_CA_rps: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -868,7 +868,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_OR_ces_bundled:        # managed by make_emission_policies.py
+    ESR_OR_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -883,7 +883,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_OR_rps_bundled:        # managed by make_emission_policies.py
+    ESR_OR_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -896,7 +896,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_OR_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_OR_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -904,7 +904,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p10:
-    ESR_AZ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -916,7 +916,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_CA_ces:                # managed by make_emission_policies.py
+    ESR_CA_ces: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -929,7 +929,7 @@ regional_tag_values:
       geothermal: 1
       ccs: 1
       nuclear: 1
-    ESR_CA_rps:                # managed by make_emission_policies.py
+    ESR_CA_rps: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -940,7 +940,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_OR_ces_bundled:        # managed by make_emission_policies.py
+    ESR_OR_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -955,7 +955,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_OR_rps_bundled:        # managed by make_emission_policies.py
+    ESR_OR_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -968,7 +968,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_OR_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_OR_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -976,7 +976,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p11:
-    ESR_AZ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -988,7 +988,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_CA_ces:                # managed by make_emission_policies.py
+    ESR_CA_ces: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -1001,7 +1001,7 @@ regional_tag_values:
       geothermal: 1
       ccs: 1
       nuclear: 1
-    ESR_CA_rps:                # managed by make_emission_policies.py
+    ESR_CA_rps: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -1012,7 +1012,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       geothermal: 1
-    ESR_OR_ces_bundled:        # managed by make_emission_policies.py
+    ESR_OR_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1027,7 +1027,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_OR_rps_bundled:        # managed by make_emission_policies.py
+    ESR_OR_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1040,7 +1040,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_OR_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_OR_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -1048,7 +1048,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p12:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -1101,7 +1101,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p13:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -1154,7 +1154,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p27:
-    ESR_AZ_rps:  # managed by make_emission_policies.py
+    ESR_AZ_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1191,7 +1191,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p28:
-    ESR_AZ_rps:  # managed by make_emission_policies.py
+    ESR_AZ_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1228,7 +1228,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p29:
-    ESR_AZ_rps:  # managed by make_emission_policies.py
+    ESR_AZ_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1265,7 +1265,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p30:
-    ESR_AZ_rps:  # managed by make_emission_policies.py
+    ESR_AZ_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1302,7 +1302,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p31:
-    ESR_AZ_rps_bundled:  # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1389,7 +1389,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p33:
-    ESR_AZ_rps_bundled:  # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1430,7 +1430,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p34:
-    ESR_AZ_rps_bundled:  # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1471,7 +1471,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p39:
-    ESR_NE_ces:  # managed by make_emission_policies.py
+    ESR_NE_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1487,7 +1487,7 @@ regional_tag_values:
       nuclear: 1
       imports: 1
   p40:
-    ESR_NE_ces:  # managed by make_emission_policies.py
+    ESR_NE_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1503,7 +1503,7 @@ regional_tag_values:
       nuclear: 1
       imports: 1
   p41:
-    ESR_NE_ces:  # managed by make_emission_policies.py
+    ESR_NE_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1519,7 +1519,7 @@ regional_tag_values:
       nuclear: 1
       imports: 1
   p42:
-    ESR_MD_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1657,7 +1657,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p43:
-    ESR_MD_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1795,7 +1795,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p44:
-    ESR_MD_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -1933,7 +1933,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p45:
-    ESR_IA_rps:  # managed by make_emission_policies.py
+    ESR_IA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2208,7 +2208,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p46:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2438,7 +2438,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p47:
-    ESR_AZ_rps_bundled:  # managed by make_emission_policies.py
+    ESR_AZ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2525,7 +2525,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p48:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2538,7 +2538,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p54:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2669,7 +2669,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p55:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2800,7 +2800,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p57:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2813,7 +2813,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p59:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2826,7 +2826,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p60:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2839,7 +2839,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p61:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2852,7 +2852,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p62:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2865,7 +2865,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p63:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2878,7 +2878,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p64:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2891,7 +2891,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p65:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2904,7 +2904,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p66:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2917,7 +2917,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p67:
-    ESR_TX_rps:  # managed by make_emission_policies.py
+    ESR_TX_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -2930,7 +2930,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p68:
-    ESR_MD_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -3068,7 +3068,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p69:
-    ESR_IA_rps:  # managed by make_emission_policies.py
+    ESR_IA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -3343,7 +3343,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p70:
-    ESR_IA_rps:  # managed by make_emission_policies.py
+    ESR_IA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -3618,7 +3618,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p71:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -3749,7 +3749,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p72:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -3880,7 +3880,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p73:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -4011,7 +4011,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p74:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -4282,7 +4282,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p75:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -4512,7 +4512,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p76:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -4742,7 +4742,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p77:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -4972,7 +4972,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p78:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -5202,7 +5202,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p79:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -5432,7 +5432,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p80:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -5643,7 +5643,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p81:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -5854,7 +5854,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p82:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6065,7 +6065,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p83:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6276,7 +6276,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p84:
-    ESR_IL_ces_bundled:  # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6407,7 +6407,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p97:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6585,7 +6585,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p98:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6763,7 +6763,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p99:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6776,7 +6776,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -6784,7 +6784,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6797,7 +6797,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6809,7 +6809,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6819,16 +6819,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6840,7 +6840,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -6848,7 +6848,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6860,7 +6860,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -6870,7 +6870,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6884,7 +6884,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6898,7 +6898,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6910,7 +6910,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6922,7 +6922,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_ces_bundled:        # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6937,7 +6937,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NC_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NC_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6950,11 +6950,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NC_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6967,7 +6967,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -6975,7 +6975,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -6988,7 +6988,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7001,7 +7001,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -7009,7 +7009,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7022,7 +7022,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces:                # managed by make_emission_policies.py
+    ESR_VA_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7036,7 +7036,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps:                # managed by make_emission_policies.py
+    ESR_VA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7052,7 +7052,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p100:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7065,7 +7065,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -7073,7 +7073,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7086,7 +7086,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7098,7 +7098,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7108,16 +7108,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7129,7 +7129,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -7137,7 +7137,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7149,7 +7149,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -7159,7 +7159,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7173,7 +7173,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7187,7 +7187,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7199,7 +7199,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7211,7 +7211,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_ces_bundled:        # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7226,7 +7226,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NC_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NC_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7239,11 +7239,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NC_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7256,7 +7256,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -7264,7 +7264,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7277,7 +7277,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7290,7 +7290,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -7298,7 +7298,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7311,7 +7311,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces:                # managed by make_emission_policies.py
+    ESR_VA_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7325,7 +7325,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps:                # managed by make_emission_policies.py
+    ESR_VA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7341,7 +7341,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p103:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7612,7 +7612,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p104:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -7883,7 +7883,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p111:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -8208,7 +8208,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p112:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -8533,7 +8533,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p113:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -8858,7 +8858,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p114:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9183,7 +9183,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p115:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9491,7 +9491,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p118:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9504,7 +9504,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -9512,7 +9512,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9525,7 +9525,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9537,7 +9537,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9547,16 +9547,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9568,7 +9568,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -9576,7 +9576,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9588,7 +9588,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -9598,7 +9598,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9612,7 +9612,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9626,7 +9626,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9638,7 +9638,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9650,7 +9650,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_ces_bundled:        # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9665,7 +9665,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NC_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NC_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9678,11 +9678,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NC_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9695,7 +9695,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -9703,7 +9703,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9716,7 +9716,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9729,7 +9729,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -9737,7 +9737,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9750,7 +9750,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces:                # managed by make_emission_policies.py
+    ESR_VA_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9764,7 +9764,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps:                # managed by make_emission_policies.py
+    ESR_VA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -9780,7 +9780,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p119:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10088,7 +10088,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p120:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10396,7 +10396,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p121:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10409,7 +10409,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -10417,7 +10417,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10430,7 +10430,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10442,7 +10442,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10452,37 +10452,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps:                # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      geothermal: 1
-      imports: 1
-    ESR_MD_rps_solar:          # managed by make_emission_policies.py
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-    ESR_MD_rps_wind:           # managed by make_emission_policies.py
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10493,10 +10472,17 @@ regional_tag_values:
       onshore wind: 1
       conventional hydro: 1
       geothermal: 1
-      ccs: 1
-      nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_MD_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10510,7 +10496,21 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10522,7 +10522,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10534,7 +10534,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10547,7 +10547,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -10555,7 +10555,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10568,7 +10568,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10581,7 +10581,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -10589,7 +10589,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10602,7 +10602,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_VA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10616,7 +10616,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10630,7 +10630,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10642,7 +10642,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10658,7 +10658,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p122:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10966,7 +10966,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p123:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -10979,7 +10979,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -10987,7 +10987,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11000,7 +11000,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11012,7 +11012,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11022,37 +11022,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps:                # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      geothermal: 1
-      imports: 1
-    ESR_MD_rps_solar:          # managed by make_emission_policies.py
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-    ESR_MD_rps_wind:           # managed by make_emission_policies.py
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11063,10 +11042,17 @@ regional_tag_values:
       onshore wind: 1
       conventional hydro: 1
       geothermal: 1
-      ccs: 1
-      nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_MD_rps_wind: # managed by make_emission_policies.py
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11080,7 +11066,21 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11092,7 +11092,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11104,7 +11104,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11117,7 +11117,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11125,7 +11125,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11138,7 +11138,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11151,7 +11151,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11159,7 +11159,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11172,7 +11172,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_VA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11186,7 +11186,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11200,7 +11200,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11212,7 +11212,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11228,7 +11228,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p124:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11241,7 +11241,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11249,7 +11249,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11262,7 +11262,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11274,7 +11274,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11284,16 +11284,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11305,7 +11305,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11313,7 +11313,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11325,7 +11325,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -11335,7 +11335,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11349,7 +11349,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11363,7 +11363,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11375,7 +11375,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11387,7 +11387,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_ces_bundled:        # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11402,7 +11402,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NC_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NC_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11415,11 +11415,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NC_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NC_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11432,7 +11432,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11440,7 +11440,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NJ_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11453,7 +11453,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11466,7 +11466,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11474,7 +11474,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11487,7 +11487,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces:                # managed by make_emission_policies.py
+    ESR_VA_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11501,7 +11501,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps:                # managed by make_emission_policies.py
+    ESR_VA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11517,7 +11517,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p125:
-    ESR_DE_rps:  # managed by make_emission_policies.py
+    ESR_DE_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11780,7 +11780,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p126:
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11793,7 +11793,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11801,7 +11801,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_DE_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_DE_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11814,7 +11814,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_IL_ces_bundled:        # managed by make_emission_policies.py
+    ESR_IL_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11826,7 +11826,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_IL_rps_bundled:        # managed by make_emission_policies.py
+    ESR_IL_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11836,16 +11836,16 @@ regional_tag_values:
       LandbasedWind: 1
       onshore wind: 1
       imports: 1
-    ESR_IL_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_IL_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_IL_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_IL_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11857,7 +11857,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11865,7 +11865,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11877,7 +11877,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -11887,7 +11887,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_MI_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11901,7 +11901,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11915,7 +11915,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11927,7 +11927,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11939,24 +11939,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps:                # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      small hydro: 1
-      geothermal: 1
-      imports: 1
-    ESR_NJ_rps_solar:          # managed by make_emission_policies.py
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-    ESR_PA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11969,7 +11952,24 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_PA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar: # managed by make_emission_policies.py
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+    ESR_PA_rps_bundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      imports: 1
+    ESR_PA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -11977,7 +11977,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_PA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_PA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -11990,7 +11990,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_VA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12004,7 +12004,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12018,7 +12018,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_VA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12030,7 +12030,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12046,7 +12046,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p127:
-    ESR_CT_ces_bundled:        # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12061,7 +12061,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_CT_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12074,7 +12074,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12087,11 +12087,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12104,7 +12104,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12117,11 +12117,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12133,7 +12133,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -12141,7 +12141,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12153,7 +12153,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -12163,7 +12163,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_ME_ces_bundled:        # managed by make_emission_policies.py
+    ESR_ME_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12178,7 +12178,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps_bundled:        # managed by make_emission_policies.py
+    ESR_ME_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12191,7 +12191,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12204,11 +12204,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12221,11 +12221,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NY_ces:                # managed by make_emission_policies.py
+    ESR_NY_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12239,7 +12239,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NY_rps:                # managed by make_emission_policies.py
+    ESR_NY_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12251,7 +12251,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       imports: 1
-    ESR_RI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_RI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12268,7 +12268,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p128:
-    ESR_CT_ces_bundled:        # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12283,7 +12283,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_CT_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12296,7 +12296,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_bundled:        # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12309,11 +12309,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_DE_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12326,7 +12326,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12339,11 +12339,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MD_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12355,7 +12355,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MD_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -12363,7 +12363,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MD_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MD_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12375,7 +12375,7 @@ regional_tag_values:
       conventional hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MD_rps_wind_bundled:   # managed by make_emission_policies.py
+    ESR_MD_rps_wind_bundled: # managed by make_emission_policies.py
       OffShoreWind: 1
       offshore wind: 1
       LandbasedWind: 1
@@ -12385,7 +12385,7 @@ regional_tag_values:
       offshore wind: 1
       LandbasedWind: 1
       onshore wind: 1
-    ESR_ME_ces_bundled:        # managed by make_emission_policies.py
+    ESR_ME_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12400,7 +12400,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps_bundled:        # managed by make_emission_policies.py
+    ESR_ME_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12413,7 +12413,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12426,11 +12426,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NJ_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NJ_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12443,11 +12443,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NJ_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NJ_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NY_ces:                # managed by make_emission_policies.py
+    ESR_NY_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12461,7 +12461,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_NY_rps:                # managed by make_emission_policies.py
+    ESR_NY_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12473,7 +12473,7 @@ regional_tag_values:
       conventional hydro: 1
       small hydro: 1
       imports: 1
-    ESR_RI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_RI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12490,7 +12490,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p129:
-    ESR_CT_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12733,7 +12733,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p130:
-    ESR_CT_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12969,7 +12969,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p131:
-    ESR_CT_ces_bundled:        # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12984,7 +12984,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -12999,7 +12999,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_CT_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13012,7 +13012,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_CT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13025,7 +13025,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_ces:                # managed by make_emission_policies.py
+    ESR_MA_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13038,7 +13038,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps:                # managed by make_emission_policies.py
+    ESR_MA_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13051,26 +13051,11 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar:          # managed by make_emission_policies.py
+    ESR_MA_rps_solar: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_ME_ces_bundled:        # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      small hydro: 1
-      geothermal: 1
-      ccs: 1
-      nuclear: 1
-      imports: 1
-    ESR_ME_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13085,7 +13070,22 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps_bundled:        # managed by make_emission_policies.py
+    ESR_ME_ces_unbundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_ME_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13098,7 +13098,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13111,7 +13111,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13124,7 +13124,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13132,7 +13132,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NH_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NH_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13145,7 +13145,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_RI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13158,7 +13158,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_RI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13171,7 +13171,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VT_rps_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13181,7 +13181,7 @@ regional_tag_values:
       onshore wind: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VT_rps_unbundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13195,7 +13195,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p132:
-    ESR_CT_ces:                # managed by make_emission_policies.py
+    ESR_CT_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13210,7 +13210,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps:                # managed by make_emission_policies.py
+    ESR_CT_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13223,7 +13223,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13236,7 +13236,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13249,7 +13249,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13262,7 +13262,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13270,7 +13270,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13283,22 +13283,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_ces_bundled:        # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      small hydro: 1
-      geothermal: 1
-      ccs: 1
-      nuclear: 1
-      imports: 1
-    ESR_ME_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13313,7 +13298,22 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps_bundled:        # managed by make_emission_policies.py
+    ESR_ME_ces_unbundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_ME_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13326,7 +13326,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13339,7 +13339,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13352,7 +13352,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13360,7 +13360,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NH_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NH_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13373,7 +13373,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_RI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13386,7 +13386,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_RI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13399,7 +13399,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VT_rps_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13409,7 +13409,7 @@ regional_tag_values:
       onshore wind: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VT_rps_unbundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13423,7 +13423,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p133:
-    ESR_CT_ces_bundled:        # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13438,7 +13438,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13453,7 +13453,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_CT_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13466,7 +13466,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_CT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13479,7 +13479,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13492,7 +13492,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13505,7 +13505,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13518,7 +13518,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13526,7 +13526,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13539,22 +13539,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_ces_bundled:        # managed by make_emission_policies.py
-      bio: 1
-      distributed_generation: 1
-      UtilityPV: 1
-      photovoltaic: 1
-      OffShoreWind: 1
-      offshore wind: 1
-      LandbasedWind: 1
-      onshore wind: 1
-      conventional hydro: 1
-      small hydro: 1
-      geothermal: 1
-      ccs: 1
-      nuclear: 1
-      imports: 1
-    ESR_ME_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13569,7 +13554,22 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps_bundled:        # managed by make_emission_policies.py
+    ESR_ME_ces_unbundled: # managed by make_emission_policies.py
+      bio: 1
+      distributed_generation: 1
+      UtilityPV: 1
+      photovoltaic: 1
+      OffShoreWind: 1
+      offshore wind: 1
+      LandbasedWind: 1
+      onshore wind: 1
+      conventional hydro: 1
+      small hydro: 1
+      geothermal: 1
+      ccs: 1
+      nuclear: 1
+      imports: 1
+    ESR_ME_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13582,7 +13582,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_ME_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13595,7 +13595,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13608,7 +13608,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13616,7 +13616,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NH_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NH_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13629,7 +13629,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps:                # managed by make_emission_policies.py
+    ESR_RI_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13642,7 +13642,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VT_rps_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13652,7 +13652,7 @@ regional_tag_values:
       onshore wind: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VT_rps_unbundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13666,7 +13666,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p134:
-    ESR_CT_ces_bundled:        # managed by make_emission_policies.py
+    ESR_CT_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13681,7 +13681,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13696,7 +13696,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_CT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_CT_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13709,7 +13709,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_CT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_CT_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13722,7 +13722,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_ces_bundled:        # managed by make_emission_policies.py
+    ESR_MA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13735,7 +13735,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_ces_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_ces_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13748,7 +13748,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_MA_rps_bundled:        # managed by make_emission_policies.py
+    ESR_MA_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13761,7 +13761,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_MA_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_MA_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13769,7 +13769,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_MA_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_MA_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13782,7 +13782,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_ME_ces:                # managed by make_emission_policies.py
+    ESR_ME_ces: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13797,7 +13797,7 @@ regional_tag_values:
       ccs: 1
       nuclear: 1
       imports: 1
-    ESR_ME_rps:                # managed by make_emission_policies.py
+    ESR_ME_rps: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13810,7 +13810,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_bundled:        # managed by make_emission_policies.py
+    ESR_NH_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13823,7 +13823,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_NH_rps_solar_bundled:  # managed by make_emission_policies.py
+    ESR_NH_rps_solar_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13831,7 +13831,7 @@ regional_tag_values:
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
-    ESR_NH_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_NH_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13844,7 +13844,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_bundled:        # managed by make_emission_policies.py
+    ESR_RI_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13857,7 +13857,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_RI_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_RI_rps_unbundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -13870,7 +13870,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_bundled:        # managed by make_emission_policies.py
+    ESR_VT_rps_bundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13880,7 +13880,7 @@ regional_tag_values:
       onshore wind: 1
       geothermal: 1
       imports: 1
-    ESR_VT_rps_unbundled:      # managed by make_emission_policies.py
+    ESR_VT_rps_unbundled: # managed by make_emission_policies.py
       distributed_generation: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -13894,7 +13894,7 @@ regional_tag_values:
       OffShoreWind: 1
       offshore wind: 1
   p14:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14027,7 +14027,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p15:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14160,7 +14160,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p16:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14293,7 +14293,7 @@ regional_tag_values:
       small hydro: 1
       geothermal: 1
   p17:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14426,7 +14426,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p18:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14559,7 +14559,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p19:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14692,7 +14692,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p20:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14825,7 +14825,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p21:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -14938,7 +14938,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p22:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15051,7 +15051,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p23:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15164,7 +15164,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p24:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15277,7 +15277,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p25:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15334,7 +15334,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p26:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15391,7 +15391,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p32:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -15517,7 +15517,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p35:
-    ESR_CA_ces_bundled:  # managed by make_emission_policies.py
+    ESR_CA_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       UtilityPV: 1
       photovoltaic: 1
@@ -15650,7 +15650,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p36:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -15776,7 +15776,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p37:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -15902,7 +15902,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p38:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16028,7 +16028,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p52:
-    ESR_MO_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MO_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16061,7 +16061,7 @@ regional_tag_values:
       small hydro: 1
       imports: 1
   p53:
-    ESR_MO_rps_bundled:  # managed by make_emission_policies.py
+    ESR_MO_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16094,7 +16094,7 @@ regional_tag_values:
       small hydro: 1
       imports: 1
   p56:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16147,7 +16147,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p58:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16232,7 +16232,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p85:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16285,7 +16285,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p86:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16370,7 +16370,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p87:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16455,7 +16455,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p88:
-    ESR_MI_ces_bundled:  # managed by make_emission_policies.py
+    ESR_MI_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16540,7 +16540,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p89:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16573,7 +16573,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p90:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16606,7 +16606,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p91:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16639,7 +16639,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p92:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -16783,7 +16783,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p93:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17033,7 +17033,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p94:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17066,7 +17066,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p95:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17099,7 +17099,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p96:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17132,7 +17132,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p101:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17165,7 +17165,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p102:
-    ESR_NC_ces_bundled:  # managed by make_emission_policies.py
+    ESR_NC_ces_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17198,7 +17198,7 @@ regional_tag_values:
       UtilityPV: 1
       photovoltaic: 1
   p105:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17453,7 +17453,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p106:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17708,7 +17708,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p107:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -17963,7 +17963,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p108:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -18213,7 +18213,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p109:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -18463,7 +18463,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p110:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -18713,7 +18713,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p116:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1
@@ -19038,7 +19038,7 @@ regional_tag_values:
       geothermal: 1
       imports: 1
   p117:
-    ESR_DE_rps_bundled:  # managed by make_emission_policies.py
+    ESR_DE_rps_bundled: # managed by make_emission_policies.py
       bio: 1
       distributed_generation: 1
       UtilityPV: 1

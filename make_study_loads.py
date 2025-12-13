@@ -109,7 +109,6 @@ base_wide = (
     .astype(int)
 )
 base_wide.to_csv(load_file_path, index=False)
-del base_wide
 
 # %%#################
 # Calculate load growth each year (will be added as flexible load)
@@ -351,5 +350,22 @@ pd.DataFrame(
     }
 ).to_csv(metadata_path, index=False)
 print(f"Saved {metadata_path}")
+
+# %%
+print("national growth statistics (change from 2024 to 2030):")
+b = base_wide.xs("base", level=1, axis=1).groupby(level=0, axis=1).sum()
+g = flex.xs("base", level=2, axis=1).groupby(level=1, axis=1).sum()
+total = (
+    (b + g)[[2024, 2030]]
+    .agg(["sum", "max"], axis=0)
+    .rename({"sum": "sales", "max": "peak"})
+    .div(1000)
+)
+# convert from total GWh in 7 years to TWh/year
+total.loc["sales", :] *= 0.001 * 8760 / len(b)
+print("absolute change (TWh/y, GW):")
+print((total[2030] - total[2024]).to_string())
+print("fractional change:")
+print((total[2030] / total[2024]).to_string())
 
 # %%

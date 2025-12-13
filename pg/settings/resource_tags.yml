@@ -6,181 +6,180 @@
 # after more general terms ("Natural Gas CCS100: 0" should come after "Natural Gas: 1").
 
 model_tag_names:
-- THERM
-- VRE
-- Num_VRE_Bins
-- MUST_RUN
-- STOR
-- FLEX
-- HYDRO
-  # - LDS
-- Commit
-- New_Build
-  # - Hydro_level
-- CapRes_1
-- CapRes_2
-- MaxCapTag_Ban
-- MaxCapTag_WindGrowth
-- MaxCapTag_SolarGrowth
-- MaxCapTag_NuclearGrowth
-- MaxCapTag_GasTurbineSupply
+  - THERM
+  - VRE
+  - Num_VRE_Bins
+  - MUST_RUN
+  - STOR
+  - FLEX
+  - HYDRO
+    # - LDS
+  - Commit
+  - New_Build
+    # - Hydro_level
+  - CapRes_1
+  - CapRes_2
+  - MaxCapTag_Ban
+  - MaxCapTag_WindGrowth
+  - MaxCapTag_SolarGrowth
+  - MaxCapTag_NuclearGrowth
+  - MaxCapTag_GasTurbineSupply
 
-# tags starting with ESR_ or MinCapTag_ are managed by make_emission_policies.py
-- MinCapTag_CA_offshorewind
-- MinCapTag_CT_offshorewind
-- MinCapTag_MA_offshorewind
-- MinCapTag_MD_offshorewind
-- MinCapTag_ME_offshorewind
-- MinCapTag_NJ_offshorewind
-- MinCapTag_NY_offshorewind
-- MinCapTag_RI_offshorewind
-- MinCapTag_VA_offshorewind
+  # tags starting with ESR_ or MinCapTag_ are managed by make_emission_policies.py
+  - MinCapTag_CA_offshorewind
+  - MinCapTag_CT_offshorewind
+  - MinCapTag_MA_offshorewind
+  - MinCapTag_MD_offshorewind
+  - MinCapTag_ME_offshorewind
+  - MinCapTag_NJ_offshorewind
+  - MinCapTag_NY_offshorewind
+  - MinCapTag_RI_offshorewind
+  - MinCapTag_VA_offshorewind
 
-
-- ESR_AZ_rps
-- ESR_AZ_rps_bundled
-- ESR_CA_ces
-- ESR_CA_ces_bundled
-- ESR_CA_ces_unbundled
-- ESR_CA_rps
-- ESR_CA_rps_bundled
-- ESR_CA_rps_unbundled
-- ESR_CO_ces
-- ESR_CO_ces_bundled
-- ESR_CO_ces_unbundled
-- ESR_CO_rps
-- ESR_CO_rps_bundled
-- ESR_CO_rps_unbundled
-- ESR_CT_ces
-- ESR_CT_ces_bundled
-- ESR_CT_ces_unbundled
-- ESR_CT_rps
-- ESR_CT_rps_bundled
-- ESR_CT_rps_unbundled
-- ESR_DE_rps
-- ESR_DE_rps_bundled
-- ESR_DE_rps_solar
-- ESR_DE_rps_solar_bundled
-- ESR_DE_rps_solar_unbundled
-- ESR_DE_rps_unbundled
-- ESR_IA_rps
-- ESR_IL_ces
-- ESR_IL_ces_bundled
-- ESR_IL_ces_unbundled
-- ESR_IL_rps
-- ESR_IL_rps_bundled
-- ESR_IL_rps_solar
-- ESR_IL_rps_solar_bundled
-- ESR_IL_rps_solar_unbundled
-- ESR_IL_rps_unbundled
-- ESR_IL_rps_wind
-- ESR_IL_rps_wind_bundled
-- ESR_IL_rps_wind_unbundled
-- ESR_MA_ces
-- ESR_MA_ces_bundled
-- ESR_MA_ces_unbundled
-- ESR_MA_rps
-- ESR_MA_rps_bundled
-- ESR_MA_rps_solar
-- ESR_MA_rps_solar_bundled
-- ESR_MA_rps_solar_unbundled
-- ESR_MA_rps_unbundled
-- ESR_MD_rps
-- ESR_MD_rps_bundled
-- ESR_MD_rps_solar
-- ESR_MD_rps_solar_bundled
-- ESR_MD_rps_solar_unbundled
-- ESR_MD_rps_unbundled
-- ESR_MD_rps_wind
-- ESR_MD_rps_wind_bundled
-- ESR_MD_rps_wind_unbundled
-- ESR_ME_ces
-- ESR_ME_ces_bundled
-- ESR_ME_ces_unbundled
-- ESR_ME_rps
-- ESR_ME_rps_bundled
-- ESR_ME_rps_unbundled
-- ESR_MI_ces
-- ESR_MI_ces_bundled
-- ESR_MI_ces_unbundled
-- ESR_MI_rps
-- ESR_MI_rps_bundled
-- ESR_MI_rps_unbundled
-- ESR_MN_ces
-- ESR_MN_ces_bundled
-- ESR_MN_ces_unbundled
-- ESR_MN_rps
-- ESR_MN_rps_bundled
-- ESR_MN_rps_solar
-- ESR_MN_rps_solar_bundled
-- ESR_MN_rps_solar_unbundled
-- ESR_MN_rps_unbundled
-- ESR_MO_rps
-- ESR_MO_rps_bundled
-- ESR_MO_rps_solar
-- ESR_MO_rps_solar_bundled
-- ESR_MO_rps_solar_unbundled
-- ESR_MO_rps_unbundled
-- ESR_NC_ces
-- ESR_NC_ces_bundled
-- ESR_NC_rps
-- ESR_NC_rps_bundled
-- ESR_NC_rps_solar
-- ESR_NC_rps_solar_bundled
-- ESR_NE_ces
-- ESR_NH_rps
-- ESR_NH_rps_bundled
-- ESR_NH_rps_solar
-- ESR_NH_rps_solar_bundled
-- ESR_NH_rps_solar_unbundled
-- ESR_NH_rps_unbundled
-- ESR_NJ_rps
-- ESR_NJ_rps_bundled
-- ESR_NJ_rps_solar
-- ESR_NJ_rps_solar_bundled
-- ESR_NJ_rps_solar_unbundled
-- ESR_NJ_rps_unbundled
-- ESR_NM_ces
-- ESR_NM_rps
-- ESR_NV_ces
-- ESR_NV_rps
-- ESR_NY_ces
-- ESR_NY_rps
-- ESR_OH_rps
-- ESR_OH_rps_bundled
-- ESR_OR_ces
-- ESR_OR_ces_bundled
-- ESR_OR_rps
-- ESR_OR_rps_bundled
-- ESR_OR_rps_solar
-- ESR_OR_rps_solar_bundled
-- ESR_PA_rps
-- ESR_PA_rps_bundled
-- ESR_PA_rps_solar
-- ESR_PA_rps_solar_bundled
-- ESR_PA_rps_solar_unbundled
-- ESR_PA_rps_unbundled
-- ESR_RI_rps
-- ESR_RI_rps_bundled
-- ESR_RI_rps_unbundled
-- ESR_TX_rps
-- ESR_VA_ces
-- ESR_VA_ces_bundled
-- ESR_VA_ces_unbundled
-- ESR_VA_rps
-- ESR_VA_rps_bundled
-- ESR_VA_rps_unbundled
-- ESR_VT_rps
-- ESR_VT_rps_bundled
-- ESR_VT_rps_unbundled
-- ESR_WA_ces
-- ESR_WA_ces_bundled
-- ESR_WA_ces_unbundled
-- ESR_WA_rps
-- ESR_WA_rps_bundled
-- ESR_WA_rps_unbundled
-- ESR_WI_rps
-- ESR_WI_rps_bundled
+  - ESR_AZ_rps
+  - ESR_AZ_rps_bundled
+  - ESR_CA_ces
+  - ESR_CA_ces_bundled
+  - ESR_CA_ces_unbundled
+  - ESR_CA_rps
+  - ESR_CA_rps_bundled
+  - ESR_CA_rps_unbundled
+  - ESR_CO_ces
+  - ESR_CO_ces_bundled
+  - ESR_CO_ces_unbundled
+  - ESR_CO_rps
+  - ESR_CO_rps_bundled
+  - ESR_CO_rps_unbundled
+  - ESR_CT_ces
+  - ESR_CT_ces_bundled
+  - ESR_CT_ces_unbundled
+  - ESR_CT_rps
+  - ESR_CT_rps_bundled
+  - ESR_CT_rps_unbundled
+  - ESR_DE_rps
+  - ESR_DE_rps_bundled
+  - ESR_DE_rps_solar
+  - ESR_DE_rps_solar_bundled
+  - ESR_DE_rps_solar_unbundled
+  - ESR_DE_rps_unbundled
+  - ESR_IA_rps
+  - ESR_IL_ces
+  - ESR_IL_ces_bundled
+  - ESR_IL_ces_unbundled
+  - ESR_IL_rps
+  - ESR_IL_rps_bundled
+  - ESR_IL_rps_solar
+  - ESR_IL_rps_solar_bundled
+  - ESR_IL_rps_solar_unbundled
+  - ESR_IL_rps_unbundled
+  - ESR_IL_rps_wind
+  - ESR_IL_rps_wind_bundled
+  - ESR_IL_rps_wind_unbundled
+  - ESR_MA_ces
+  - ESR_MA_ces_bundled
+  - ESR_MA_ces_unbundled
+  - ESR_MA_rps
+  - ESR_MA_rps_bundled
+  - ESR_MA_rps_solar
+  - ESR_MA_rps_solar_bundled
+  - ESR_MA_rps_solar_unbundled
+  - ESR_MA_rps_unbundled
+  - ESR_MD_rps
+  - ESR_MD_rps_bundled
+  - ESR_MD_rps_solar
+  - ESR_MD_rps_solar_bundled
+  - ESR_MD_rps_solar_unbundled
+  - ESR_MD_rps_unbundled
+  - ESR_MD_rps_wind
+  - ESR_MD_rps_wind_bundled
+  - ESR_MD_rps_wind_unbundled
+  - ESR_ME_ces
+  - ESR_ME_ces_bundled
+  - ESR_ME_ces_unbundled
+  - ESR_ME_rps
+  - ESR_ME_rps_bundled
+  - ESR_ME_rps_unbundled
+  - ESR_MI_ces
+  - ESR_MI_ces_bundled
+  - ESR_MI_ces_unbundled
+  - ESR_MI_rps
+  - ESR_MI_rps_bundled
+  - ESR_MI_rps_unbundled
+  - ESR_MN_ces
+  - ESR_MN_ces_bundled
+  - ESR_MN_ces_unbundled
+  - ESR_MN_rps
+  - ESR_MN_rps_bundled
+  - ESR_MN_rps_solar
+  - ESR_MN_rps_solar_bundled
+  - ESR_MN_rps_solar_unbundled
+  - ESR_MN_rps_unbundled
+  - ESR_MO_rps
+  - ESR_MO_rps_bundled
+  - ESR_MO_rps_solar
+  - ESR_MO_rps_solar_bundled
+  - ESR_MO_rps_solar_unbundled
+  - ESR_MO_rps_unbundled
+  - ESR_NC_ces
+  - ESR_NC_ces_bundled
+  - ESR_NC_rps
+  - ESR_NC_rps_bundled
+  - ESR_NC_rps_solar
+  - ESR_NC_rps_solar_bundled
+  - ESR_NE_ces
+  - ESR_NH_rps
+  - ESR_NH_rps_bundled
+  - ESR_NH_rps_solar
+  - ESR_NH_rps_solar_bundled
+  - ESR_NH_rps_solar_unbundled
+  - ESR_NH_rps_unbundled
+  - ESR_NJ_rps
+  - ESR_NJ_rps_bundled
+  - ESR_NJ_rps_solar
+  - ESR_NJ_rps_solar_bundled
+  - ESR_NJ_rps_solar_unbundled
+  - ESR_NJ_rps_unbundled
+  - ESR_NM_ces
+  - ESR_NM_rps
+  - ESR_NV_ces
+  - ESR_NV_rps
+  - ESR_NY_ces
+  - ESR_NY_rps
+  - ESR_OH_rps
+  - ESR_OH_rps_bundled
+  - ESR_OR_ces
+  - ESR_OR_ces_bundled
+  - ESR_OR_rps
+  - ESR_OR_rps_bundled
+  - ESR_OR_rps_solar
+  - ESR_OR_rps_solar_bundled
+  - ESR_PA_rps
+  - ESR_PA_rps_bundled
+  - ESR_PA_rps_solar
+  - ESR_PA_rps_solar_bundled
+  - ESR_PA_rps_solar_unbundled
+  - ESR_PA_rps_unbundled
+  - ESR_RI_rps
+  - ESR_RI_rps_bundled
+  - ESR_RI_rps_unbundled
+  - ESR_TX_rps
+  - ESR_VA_ces
+  - ESR_VA_ces_bundled
+  - ESR_VA_ces_unbundled
+  - ESR_VA_rps
+  - ESR_VA_rps_bundled
+  - ESR_VA_rps_unbundled
+  - ESR_VT_rps
+  - ESR_VT_rps_bundled
+  - ESR_VT_rps_unbundled
+  - ESR_WA_ces
+  - ESR_WA_ces_bundled
+  - ESR_WA_ces_unbundled
+  - ESR_WA_rps
+  - ESR_WA_rps_bundled
+  - ESR_WA_rps_unbundled
+  - ESR_WI_rps
+  - ESR_WI_rps_bundled
 
 default_model_tag: 0
 
@@ -350,17 +349,17 @@ model_tag_values:
     # From NERC GADS statistical brochures: https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
     # Conventional plants from NERC GADS Generating Unit Statistical Brochure 4 for 2020-24 (EFORd, all sizes)
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-conventional/generating-unit-statistical-brochures
-    Coal: 0.1019  # Coal Primary
-    Petroleum Liquids: 0.0876  # 0.0632 Diesel -> 20369 MW DFO fuel; 0.1458 Oil Primary -> 8522 MW all other fuels
-    Petroleum Coke: 0.0876  # Assume same as petroleum liquids
-    Natural Gas Steam Turbine: 0.1399  # Gas Primary
-    Nuclear: 0.0224  # Nuclear All Types
-    Combustion Turbine: 0.0986  # Gas Turbine
-    Combined Cycle: 0.0491  # Combined Cycle
-    Hydro: 0.0875  # Hydro
-    Pumped Storage: 0.0803  # Pumped Storage
-    Geothermal: 0.0452  # Geothermal
-    # Wind from NERC GADS Wind - Wind Metric Brochure for 2020-23 (1.B.12 (E-FOR) weighted by NMC): 
+    Coal: 0.1019 # Coal Primary
+    Petroleum Liquids: 0.0876 # 0.0632 Diesel -> 20369 MW DFO fuel; 0.1458 Oil Primary -> 8522 MW all other fuels
+    Petroleum Coke: 0.0876 # Assume same as petroleum liquids
+    Natural Gas Steam Turbine: 0.1399 # Gas Primary
+    Nuclear: 0.0224 # Nuclear All Types
+    Combustion Turbine: 0.0986 # Gas Turbine
+    Combined Cycle: 0.0491 # Combined Cycle
+    Hydro: 0.0875 # Hydro
+    Pumped Storage: 0.0803 # Pumped Storage
+    Geothermal: 0.0452 # Geothermal
+    # Wind from NERC GADS Wind - Wind Metric Brochure for 2020-23 (1.B.12 (E-FOR) weighted by NMC):
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-wind
     # documentation: https://www.nerc.com/globalassets/programs/rapa/gads/wind/2025_gads_wind_dri.pdf
     Wind: 0.06227
@@ -371,16 +370,16 @@ model_tag_values:
     UtilityPV: 0.01
     # We don't have a good source for batteries, so we use 5% recommendation from CESA (2021): https://efiling.energy.ca.gov/getdocument.aspx?tn=238987
     Battery: 0.05
-    Batteries: 0.05 
+    Batteries: 0.05
     Biomass: 0.1019 # assume same as coal
     Other_peaker: 0.0986 # assume same as combustion turbine
-    distributed: 0  # assume reported production is actual (no derate)
+    distributed: 0 # assume reported production is actual (no derate)
     Imports: 0 # use reported imports with no derate
-    load_growth: 0  # don't derate VPP since corresponding loads aren't derated (but maybe we should count some non-response?)
-    us_exports: 1  # this is a VPP corresponding to canceling scheduled US exports (load), which should never be used
+    load_growth: 0 # don't derate VPP since corresponding loads aren't derated (but maybe we should count some non-response?)
+    us_exports: 1 # this is a VPP corresponding to canceling scheduled US exports (load), which should never be used
   gen_max_annual_availability:
     # this is set for passthrough to gen_info.csv in switch.yml
-    # "" will match all technologies; set to 1 by default, but override for the 
+    # "" will match all technologies; set to 1 by default, but override for the
     # demand response virtual generators (see notes in flexible_load.yml)
     "": 1.0
     # firm loads (0.0 reduction) by default, but may be adjusted in scenarios
@@ -389,7 +388,7 @@ model_tag_values:
   gen_can_provide_spinning_reserves:
     # most gens can provide spinning reserves
     "": 1
-    # no spinning reserves from the DR generators with limited or no annual 
+    # no spinning reserves from the DR generators with limited or no annual
     # availability (could revisit this to treat them as interruptible loads
     # that can be counted toward the reserve margin even if not interrupted)
     load_growth: 0
@@ -425,14 +424,11 @@ model_tag_values:
     # turn it off for some cases)
     # make_emission_policies.py defines and documents the specific limit.
     NaturalGas: 1 # new-build CC and CT
-    Natural Gas Fired Combined Cycle: 1  # existing/planned CC
-    Natural Gas Fired Combustion Turbine: 1  # existing/planned CT
+    Natural Gas Fired Combined Cycle: 1 # existing/planned CC
+    Natural Gas Fired Combustion Turbine: 1 # existing/planned CT
   MaxCapTag_Ban:
     # 0 by default, but we also specify 0 to avoid a warning from PowerGenome
     "": 0
-
-
-
 # Tags for a technology in a specific region Format should be
 # regional_tag_values: <region>: <tag name>: <technology>: <tag value>
 # Technologies will be matched using str.contains(case=False, regex=False) (with

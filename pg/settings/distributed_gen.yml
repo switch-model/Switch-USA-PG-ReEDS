@@ -3,6 +3,8 @@
 distributed_gen_fn: nrel_reeds_distr_pv_2025.2.0.parquet
 distributed_gen_scenario: mid_case
 
+# q "select year, sum(distpv_mw) as distpv_mw from (select year, region, max(distpv_mwh) as distpv_mw from 'pg_data/NREL-dist-gen/nrel_reeds_distr_pv_2025.2.0.parquet' group by 1, 2) group by 1 order by 1;"
+
 # Set this parameter to "true" if existing distributed generation in each region should
 # be represented as a resource rather than being subtracted from demand.
 dg_as_resource: true

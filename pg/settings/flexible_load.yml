@@ -2,7 +2,6 @@
 # from NREL's EFS study (described below) or using user input files. This case study
 # uses EFS data.
 
-
 # Electrification scenarios are supplied in two files. EFS_STOCK_AGG.parquet has scenarios
 # from the NREL Electrification Futures Study (EFS). SCENARIO_STOCK.parquet has scenarios
 # from the Princeton Net Zero study. The scenario name will depend on which source you
@@ -31,7 +30,6 @@
 # trans_heavy_duty (heavy duty vehicles)
 # trans_bus (transit buses)
 
-
 # electrification_stock_fn: SCENARIO_STOCK.parquet # EFS_STOCK_AGG.parquet
 # electrification_scenario: current_policy # REFERENCE ELECTRIFICATION - MODERATE TECHNOLOGY ADVANCEMENT
 
@@ -54,16 +52,15 @@
 # make_demand_response_profiles
 demand_response: base
 
-
 # csv file with hourly profiles for demand response resources in each
-# region/year/scenario. The top four rows are 
+# region/year/scenario. The top four rows are
 #   1) the name of the DR resource (matching key values in
-#      `flexible_demand_resources` below), 
-#   2) the model year, 
+#      `flexible_demand_resources` below),
+#   2) the model year,
 #   3) the scenario name (scenarios are selected using the `demand_response`
 #      settings parameter), and
 #   4) the model region from `model_regions`
-# Then the rows contain hourly loads for each of these cases / regions. There should be 
+# Then the rows contain hourly loads for each of these cases / regions. There should be
 # one row per load hour, in order, with no explicit index.
 demand_response_fn: load_adjustments.csv.zip
 
@@ -78,7 +75,7 @@ demand_response_fn: load_adjustments.csv.zip
 #   - Fuel: "No_fuel"
 #   - cluster: 1
 #   - others as given under `parameter_values` here
-# They will also have max cap factor equal to the normalized load shape, so 
+# They will also have max cap factor equal to the normalized load shape, so
 # effectively they can represent curtailment of fraction_shiftable * profile
 # in any hour (subject to limits imposed by the model based on parameter_values).
 

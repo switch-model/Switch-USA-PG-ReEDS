@@ -9,7 +9,6 @@
 # applied, which can be problematic with historical load profiles from well
 # before the start of the study.
 
-
 # User load profiles in regional_load_fn are applied as-is (no growth factor)
 # and supersede any loads defined below. They should have three header rows
 # identifying model year, scenario and region, then one row per historical hour
@@ -27,7 +26,6 @@ electrification: base
 # note: we also add growth in via flexible_load.yml, so it can optionally be
 # made interruptible.
 
-
 # # The ReEDS dataset (load_curves_nrel_reeds table in PG_DB) includes hourly
 # # demand from 2007-2013, shifted to 2020-2050. In this case, since model years
 # # appear in the PG_DB dataset, data for model years will be used as-is, with no
@@ -37,7 +35,7 @@ electrification: base
 # # 2012-2019 can be calculated using historical data (from EIA AEO). Different
 # # growth scenarios can be selected using the same AEO scenarios used for fuel
 # # prices. Examples include HIGHMACRO for high growth and LOWMACRO for low
-# # growth. 
+# # growth.
 # regular_load_growth_start_year: 2020
 # growth_scenario: REF2021
 
@@ -45,9 +43,9 @@ electrification: base
 # # will use load_aeo_year or 2020 if not specified
 # load_eia_aeo_year: 2021
 
-# # *_load_region_map entries identify model regions that fall in each 
-# # AEO region. `historical_load_region_map` is used prior to 2019 and 
-# # `future_load_region_map` is used after. Annual % growth rates are 
+# # *_load_region_map entries identify model regions that fall in each
+# # AEO region. `historical_load_region_map` is used prior to 2019 and
+# # `future_load_region_map` is used after. Annual % growth rates are
 # # taken from the `growth_scenario` and aeo release specified above.
 
 # # outdated, uses IPM zones instead of ReEDS
@@ -116,7 +114,7 @@ electrification: base
 #   WECCCAS: [WECC_IID, WECC_SCE, WEC_LADW, WEC_SDGE] #CASO
 #   WECCSW: [WECC_AZ, WECC_NM, WECC_SNV] #SRSG
 
-# # supersedes EIA AEO growth rates for total demand (appears to also 
+# # supersedes EIA AEO growth rates for total demand (appears to also
 # # supersede AEO for historical growth, which could cause trouble when
 # # working with data that is not pre-shifted to the start of the study
 # # period)
@@ -130,7 +128,6 @@ electrification: base
 #   #   sector1: 0.02
 #   #   sector2: 0.02
 
-
 ######################
 # Historical hourly load profiles
 ######################
@@ -140,7 +137,8 @@ electrification: base
 # from the pg_db database, and from user-supplied profiles in
 # `regional_load_fn`. Not clear what happens if the same region appears more
 # than once among these sources.
-load_source_table_name: ~
+load_source_table_name:
+  ~
   # load_source: table_name
   # reeds: load_curves_nrel_reeds
 
@@ -151,5 +149,3 @@ load_source_table_name: ~
 # should be pulled from regional_load_fn.
 # regional_load_source: reeds
 regional_load_source: USER
-
-
