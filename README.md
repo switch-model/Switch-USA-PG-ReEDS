@@ -365,9 +365,10 @@ exporting zone.
 `make_emission_policies.py` script implements these by reading rules from the
 ReEDS repository on github.com and creating several files and .yml sections with
 equivalent terms in the pg/settings and pg/extra_inputs directories. This also
-creates a national cap on new wind development equal to the highest rate of
-growth in 2014-24, as determined from EIA 860m data downloaded by PowerGenome.
-These are the files and sections created by this script:
+creates national caps on new wind, solar, nuclear and gas power plant
+development based on near-term market conditions, as documented near the top of
+the script. These are the files and sections created by
+`make_emission_policies.py`:
 
   - `emission_policies_current.csv`: current CO2 policies
   - `emission_policies_decarb.csv`: national cap / carbon tax case

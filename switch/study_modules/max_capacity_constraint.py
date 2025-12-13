@@ -53,9 +53,23 @@ def define_components(m):
             # in which case the constraint is always met
             return Constraint.Skip
 
+        # capacity added in the model; we use additions instead of
+        # capacity in place (GenCapacity[g, pe]) because this is
+        # meant to be a limit on construction at any point, which
+        # shouldn't be circumventable by suspending older gens of
+        # a similar type; however, it does allow replacing capped
+        # capacity when it ages out.
+        # TODO: maybe add a MaxAdditionsTag to PowerGenome distinct
+        # from MaxCapacityTag
         build_capacity = sum(
-            m.GenCapacity[g, pe] for g in m.GENS_IN_MAX_CAP_PROGRAM[pr]
+            m.BuildGen[g, bld_yr]
+            for g in m.GENS_IN_MAX_CAP_PROGRAM[pr]
+            for bld_yr in m.BLD_YRS_FOR_GEN_PERIOD[g, pe]
         )
+        # build_capacity = sum(
+        #     m.GenCapacity[g, pe] for g in m.GENS_IN_MAX_CAP_PROGRAM[pr]
+        # )
+
         max_capacity_requirement = m.max_cap_mw[pr, pe]
 
         # define and return the constraint

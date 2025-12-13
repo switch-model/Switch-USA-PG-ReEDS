@@ -377,10 +377,9 @@ settings_management:
             p99: 4.637933888357141
   2024:
     all_cases:
-      # disable new-build for historical case
+      # disable new-build and economic retirement for historical case
       atb_new_gen: []
       atb_modifiers: ~
-      # never allow retirement in 2024
       model_tag_values:
         Can_Retire:
           "": 0
@@ -398,8 +397,23 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 151941.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 121039.59999999998
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 451444.19999999995
   2025:
     all_cases:
+      # disable new-build and economic retirement for historical case
+      atb_new_gen: []
+      atb_modifiers: ~
+      model_tag_values:
+        Can_Retire:
+          "": 0
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_ME_offshorewind:
           description: ME_offshorewind
@@ -416,9 +430,29 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 166429.5
+          max_mw: 166431.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 157990.36
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 461110.86666666664
   2026:
     all_cases:
+      # don't allow floating offshore wind before 2030 (no prices in ATB)
+      # don't allow new nuclear before 2030 (too soon to finish)
+      atb_new_gen:
+      - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
+      - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
+      - [LandbasedWind, Class3, Moderate, 1]
+        # - [OffShoreWind, Class12, Moderate, 1]
+      - [OffShoreWind, Class3, Moderate, 1]
+      - [UtilityPV, Class1, Moderate, 1]
+      - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
+        # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
@@ -441,9 +475,29 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 180917.5
+          max_mw: 180921.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 202331.27199999997
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 470777.53333333327
   2027:
     all_cases:
+      # don't allow floating offshore wind before 2030 (no prices in ATB)
+      # don't allow new nuclear before 2030 (too soon to finish)
+      atb_new_gen:
+      - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
+      - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
+      - [LandbasedWind, Class3, Moderate, 1]
+        # - [OffShoreWind, Class12, Moderate, 1]
+      - [OffShoreWind, Class3, Moderate, 1]
+      - [UtilityPV, Class1, Moderate, 1]
+      - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
+        # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
@@ -466,9 +520,29 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 195405.5
+          max_mw: 195411.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 255540.36639999997
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 480444.19999999995
   2028:
     all_cases:
+      # don't allow floating offshore wind before 2030 (no prices in ATB)
+      # don't allow new nuclear before 2030 (too soon to finish)
+      atb_new_gen:
+      - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
+      - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
+      - [LandbasedWind, Class3, Moderate, 1]
+        # - [OffShoreWind, Class12, Moderate, 1]
+      - [OffShoreWind, Class3, Moderate, 1]
+      - [UtilityPV, Class1, Moderate, 1]
+      - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
+        # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
@@ -494,9 +568,29 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 209893.5
+          max_mw: 209901.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 319391.27968
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 490110.86666666664
   2029:
     all_cases:
+      # don't allow floating offshore wind before 2030 (no prices in ATB)
+      # don't allow new nuclear before 2030 (too soon to finish)
+      atb_new_gen:
+      - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
+      - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
+      - [LandbasedWind, Class3, Moderate, 1]
+        # - [OffShoreWind, Class12, Moderate, 1]
+      - [OffShoreWind, Class3, Moderate, 1]
+      - [UtilityPV, Class1, Moderate, 1]
+      - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
+        # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
@@ -525,9 +619,28 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 224381.5
+          max_mw: 224391.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 396012.375616
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 499777.53333333327
   2030:
     all_cases:
+      # don't allow new nuclear before 2030 (too soon to finish)
+      atb_new_gen:
+      - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
+      - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
+      - [LandbasedWind, Class3, Moderate, 1]
+      - [OffShoreWind, Class12, Moderate, 1]
+      - [OffShoreWind, Class3, Moderate, 1]
+      - [UtilityPV, Class1, Moderate, 1]
+      - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
+        # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq:  # managed by make_emission_policies.py
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
@@ -559,7 +672,16 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 238869.5
+          max_mw: 238881.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 487957.6907392
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 100016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 509444.19999999995
   2035:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -593,7 +715,16 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 311309.5
+          max_mw: 311331.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 1309021.999164166
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 110016.40000000001
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 557777.5333333333
   2040:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -627,7 +758,16 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 383749.5
+          max_mw: 383781.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 3352092.739104177
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 199315.6
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 606110.8666666666
   2045:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -661,7 +801,16 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 456189.5
+          max_mw: 456231.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 8435906.522711702
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 421520.58534399996
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 654444.2
   2050:
     all_cases:
       MinCapReq:  # managed by make_emission_policies.py
@@ -695,4 +844,13 @@ settings_management:
       MaxCapReq:  # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
-          max_mw: 528629.5
+          max_mw: 528681.5
+        MaxCapTag_SolarGrowth:
+          description: National Solar Growth Limit
+          max_mw: 21086062.03673798
+        MaxCapTag_NuclearGrowth:
+          description: National Nuclear Growth Limit
+          max_mw: 974437.6944751819
+        MaxCapTag_GasTurbineSupply:
+          description: Gas Turbine Supply-Chain Limit
+          max_mw: 702777.5333333332

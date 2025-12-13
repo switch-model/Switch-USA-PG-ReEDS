@@ -312,6 +312,9 @@ alt_resource_cap_recovery_years:
 # Format for each list item is <technology>, <tech_detail>, <cost_case>, <size>
 # We use Moderate case for most technologies but Advanced case for batteries because prices have 
 # moved quickly since ATB 2024.
+# These settings are for 2035 and later; also see scenario_management.yml for
+# more restricted versions for earlier years (no new floating wind before 2030
+# or nuclear before 2035)
 atb_new_gen:
   - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
   - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
@@ -333,6 +336,10 @@ atb_new_gen:
 #   - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
 #   - [Nuclear, Nuclear - Large, Moderate, 1000]
 
+# we define clusters for all techs in all years, but these will generate
+# warnings for years when they are not in atb_new_gen due to settings
+# in scenario_management.yml, i.e., all techs in 2024-25 and floating
+# offshore wind in 2026-2029
 renewables_clusters:
   - region: all
     technology: landbasedwind

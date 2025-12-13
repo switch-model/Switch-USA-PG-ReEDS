@@ -21,6 +21,9 @@ model_tag_names:
 - CapRes_2
 - MaxCapTag_Ban
 - MaxCapTag_WindGrowth
+- MaxCapTag_SolarGrowth
+- MaxCapTag_NuclearGrowth
+- MaxCapTag_GasTurbineSupply
 
 # tags starting with ESR_ or MinCapTag_ are managed by make_emission_policies.py
 - MinCapTag_CA_offshorewind
@@ -178,6 +181,7 @@ model_tag_names:
 - ESR_WA_rps_unbundled
 - ESR_WI_rps
 - ESR_WI_rps_bundled
+
 default_model_tag: 0
 
 model_tag_values:

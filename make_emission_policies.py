@@ -46,9 +46,55 @@ pg_reeds_tech_map = pd.read_csv(
     Path(settings["input_folder"]) / "pg_reeds_tech_map.csv"
 )
 
-# tag to use to limit total wind in the U.S. based on historical growth rates
-max_wind_growth_tag = "MaxCapTag_WindGrowth"
+# last year of historical data (e.g., in EIA 860m)
+last_hist_year = 2024
 
+max_growth_limits = [
+    # tag, selector, limit, description
+    # selector identifies existing plants of this type in the EIA 860M spreadsheet
+    # limit can be a number or a tuple of number of historical years to consider
+    # and an aggregation function to apply to annual totals
+    # wind: use maximum over 10 years before last_hist_year
+    # (14490 MW in 2020 in EIA 860M)
+    (
+        "MaxCapTag_WindGrowth",
+        "energy_source_code_1 == 'WND'",
+        # (10, "max"),
+        14490,
+        "National Wind Growth Limit",
+    ),
+    # solar: start with 2024 additions (30792.3) and allow 20%/year growth from
+    # there forward (TODO: require construction in one period to enable growth
+    # in the next)
+    (
+        "MaxCapTag_SolarGrowth",
+        "technology_description == 'Solar Photovoltaic'",
+        lambda y: 30792.3 * 1.2 ** (y - 2024),
+        "National Solar Growth Limit",
+    ),
+    # Nuclear: no new build possible before 2035; up to 10 GW possible in 2035,
+    # rising by 20%/year thereafter (based on general market assessment)
+    (
+        "MaxCapTag_NuclearGrowth",
+        "technology_description == 'Nuclear'",
+        lambda y: 0 if y < 2035 else 10000 * 1.2 ** (y - 2035),
+        "National Nuclear Growth Limit",
+    ),
+    # Gas: 58 GW limit for 2025-2030 based on
+    # https://www.woodmac.com/press-releases/coal-and-gas-generation-can-accommodate-40-to-75-of-expected-us-peak-demand-growth-through-20302/
+    # and anecdotal reports that gas turbine supply chains are maxed out in the 10-20 GW/year range
+    # see, e.g.,
+    # https://pages.marketintelligence.spglobal.com/rs/565-BDO-100/images/Global%20gas%20turbine%20manufacturing%20faces%20soaring.pdf
+    # https://www.utilitydive.com/news/mitsubishi-gas-turbine-manufacturing-capacity-expansion-supply-demand/759371/
+    # https://gridlab.org/portfolio-item/gas-tubine-cost-report/
+    # https://rmi.org/gas-turbine-supply-constraints-threaten-grid-reliability-more-affordable-near-term-solutions-can-help/
+    (
+        "MaxCapTag_GasTurbineSupply",
+        "technology_description.isin(['Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine'])",
+        58000 / (2030 - 2024),
+        "Gas Turbine Supply-Chain Limit",
+    ),
+]
 
 # keep files small and uncluttered
 possible_model_years = list(range(2024, 2030)) + list(range(2030, 2050 + 1, 5))
@@ -58,9 +104,11 @@ region_sort = dict(by="region", key=lambda r: r.str[1:].astype(int))
 
 
 def update_model_tag_names(new_tags, prefix=None):
-    # delete all tags from model_tag_names and generator_columns lists if
-    # they match the prefix, then add all new_tags to the prefix. save the file
-    # if updated.
+    """
+    delete all tags from model_tag_names and generator_columns lists if they
+    match the prefix, then add all new_tags to the prefix. save the file if
+    updated.
+    """
     for key in ["model_tag_names", "generator_columns"]:
         ym = read_yaml(yaml_files[key])
         tags = ym[key]
@@ -470,46 +518,71 @@ for file, cdf in [
     print(f"Saved {ep_file}.")
 
 # %% #####################################
-# calculate maximum historical growth rate for wind, then store that
-# as a MaxCapReq for each possible model year like
+# Apply maximum growth rate for wind and gas (net of planned growth in EIA 860m)
+# as MaxCapReq values for each possible model year like
 # settings_management:
 #   2025:
 #     all_cases:
 #       MaxCapReq:
 #         MaxCapTag_WindGrowth:
 #           description: National Wind Growth Limit
-#           max_mw: 14000
+#           max_mw: 13000
+#         MaxCapTag_GasTurbineSupply:
+#           description: Gas Turbine Supply-Chain Limit
+#           max_mw: 9700
 
-wb = load_860m(settings)
-wind = wb["operating"].query('energy_source_code_1 == "WND"')
-max_wind_growth = float(
-    wind.query("operating_year >= 2015")
-    .groupby("operating_year")["winter_capacity_mw"]
-    .sum()
-    .max()
-)
-# TODO: maybe have different baselines for each future year as retirements roll through?
-baseline_wind = float(
-    wind.query("operating_year <= 2024 and planned_retirement_year.isna()")[
-        "winter_capacity_mw"
-    ].sum()
-)
-
-# write caps to the settings_management yaml entry in format above
+# get relevant settings and clear any existing tags of this type
 ss = read_yaml(yaml_files["scenario_settings"])
 delete_yaml_keys(ss, ["settings_management", "*", "all_cases", "MaxCapReq"])
-for y in possible_model_years:
-    # cap is whatever already exists plus max possible growth to this year
-    max_wind = baseline_wind + (y - 2024) * max_wind_growth
-    d = {
-        max_wind_growth_tag: {
-            "description": "National Wind Growth Limit",
-            "max_mw": max_wind,
-        }
-    }
-    add_yaml_key(ss, ["settings_management", y, "all_cases", "MaxCapReq"], d)
-write_yaml(ss, yaml_files["scenario_settings"])
-update_model_tag_names([max_wind_growth_tag], max_wind_growth_tag)
 
+
+def make_const_func(lim):
+    return lambda y: lim
+
+
+wb = load_860m(settings)
+lims = []
+for tag, selector, limit, description in max_growth_limits:
+    subset = wb["operating"].query(selector)
+    if isinstance(limit, tuple):
+        # apply limit query
+        n_years, agg = limit
+        annual_limit = float(
+            subset.query(f"operating_year >= {last_hist_year - n_years + 1}")
+            .groupby("operating_year")["winter_capacity_mw"]
+            .sum()
+            .agg(agg)
+        )
+        lim_func = make_const_func(annual_limit)
+    elif isinstance(limit, (int, float)):
+        lim_func = make_const_func(limit)
+    elif callable(limit):
+        lim_func = limit
+    else:
+        raise ValueError(f"Unknown type for limit {limit}: {type(limit)}")
+    # TODO: maybe have different baselines for each future year as retirements roll through?
+    baseline_capacity = float(
+        subset.query(
+            f"operating_year <= {last_hist_year} and planned_retirement_year.isna()"
+        )["winter_capacity_mw"].sum()
+    )
+    lims.append((tag, description, lim_func, baseline_capacity))
+
+# write caps to the settings_management yaml entry in format above
+for y in possible_model_years:
+    d = {}
+    for tag, description, lim_func, baseline_capacity in lims:
+        # cap is whatever already exists plus max possible growth to this year
+        max_capacity = baseline_capacity + sum(
+            lim_func(y_ + 1) for y_ in range(last_hist_year, y)
+        )
+        d[tag] = {
+            "description": description,
+            "max_mw": max_capacity,
+        }
+        update_model_tag_names([tag], tag)
+    add_yaml_key(ss, ["settings_management", y, "all_cases", "MaxCapReq"], d)
+
+write_yaml(ss, yaml_files["scenario_settings"])
 
 # %%
