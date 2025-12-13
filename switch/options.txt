@@ -1,5 +1,5 @@
 --verbose --stream-solver
---inputs-dir 26-zone/in/2030/base_short
+# --inputs-dir 26-zone/in/2030/base_short
 # use GenX-style retirement (input files, e.g., variable_capacity_factors.csv,
 # assume this)
 --retire early
@@ -15,18 +15,23 @@
 # see https://docs.gurobi.com/projects/optimizer/en/current/concepts/numericguide/numeric_parameters.html#secnumericparameters
 
 # standard gurobi from conda
---solver gurobi --solver-options-string "method=2 crossover=0 NumericFocus=2 ScaleFlag=2 BarHomogeneous=1"
+# --solver gurobi --solver-options-string "method=2 crossover=0 NumericFocus=2 ScaleFlag=2 BarHomogeneous=1"
 
 # gurobi solver from ampl
 # --solver gurobi --solver-io nl --solver-options-string "tech:outlev=1 alg:method=2 bar:crossover=0 alg:numericfocus=2 pre:scale=2 bar:homog=1"
 
-# --solver "/Applications/copt71/bin/coptampl" --solver-options-string "lp:method=2 lp:crossover=0 tech:outlev=1"
+# COPT (8.0 seems to be faster than Gurobi or Mosek by a factor of 2-3)
+# we don't really need crossover for the solutions, but it's pretty fast and
+# prevents small infeasibilities in chained solutions
+# --solver "/Applications/copt71/bin/coptampl" --solver-options-string "lp:method=2 lp:crossover=0 tech:outlev=1" 
+--solver "/Applications/copt80/bin/coptampl" --solver-options-string "lpmethod=2 crossover=1" 
+
 # --solver appsi_highs --solver-options-string "solver=ipm parallel=on run_crossover=off threads=10"
+
 # Mosek args are from objects defined in mosek module, e.g., mosek.optimizertype.intpnt
-# also see
-# https://docs.mosek.com/latest/capi/solver-parameters.html
-# https://docs.mosek.com/10.2/faq.pdf
+# also see https://docs.mosek.com/10.2/faq.pdf
 # --solver mosek --solver-options-string "iparam.optimizer=optimizertype.intpnt iparam.intpnt_basis=basindtype.never"
+
 # MindOpt is from Alibaba -- has unlimited free use but only 1 (or maybe 8) at a time
 # https://help.aliyun.com/zh/optimization-solver/developer-reference/download-and-install-the-latest-optimization-solver-sdk
 # https://help.aliyun.com/zh/optimization-solver/getting-started/activate-and-use-the-service
