@@ -20,19 +20,24 @@ eia_series_scenario_names:
   high_resource: HIGHOGS # High oil and gas resource scenario -- lowest gas prices
   low_resource: LOWOGS # Low oil and gas resource scenario -- highest gas prices
 
+# added in scenario_settings key so AEO prices can be skipped if needed
+# (dummy entry is to prevent creation of default dict when this is left empty)
+# must match <PowerGenome data cache>/eia/open_data/AEO.2025.REF2025.PRCE_REAL_ELEP_NA_<fuel code>_NA_<region code>_Y13DLRPMMBTU.A.csv
 eia_series_fuel_names:
-  # added in scenario_settings key so AEO prices can be skipped if needed
+  dummy: STC
   # coal: STC
   # naturalgas: NG
-  distillate: DFO
-  uranium: U
+  # distillate: DFO
+  # uranium: U
 
+# added in scenario_settings key so AEO prices can be skipped if needed
+# (dummy entry is to prevent creation of default dict when this is left empty)
 aeo_fuel_scenarios:
-  # added in scenario_settings key so AEO prices can be skipped if needed
+  dummy: reference
   # coal: reference
   # naturalgas: reference
-  distillate: reference
-  uranium: reference
+  # distillate: reference
+  # uranium: reference
 
 # Need to make choices about fuel regions when user-defined regions cross AEO fuel regions.
 # Regions are included here only as a guide. All user regions must be mapped to AEO regions.
@@ -204,8 +209,9 @@ tech_fuel_map:
   Natural Gas Fired Combustion Turbine: naturalgas
   Natural Gas Steam Turbine: naturalgas
   Nuclear: uranium
-  Petroleum Liquids: distillate
+  Petroleum Liquids: distillate # 21 GW DFO, 6 GW RFO
   Other_peaker: naturalgas
+  Gas Peaker: naturalgas
 
 # The CCS fuel names (key values on right have to be in the format <fuel>_<ccslevel>,
 # where the fuel matches something from "aeo_fuel_scenarios" (above
