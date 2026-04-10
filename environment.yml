@@ -30,7 +30,7 @@ dependencies:
   # https://github.com/PowerGenome/PowerGenome/blob/v0.7.0/pyproject.toml. We
   # install these via conda to avoid getting x86 versions on arm64 if
   # pip installs them automatically along with powergenome
-  - catalystcoop.pudl =2022.11.30  # pin at upper end
+  - catalystcoop.pudl =2022.11.30 # pin at upper end
   - beautifulsoup4 >=4.8.13
   - statsmodels >=0.12.2
   - python-dotenv
@@ -55,7 +55,7 @@ dependencies:
   # 2022.11.30
   - setuptools=79
   # powergenome itself
-  # note: for now we manually install a local patched version of 0.7.0 into 
+  # note: for now we manually install a local patched version of 0.7.0 into
   # the environment after creation instead of using the offical one
   # - pip:
   #   - powergenome==0.7.0
@@ -63,14 +63,14 @@ dependencies:
   # pin a bunch of catalystcoop.pudl-compatible versions to speed up the conda solve
   # (everything that gets changed when you add catalystcoop.pudl to the environment
   # you would otherwise install without it)
-  # found by 
-  # conda env create -n switch-pg-reeds-test --env-spec environment.yml --file enviro_test.yml 
+  # found by
+  # conda env create -n switch-pg-reeds-test --env-spec environment.yml --file enviro_test.yml
   # conda export -n switch-pg-reeds-test > env_reeds_pre_pudl.yml
   # conda install -n switch-pg-reeds-test catalystcoop.pudl=2022.11.30
-  # conda export -n switch-pg-reeds-test > env_reeds_with_pudl.yml                                
+  # conda export -n switch-pg-reeds-test > env_reeds_with_pudl.yml
   # diff env_reeds_pre_pudl.yml env_reeds_with_pudl.yml | grep '^>'
-  # Then drop or change versions of packages on Windows and macOS until it works
-  # in both places.
+  # Then drop or change versions of packages on Windows, Linux and macOS until
+  # it works everywhere.
   - addfips=0.4
   - aiohappyeyeballs=2.6
   - aiohttp=3.13
@@ -181,7 +181,7 @@ dependencies:
   - libgoogle-cloud=2.8
   - libgrpc=1.52
   - libhwy=1.0
-  - libintl-devel=0.22
+  # - libintl-devel=0.22 # not available on linux
   - libjpeg-turbo=2.1.5
   - libjxl=0.8
   - liblapack=3.9
@@ -284,5 +284,3 @@ dependencies:
   - yarl=1.22
   - zeromq=4.3
   - zict=3.0
-
-
