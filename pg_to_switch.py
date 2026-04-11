@@ -9,8 +9,10 @@ import sys
 import os
 import collections
 import logging
+import math
 import shlex
 import subprocess
+import types
 from pathlib import Path
 
 from typing import List, Optional
@@ -116,6 +118,16 @@ if not sys.warnoptions:
     import warnings
 
     warnings.simplefilter("ignore")
+
+
+# patch pd.DataFrame.to_csv() to reduce binary-csv artifacts,
+# e.g., 0.0387 -> 0.038700000000000005
+def clean_to_csv(self, *args, float_format="%.15g", **kwargs):
+    pd_to_csv(self, *args, float_format=float_format, **kwargs)
+
+
+pd_to_csv = pd.DataFrame.to_csv
+pd.DataFrame.to_csv = clean_to_csv
 
 
 def fuel_files(
@@ -261,7 +273,7 @@ def operational_files(
         logger.info(f"Gathering load data for {model_year}")  # can be slow
         period_lc = make_final_load_curves(pg_engine, year_settings)
 
-        logger.info("Extracting generator variability data for {model_year}")
+        logger.info(f"Extracting generator variability data for {model_year}")
         period_variability = make_generator_variability(period_gens)
         # Assign resource names instead of numbers from '0' to 'n'.
         period_variability.columns = period_gens["Resource"]
@@ -729,7 +741,7 @@ def gen_tables(
     be built or were built.
 
     These dataframes each show both new and existing generators. They contain
-    all the data from gc.create_all_generators() (and gc.units_model after
+    all the data from gc.create_all_generators() (and gc.all_units after
     running this) plus some extra data.
 
     The "existing" column identifies generators that have a scheduled
@@ -864,6 +876,14 @@ def gen_tables(
 
     gens_by_model_year = pd.concat(gen_dfs, ignore_index=True)
     units_by_model_year = pd.concat(unit_dfs, ignore_index=True)
+
+    # import save_vars, copy
+    # # make pickleable `self` for testing powergenome GeneratorClusters methods
+    # self = copy.copy(gc)
+    # del self.pudl_engine, self.pg_engine, self.pudl_out
+    # print("\aSaving gen_tables data and self=gc for debugging.")
+    # save_vars.save_frame()
+    # breakpoint()
 
     # Set same info as eia_build_info() (build_year, capacity_mw and
     # capacity_mwh) for generic generators (Resources in the "existing" list
@@ -1434,13 +1454,15 @@ def other_tables(
     # reserve regions, but in practice, there is one load zone per reserve region
     prm_region_zone_map = dict(zip(prm_wide["Network_zones"], prm_wide.index))
 
-    # combine the name of the capacity reserve program (one of the margin_col names)
-    # with the name of the reserve region to define a region-specific requirement
+    # combine the name of the capacity reserve program (one of the program_cols
+    # names) with the name of the reserve region to define a region-specific
+    # requirement
     prm = prm_wide.melt(
         id_vars=["Network_zones"],
         value_vars=program_cols,
         var_name="prm_program",
-        value_name="prr_cap_reserve_margin",  # get margins values from the program columns
+        # get margin values from the program columns
+        value_name="prr_cap_reserve_margin",
     )
     prm["PLANNING_RESERVE_REQUIREMENT"] = (
         prm["prm_program"] + "_" + prm["Network_zones"]
@@ -2162,4 +2184,9 @@ def main(
 
 if __name__ == "__main__" and "ipykernel" not in sys.argv[0]:
     # running as a script, not from a jupyter environment
-    typer.run(main)
+    # typer.run(main)
+    app = typer.Typer(
+        pretty_exceptions_enable=False, pretty_exceptions_show_locals=False
+    )
+    app.command()(main)
+    app()

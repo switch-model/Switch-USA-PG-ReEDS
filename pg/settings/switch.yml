@@ -43,13 +43,12 @@ model_adjustment_scripts:
     order: 8
   Add extreme day:
     script: ../../adjust/add_extreme_days.py
-    # run after all the others, because it creates a new directory copied
-    # from the main one
+    # run late, because it may create a new directory copied from the main one
     order: 10
   Define scenarios:
     script: ../../adjust/define_scenarios.py
-    # run after add_extreme_days; will look for both regular and _prm
-    # versions of model directory and create different files in them
+    # run after add_extreme_days; will look for both regular and _prm versions
+    # of model directory (if present) and create different files in them
     order: 11
 
 # price to pay to go beyond carbon caps in emission_policies_fn (which may be

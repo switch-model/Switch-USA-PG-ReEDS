@@ -347,10 +347,12 @@ atb_new_gen:
   - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
   - [Nuclear, Nuclear - Large, Moderate, 1000]
 
-# we define clusters for all techs in all years, but these will generate
-# warnings for years when they are not in atb_new_gen due to settings
-# in scenario_management.yml, i.e., all techs in 2024-25 and floating
-# offshore wind in 2026-2029
+# The settings below will generate warnings for years when these techs are not
+# in atb_new_gen due to settings in scenario_management.yml, i.e., all techs in
+# 2024-25 and floating offshore wind in 2026-2029. We define reduced versions
+# of this list in scenario_management.yml to avoid those warnings in 2024-25
+# but not 2026-29 (since that would have to duplicate too much info from
+# the list below).
 renewables_clusters:
   - region: all
     technology: landbasedwind
