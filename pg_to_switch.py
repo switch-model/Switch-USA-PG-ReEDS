@@ -12,14 +12,16 @@ import logging
 import shlex
 import subprocess
 from pathlib import Path
+
 from typing import List, Optional
 from typing_extensions import Annotated
-
 import pandas as pd
 import numpy as np
 import scipy
 import sqlalchemy as sa
 import typer
+
+from joblib import Memory
 
 from powergenome.generators import (
     GeneratorClusters,
@@ -87,6 +89,12 @@ from conversion_functions import (
 )
 
 from conversion_functions import LogFormatterTwoLine as LogFormatter
+
+# cache some functions to speed up repeated execution
+memory = Memory("cache", verbose=0)
+make_generator_variability = memory.cache(make_generator_variability)
+kmeans_time_clustering = memory.cache(kmeans_time_clustering)
+
 
 # turn on info-level logging with colored messages at the root level
 # (this uses a simplified version of pudl's colored-logging approach)
