@@ -3431,10 +3431,14 @@ settings_management:
       model_tag_values:
         Can_Retire:
           "": 0
+      renewables_clusters:
+        # don't define clusters for any new-build techs except imports
+        # (prevents warnings when there are no atb_new_gen techs)
+        - region: all
+          technology: imports
+      # use year-specific data for derating (not available for 2025 yet)
+      # capacity_factor_default_year_filter: [2025]
       MinCapReq: # managed by make_emission_policies.py
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 132
@@ -3468,12 +3472,12 @@ settings_management:
         - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
           # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq: # managed by make_emission_policies.py
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 304
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 806
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 132
@@ -3483,9 +3487,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 2599
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 304
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3510,12 +3511,12 @@ settings_management:
         - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
           # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq: # managed by make_emission_policies.py
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 304
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 806
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 1866
@@ -3525,9 +3526,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 2599
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 304
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3552,15 +3550,12 @@ settings_management:
         - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
           # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq: # managed by make_emission_policies.py
-        MinCapTag_CA_offshorewind:
-          description: CA_offshorewind
-          min_mw: 60
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 304
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 806
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 1866
@@ -3570,9 +3565,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 2599
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 304
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3597,18 +3589,15 @@ settings_management:
         - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
           # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq: # managed by make_emission_policies.py
-        MinCapTag_CA_offshorewind:
-          description: CA_offshorewind
-          min_mw: 60
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 304
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 1597
         MinCapTag_MD_offshorewind:
           description: MD_offshorewind
           min_mw: 300
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 1866
@@ -3618,9 +3607,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 2599
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 304
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3644,21 +3630,15 @@ settings_management:
         - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
           # - [Nuclear, Nuclear - Large, Moderate, 1000]
       MinCapReq: # managed by make_emission_policies.py
-        MinCapTag_CA_offshorewind:
-          description: CA_offshorewind
-          min_mw: 60
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 304
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 2829
         MinCapTag_MD_offshorewind:
           description: MD_offshorewind
           min_mw: 1710
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 12
-        MinCapTag_NJ_offshorewind:
-          description: NJ_offshorewind
-          min_mw: 1510
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind
           min_mw: 1866
@@ -3668,9 +3648,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 2599
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 925
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3686,31 +3663,31 @@ settings_management:
       MinCapReq: # managed by make_emission_policies.py
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
-          min_mw: 3660
-        MinCapTag_MA_offshorewind:
-          description: MA_offshorewind
-          min_mw: 5600
-        MinCapTag_MD_offshorewind:
-          description: MD_offshorewind
-          min_mw: 8298
-        MinCapTag_ME_offshorewind:
-          description: ME_offshorewind
-          min_mw: 156
-        MinCapTag_NJ_offshorewind:
-          description: NJ_offshorewind
-          min_mw: 6475
-        MinCapTag_NY_offshorewind:
-          description: NY_offshorewind
-          min_mw: 9000
-        MinCapTag_RI_offshorewind:
-          description: RI_offshorewind
-          min_mw: 1430
-        MinCapTag_VA_offshorewind:
-          description: VA_offshorewind
-          min_mw: 5200
+          min_mw: 3600.0
         MinCapTag_CT_offshorewind:
           description: CT_offshorewind
-          min_mw: 2000
+          min_mw: 2000.0
+        MinCapTag_MA_offshorewind:
+          description: MA_offshorewind
+          min_mw: 5600.0
+        MinCapTag_MD_offshorewind:
+          description: MD_offshorewind
+          min_mw: 2676.0
+        MinCapTag_ME_offshorewind:
+          description: ME_offshorewind
+          min_mw: 144.0
+        MinCapTag_NJ_offshorewind:
+          description: NJ_offshorewind
+          min_mw: 5936.8
+        MinCapTag_NY_offshorewind:
+          description: NY_offshorewind
+          min_mw: 9000.0
+        MinCapTag_RI_offshorewind:
+          description: RI_offshorewind
+          min_mw: 1430.0
+        MinCapTag_VA_offshorewind:
+          description: VA_offshorewind
+          min_mw: 5200.0
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3727,6 +3704,9 @@ settings_management:
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
           min_mw: 7600
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 2000
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 5600
@@ -3748,9 +3728,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 5200
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 2000
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3767,6 +3744,9 @@ settings_management:
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
           min_mw: 7600
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 2000
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 5600
@@ -3788,9 +3768,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 5200
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 2000
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
@@ -3807,6 +3784,9 @@ settings_management:
         MinCapTag_CA_offshorewind:
           description: CA_offshorewind
           min_mw: 7600
+        MinCapTag_CT_offshorewind:
+          description: CT_offshorewind
+          min_mw: 2000
         MinCapTag_MA_offshorewind:
           description: MA_offshorewind
           min_mw: 5600
@@ -3828,9 +3808,6 @@ settings_management:
         MinCapTag_VA_offshorewind:
           description: VA_offshorewind
           min_mw: 5200
-        MinCapTag_CT_offshorewind:
-          description: CT_offshorewind
-          min_mw: 2000
       MaxCapReq: # managed by make_emission_policies.py
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
