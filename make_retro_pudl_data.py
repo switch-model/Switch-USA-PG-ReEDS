@@ -53,7 +53,9 @@ table_map = [
     ("boiler_generator_assn_eia860", "core_eia860__assn_boiler_generator"),
     ("boiler_fuel_eia923", "core_eia923__monthly_boiler_fuel"),
     ("plants_eia860", "core_eia860__scd_plants"),
-    ("generation_eia923", "core_eia923__monthly_generation"),
+    # incomplete, only used by PowerGenome/tests/data/create_data_from_pudl.py
+    # may have been used in 0.6.3?
+    # ("generation_eia923", "core_eia923__monthly_generation"),
     ("generation_fuel_eia923", "core_eia923__monthly_generation_fuel"),
     ("generation_fuel_nuclear_eia923", "core_eia923__monthly_generation_fuel_nuclear"),
 ]
