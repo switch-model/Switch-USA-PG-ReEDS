@@ -31,21 +31,14 @@ def parse_arguments():
     # process command line options (name of inputs dir and )
     parser = argparse.ArgumentParser()
     parser.add_argument("in_dir", help="Path to the input directory")
-    # parser.add_argument(
-    #     "--peak-timeseries",
-    #     action="store_const",
-    #     const="peak",
-    #     dest="timeseries",
-    #     default="peak",
-    #     help="Add extra copies of peak timeseries with 0 weight(default)",
-    # )
-    # parser.add_argument(
-    #     "--all-timeseries",
-    #     action="store_const",
-    #     const="all",
-    #     dest="timeseries",
-    #     help="Add extra copies of all timeseries with 0 weight",
-    # )
+    parser.add_argument(
+        "--create-prm-dir",
+        action="store_true",
+        default=False,
+        help="Write version of the model with extreme-day planning reserves to a new "
+        "directory ending with _prm. If not specified, the PRM version of the model "
+        "inputs will replace the non-PRM version.",
+    )
     options = parser.parse_args()
     return options
 
@@ -58,7 +51,10 @@ def parse_arguments():
 def main():
     options = parse_arguments()
     in_dir = Path(options.in_dir)
-    out_dir = in_dir.with_name(in_dir.stem + "_prm")
+    if options.create_prm_dir:
+        out_dir = in_dir.with_name(in_dir.stem + "_prm")
+    else:
+        out_dir = in_dir
 
     def read(f):
         return pd.read_csv(in_dir / f, na_values=".")
@@ -79,10 +75,11 @@ def main():
         df.to_csv(out_dir / file, na_rep=".", index=False)
         print(f"saved {out_dir / file}.")
 
-    print(f"Copying {in_dir} to {out_dir}.")
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-    shutil.copytree(in_dir, out_dir)
+    if options.create_prm_dir:
+        print(f"Copying {in_dir} to {out_dir}.")
+        if out_dir.exists():
+            shutil.rmtree(out_dir)
+        shutil.copytree(in_dir, out_dir)
 
     # define planning reserve margins and determine whether we are interested
     # in peak days or all days
@@ -195,7 +192,7 @@ def main():
             # )
             write(df_new[df.columns], file)
 
-    # create planning reserves file (zone, timeseries, margin) from new_tp and prr_whatnot
+    # create planning reserves file (zone, timeseries, margin) from new_tp and prr_*
     zone_prm = (
         prr.rename(columns={"prr_cap_reserve_margin": "planning_reserve_margin"})
         .merge(prz)
