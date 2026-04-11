@@ -37,6 +37,10 @@ model_adjustment_scripts:
     script: ../../adjust/add_ee_info.py
     # run before add_extreme_days to index off normal peak load, not super-peak
     order: 2
+  Increase timepoint duration to 2 hours:
+    script: ../../adjust/increase_timepoint_duration.py
+    # run before add_extreme_days; alters some files used by that script
+    order: 8
   Add extreme day:
     script: ../../adjust/add_extreme_days.py
     # run after all the others, because it creates a new directory copied
