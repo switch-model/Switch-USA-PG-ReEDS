@@ -126,14 +126,21 @@ settings_management:
           MaxCapTag_Ban:
             # technology name for new gas, but not existing/planned
             NaturalGas: 1
-
     policies:
       current: ~ # use default settings
       decarb:
         # national carbon tax at 200, to see what would be cheapest way to decarbonize
         emission_policies_fn: emission_policies_decarb.csv
         carbon_cost_dollar_per_tco2: 200
-
+    split_weeks:
+      yes:
+        model_adjustment_scripts:
+          Increase timepoint duration to 2 hours: ~ # keep 1-hour resolution
+          Create weekly production models:
+            script: ../../adjust/create_weekly_models.py
+            arguments: switch/in/2030/s40x1
+            order: 5
+      no: ~ # default settings
     fuel_price_forecast:
       aeo2025: # get coal and gas from AEO 2025 reference
         eia_series_fuel_names:

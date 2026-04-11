@@ -74,6 +74,12 @@ for tag in ("", "_prm"):
         if name != "gen_info":
             to_csv(df, name + ".csv")
         to_csv(df_flex, name.replace("gen_info", "gen_info.flex") + ".csv")
+        # allow full flexibility to be concentrated in each weekly case
+        # if needed (for rare emergencies)
+        df_flex.loc[
+            df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
+        ] *= 52
+        to_csv(df_flex, name.replace("gen_info", "gen_info.flex_weekly") + ".csv")
 
     # if this is a low_growth case and there already exists a regular case with
     # the same name, create loads.low_growth.csv in the regular case, using the
