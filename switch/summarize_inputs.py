@@ -29,6 +29,7 @@ from pathlib import Path
 
 # for testing: sys.argv[1] = "in/test_flex/2024/s4"
 # for testing: sys.argv[1] = "switch/in/test/2030/p1"
+# sys.argv[1] = "in/2030/s40x1"
 
 idir = Path(sys.argv[1])
 try:
@@ -41,7 +42,7 @@ out_html = label + ".html"
 
 
 def icsv(f):
-    return pd.read_csv(idir / f, na_values=".")
+    return pd.read_csv(idir / f, na_values=".", low_memory=False)
 
 
 print("Processing data files")
@@ -105,10 +106,25 @@ new_and_old = info.query("(existing_cap > 0) and (new_cap.isna() | new_cap > 0)"
 ]
 assert new_and_old.empty, "Some existing projects can also be extended in the future."
 
+# get weights per timepoint and adjust to represent one year
+# (for now, even if there are multiple years in the model, we lump
+# into one virtual year)
+timepoint_weights = (
+    icsv("timepoints.csv")
+    .rename(columns={"timepoint_id": "timepoint"})
+    .merge(icsv("timeseries.csv"), on="timeseries")
+    .assign(n_hours=lambda df: df["ts_duration_of_tp"] * df["ts_scale_to_period"])
+    .set_index("timepoint")
+)["n_hours"]
+timepoint_weights *= 8760 / timepoint_weights.sum()
+
 # calculate and apply capacity factors
-# (assume no weighting for now)
 cf = icsv("variable_capacity_factors.csv")
-cf_map = cf.groupby("GENERATION_PROJECT")["gen_max_capacity_factor"].mean()
+cf["n_hours"] = cf["TIMEPOINT"].map(timepoint_weights)
+wmean = (
+    lambda g: (g["gen_max_capacity_factor"] * g["n_hours"]).sum() / g["n_hours"].sum()
+)
+cf_map = cf.groupby("GENERATION_PROJECT").apply(wmean)
 info["annual_cap_factor"] = info["GENERATION_PROJECT"].map(cf_map)
 del cf, cf_map  # save some memory
 
@@ -298,20 +314,27 @@ cap_fig.update_yaxes(type="log")
 figs.append(cap_fig)
 
 # total coincident load curve (all zones)
-# (ignoring sampling and periods for now)
 load = (
     icsv("loads.csv")
-    .groupby("TIMEPOINT")["zone_demand_mw"]
+    .groupby("TIMEPOINT")[["zone_demand_mw"]]
     .sum()
     .reset_index()
-    .rename(columns={"zone_demand_mw": "load"})
+    .assign(load=lambda df: df["zone_demand_mw"] * 0.001)  # MW -> GW
+    .assign(n_hours=lambda df: df["TIMEPOINT"].map(timepoint_weights))
+    .query("n_hours > 0")  # drop prm extreme days
     .sort_values(by="load", axis=0, ascending=False)
-    .reset_index(drop=True)
-) * 0.001  # convert to GW
-total_load = int(load["load"].mean() * 8760 * 0.001)  # in TWh
+    # create virtual timesteps
+    .assign(hour_of_year=lambda df: df["n_hours"].cumsum())
+)[["load", "n_hours", "hour_of_year"]]
+
+# avg load in TWh/y
+total_load = int((load["load"] * 0.001 * load["n_hours"]).sum())
+
 load_fig = px.line(
     load,
+    x="hour_of_year",
     y="load",
+    line_shape="vh",
     title=f"2030 U.S. Load Duration Curve (total = {total_load} TWh/y)",
 )
 load_fig.update_layout(
