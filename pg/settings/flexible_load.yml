@@ -62,6 +62,7 @@ demand_response: base
 #   4) the model region from `model_regions`
 # Then the rows contain hourly loads for each of these cases / regions. There should be
 # one row per load hour, in order, with no explicit index.
+# This should be in the model time zone, not UTC.
 demand_response_fn: load_adjustments.csv.zip
 
 # `flexible_demand_resources` contains name of the flexible resource, fraction of

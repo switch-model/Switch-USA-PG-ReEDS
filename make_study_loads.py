@@ -93,6 +93,15 @@ base = pd.read_sql(
     con=pg_engine,
 ).rename(columns={"year": "base_year"})
 
+# Shift from UTC to model time zone (PowerGenome does this when using loads
+# directly from PG_DB, but not when using user load profiles)
+n_steps = settings.get("utc_offset", 0)
+print(f"Applying {n_steps} hour offset to shift loads from UTC to model time zone.")
+base = base.sort_values(["region", "weather_year", "time_index"])
+base["load_mw"] = base.groupby(["region", "weather_year"])["load_mw"].transform(
+    lambda s: pd.np.roll(s.values, n_steps)
+)
+
 print(f"Saving {base_year} loads for {start_year}-{end_year} in {load_file_path}")
 base_wide = (
     pd.concat(

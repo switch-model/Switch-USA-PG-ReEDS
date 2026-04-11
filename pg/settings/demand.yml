@@ -9,14 +9,14 @@
 # applied, which can be problematic with historical load profiles from well
 # before the start of the study.
 
-# User load profiles in regional_load_fn are applied as-is (no growth factor)
-# and supersede any loads defined below. They should have three header rows
-# identifying model year, scenario and region, then one row per historical hour
-# (same number of rows as the renewable resource data). For 2025-2030, we use
-# unchanging 2023 loads based on 2007-2013 weather years, extracted from
-# load_curves_nrel_reeds table in pg_db by make_study_loads.py. Then we apply
-# ICF 2025-35 growth rates to that for 2024-2030 and report this growth as
-# flexible demand (in flexible_load.yml)
+# User load profiles in regional_load_fn are applied as-is (no growth factor or
+# time zone offset (utc_offset)) and supersede any loads defined below. They
+# should have three header rows identifying model year, scenario and region,
+# then one row per historical hour (same number of rows as the renewable
+# resource data). For 2025-2030, we use unchanging 2023 loads based on 2007-2013
+# weather years, extracted from load_curves_nrel_reeds table in pg_db by
+# make_study_loads.py. Then we apply ICF 2025-35 growth rates to that for
+# 2024-2030 and report this growth as flexible demand (in flexible_load.yml)
 regional_load_fn: reeds_2023_loads.csv.zip
 
 # name of current demand scenario; should match entries in the second row of
