@@ -59,6 +59,34 @@ settings_management:
               fraction_shiftable: 1.0
               parameter_values:
                 New_Build: -1
+      low:
+        demand_response: lower_growth
+        # settings below are same as icf
+        # add the load growth and mark it as shiftable; but shifting
+        # will be constrained separately by load_growth_flexibility
+        flexible_demand_resources:
+          2024:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                # add dummy value that will be overridden by PG to avoid
+                # warnings from PG about empty parameter_values
+                New_Build: -1
+          2029:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                New_Build: -1
+          2030:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                New_Build: -1
+          2035:
+            load_growth:
+              fraction_shiftable: 1.0
+              parameter_values:
+                New_Build: -1
       none: ~
 
     load_growth_flexibility:
