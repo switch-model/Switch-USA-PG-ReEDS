@@ -32,6 +32,15 @@ optional_dependencies = "switch_model.transmission.local_td"
 def define_arguments(argparser):
     # TODO: move this definition to switch_model.reporting.define_arguments
     argparser.add_argument(
+        "--skip-output-file",
+        "--skip-output-files",
+        dest="skip_output_files",
+        nargs="+",
+        default=[],
+        action="extend",
+        help="List of output files to skip writing, e.g., dispatch.csv",
+    )
+    argparser.add_argument(
         "--no-warn-on-extra-capacity-factors",
         dest="warn_on_extra_capacity_factors",
         default=True,
@@ -458,14 +467,17 @@ def post_solve(instance, outdir):
     if instance.options.sorted_output:
         gen_proj.sort()
 
-    write_table(
-        instance,
-        instance.TIMEPOINTS,
-        output_file=os.path.join(outdir, "dispatch_wide.csv"),
-        headings=("timestamp",) + tuple(gen_proj),
-        values=lambda m, t: (m.tp_timestamp[t],)
-        + tuple(m.DispatchGen[p, t] if (p, t) in m.GEN_TPS else 0.0 for p in gen_proj),
-    )
+    if "dispatch_wide.csv" not in instance.options.skip_output_files:
+        write_table(
+            instance,
+            instance.TIMEPOINTS,
+            output_file=os.path.join(outdir, "dispatch_wide.csv"),
+            headings=("timestamp",) + tuple(gen_proj),
+            values=lambda m, t: (m.tp_timestamp[t],)
+            + tuple(
+                m.DispatchGen[p, t] if (p, t) in m.GEN_TPS else 0.0 for p in gen_proj
+            ),
+        )
 
     dispatch_normalized_dat = []
     for g, t in instance.GEN_TPS:
@@ -524,7 +536,8 @@ def post_solve(instance, outdir):
     dispatch_full_df.set_index(["generation_project", "timestamp"], inplace=True)
     if instance.options.sorted_output:
         dispatch_full_df.sort_index(inplace=True)
-    dispatch_full_df.to_csv(os.path.join(outdir, "dispatch.csv"))
+    if "dispatch.csv" not in instance.options.skip_output_files:
+        dispatch_full_df.to_csv(os.path.join(outdir, "dispatch.csv"))
 
     summary_columns = [
         "Energy_GWh_typical_yr",
@@ -595,24 +608,28 @@ def post_solve(instance, outdir):
         return df
 
     gen_sum = add_cap_factor_and_lcoe(gen_sum)
-    gen_sum.to_csv(
-        os.path.join(outdir, "dispatch_gen_annual_summary.csv"), columns=summary_columns
-    )
+    if "dispatch_gen_annual_summary.csv" not in instance.options.skip_output_files:
+        gen_sum.to_csv(
+            os.path.join(outdir, "dispatch_gen_annual_summary.csv"),
+            columns=summary_columns,
+        )
 
     zone_sum = gen_sum.groupby(
         ["gen_tech", "gen_load_zone", "gen_energy_source", "period"]
     ).sum()
     zone_sum = add_cap_factor_and_lcoe(zone_sum)
-    zone_sum.to_csv(
-        os.path.join(outdir, "dispatch_zonal_annual_summary.csv"),
-        columns=summary_columns,
-    )
+    if "dispatch_zonal_annual_summary.csv" not in instance.options.skip_output_files:
+        zone_sum.to_csv(
+            os.path.join(outdir, "dispatch_zonal_annual_summary.csv"),
+            columns=summary_columns,
+        )
 
     annual_summary = zone_sum.groupby(["gen_tech", "gen_energy_source", "period"]).sum()
     annual_summary = add_cap_factor_and_lcoe(annual_summary)
-    annual_summary.to_csv(
-        os.path.join(outdir, "dispatch_annual_summary.csv"), columns=summary_columns
-    )
+    if "dispatch_annual_summary.csv" not in instance.options.skip_output_files:
+        annual_summary.to_csv(
+            os.path.join(outdir, "dispatch_annual_summary.csv"), columns=summary_columns
+        )
 
     import warnings
 
@@ -635,6 +652,8 @@ def post_solve(instance, outdir):
                 ("gen_tech", "dispatch_annual_summary_tech.pdf"),
             ]
             for y, outfile in plots:
+                if outfile in instance.options.skip_output_files:
+                    continue
                 annual_summary_plot = (
                     p9.ggplot(
                         annual_summary.reset_index(),
