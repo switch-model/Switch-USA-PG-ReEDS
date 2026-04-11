@@ -41,8 +41,8 @@ cluster_with_retired_gens: true
 
 # ** Any technologies not included in num_clusters will be omitted **
 num_clusters:
-  Conventional Steam Coal: 1
-  Natural Gas Fired Combined Cycle: 1
+  Conventional Steam Coal: 2
+  Natural Gas Fired Combined Cycle: 2
   Natural Gas Fired Combustion Turbine: 1
   Nuclear: 1
   Conventional Hydroelectric: 1
@@ -64,18 +64,39 @@ num_clusters:
   Biomass: 1
   Other_peaker: 1
   Batteries: 1
+  Waste Heat: 1
 
-# Group these technologies
+# Group similar technologies together
 group_technologies: True
 tech_groups:
+  Batteries:
+    - Batteries
+    - Flywheels
   Biomass:
     - Wood/Wood Waste Biomass
     - Landfill Gas
     - Municipal Solid Waste
     - Other Waste Biomass
+  Conventional Steam Coal:
+    - Conventional Steam Coal
+    - Coal Integrated Gasification Combined Cycle
+    - Petroleum Coke # TODO: treat as separate fuel
   Other_peaker:
     - Natural Gas Internal Combustion Engine
-    - Petroleum Liquids
+    - Natural Gas Steam Turbine
+    - Other Gases # TODO: treat as separate fuel
+    - Other Natural Gas
+    # PG doesn't seem to have a way to represent primary generators that also have
+    # storage; TODO: find a way to integrate this
+    # - Natural Gas with Compressed Air Storage
+  Waste Heat:
+    - All Other
+  Solar Photovoltaic:
+    - Solar Photovoltaic
+    # PG doesn't seem to have a way to represent primary generators that also have
+    # storage; TODO: find a way to integrate this
+    # - Solar Thermal with Energy Storage
+    - Solar Thermal without Energy Storage
 
 # Use this to avoid grouping technologies in some regions
 regional_no_grouping: ~
@@ -585,6 +606,7 @@ cost_multiplier_technology_map:
       Nuclear_Nuclear - Large,
     ]
   Biomass: [Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated]
+  Waste Heat: [Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated]
   MSW - landfill gas: []
   Wind: [LandbasedWind_Class3]
   Wind offshore: [OffShoreWind_Class3, OffShoreWind_Class12]
@@ -608,6 +630,7 @@ cost_multiplier_technology_map:
 eia_atb_tech_map:
   Batteries: Utility-Scale Battery Storage_Lithium Ion
   Biomass: Biopower_Dedicated
+  Waste Heat: Biopower_Dedicated
   Solar Thermal without Energy Storage: CSP_Class1
   Conventional Steam Coal: Coal_newAvgCF
   Natural Gas Fired Combined Cycle: NaturalGas_1-on-1 Combined Cycle (H-Frame) #[NaturalGas_CCAvgCF, NETL_NGCC]

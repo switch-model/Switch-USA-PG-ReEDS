@@ -104,7 +104,7 @@ settings_management:
         carbon_cost_dollar_per_tco2: 200
 
     fuel_price_forecast:
-      aeo2025: # use AEO 2025 reference
+      aeo2025: # get coal and gas from AEO 2025 reference
         eia_series_fuel_names:
           coal: STC
           naturalgas: NG

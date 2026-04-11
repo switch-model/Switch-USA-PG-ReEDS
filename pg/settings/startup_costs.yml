@@ -45,6 +45,7 @@ existing_startup_costs_tech_map:
   Natural Gas Steam Turbine: gas_steam
   Nuclear: nuclear
   Other_peaker: gas_steam
+  Petroleum Liquids: gas_steam
 
 new_build_startup_costs:
   Coal_CCS30: coal_supercritical

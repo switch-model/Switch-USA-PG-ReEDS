@@ -239,6 +239,7 @@ model_tag_values:
     Hydropower: 1
   Commit:
     Biomass: 1
+    Waste Heat: 1
     Biopower: 1
     Coal Integrated Gasification Combined Cycle: 1
     Conventional Steam Coal: 1
@@ -255,6 +256,7 @@ model_tag_values:
   New_Build:
     Battery: 1
     Biomass: -1
+    Waste Heat: -1
     Biopower: 1
     Conventional Hydroelectric: -1
     Geothermal: -1
@@ -289,6 +291,7 @@ model_tag_values:
     Other Natural Gas: 0.9
     Other_peaker: 0.9 # Is there any way to do this based on the underlying categories?
     Biomass: 0.9
+    Waste Heat: 0.9
     NaturalGas_: 0.9
     Biopower_: 0.9
     Nuclear_: 0.9
@@ -323,6 +326,7 @@ model_tag_values:
     Other Natural Gas: 0.9
     Other_peaker: 0.9 # Is there any way to do this based on the underlying categories?
     Biomass: 0.9
+    Waste Heat: 0.9
     NaturalGas_: 0.9
     Biopower_: 0.9
     Nuclear_: 0.9
@@ -398,12 +402,13 @@ model_tag_values:
     # Allow economic retirement of existing fossil plants (may pick up some new
     # ones, too, but that shouldn't matter, since they can't retire the year
     # they are built.)
-    Biomass: 1
+    Biomass: 0
+    Waste Heat: 0
     Coal: 1
     Natural Gas: 1
     Nuclear: 0
     peaker: 1
-    Petroleum: 1
+    Petroleum: 0 # assume there's some reason people are keeping these online
   MaxCapTag_WindGrowth:
     # all wind technologies are subject to a national limit on additions (this
     # could be moved to scenario_settings to turn it off for some cases)
