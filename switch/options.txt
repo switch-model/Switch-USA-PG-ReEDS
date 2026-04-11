@@ -7,6 +7,9 @@
 # use built-in 3+5 spinning reserve rule
 --spinning-requirement-rule '3+5'
 
+# suppress warning about excess data in variable_capacity_factors.csv
+--no-warn-on-extra-capacity-factors
+
 # potentially useful for reporting
 # --save-expression GenCapacity
 # --solver cplex --solver-options-string "lpmethod=4 solutiontype=2 emphasis_memory=yes"

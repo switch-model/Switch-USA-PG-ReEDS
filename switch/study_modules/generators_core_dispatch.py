@@ -29,6 +29,17 @@ dependencies = (
 optional_dependencies = "switch_model.transmission.local_td"
 
 
+def define_arguments(argparser):
+    # TODO: move this definition to switch_model.reporting.define_arguments
+    argparser.add_argument(
+        "--no-warn-on-extra-capacity-factors",
+        dest="warn_on_extra_capacity_factors",
+        default=True,
+        action="store_false",
+        help="Disable warning when there are unused rows in variable_capacity_factors.csv",
+    )
+
+
 def define_components(mod):
     """
 
@@ -294,7 +305,10 @@ def define_components(mod):
         mod.VARIABLE_GEN_TPS, rule=lambda m, g, t: (g, t) in m.VARIABLE_GEN_TPS_RAW
     )
 
-    if mod.logger.isEnabledFor(logging.INFO):
+    if (
+        mod.logger.isEnabledFor(logging.INFO)
+        and mod.options.warn_on_extra_capacity_factors
+    ):
         # Tell user if the input files specify timeseries for renewable plant
         # capacity factors that extend beyond the lifetime of the plant.
         def rule(m):
@@ -338,11 +352,17 @@ def define_components(mod):
                         come online earlier, have longer lifetimes, or have
                         options to build new capacity when the old capacity
                         reaches its maximum age.
-                    """
+                        """
                     )
                     msg += " Plants with extra timepoints:\n{}".format(pprint)
                 else:
-                    msg += " Use --log-level debug for more details."
+                    msg += unwrap(
+                        """
+                        Use `--log-level debug` for more details or
+                        `--no-warn-on-extra-capacity-factors` to disable this
+                        message`
+                        """
+                    )
                 m.logger.info(msg + "\n")
 
         mod.notify_on_extra_VARIABLE_GEN_TPS = BuildAction(rule=rule)
