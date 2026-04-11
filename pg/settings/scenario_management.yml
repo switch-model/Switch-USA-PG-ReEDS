@@ -26,6 +26,9 @@ settings_management:
       s20x1:
         time_domain_periods: 20
         time_domain_days_per_period: 1
+      s40x1:
+        time_domain_periods: 40
+        time_domain_days_per_period: 1
       s4x5:
         time_domain_periods: 4
         time_domain_days_per_period: 5

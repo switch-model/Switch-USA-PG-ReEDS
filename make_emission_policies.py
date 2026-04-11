@@ -66,12 +66,13 @@ max_growth_limits = [
     # solar: start with 2024 additions (30792.3) and allow 20%/year growth from
     # there forward (TODO: require construction in one period to enable growth
     # in the next)
-    (
-        "MaxCapTag_SolarGrowth",
-        "technology_description == 'Solar Photovoltaic'",
-        lambda y: 30792.3 * 1.2 ** (y - 2024),
-        "National Solar Growth Limit",
-    ),
+    # (disabled so we can adjust solar via a push from below on individual scenarios)
+    # (
+    #     "MaxCapTag_SolarGrowth",
+    #     "technology_description == 'Solar Photovoltaic'",
+    #     lambda y: 30792.3 * 1.2 ** (y - 2024),
+    #     "National Solar Growth Limit",
+    # ),
     # Nuclear: no new build possible before 2035; up to 10 GW possible in 2035,
     # rising by 20%/year thereafter (based on general market assessment)
     (
