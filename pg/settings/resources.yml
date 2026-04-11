@@ -104,14 +104,20 @@ regional_no_grouping: ~
 # Add code to ensure region names here are included above
 alt_num_clusters: ~
 
-# Derate the capacity of technologies that will be set as MUST_RUN in GenX by their
-# historical capacity factor.
+# Derate the capacity of technologies that will be set as MUST_RUN in GenX by
+# their historical capacity factor. (These are ones that have no fuel cost but
+# also no time-varying output limit.)
+# NOTE: nuclear, geothermal and large hydro are instead derated by applying the
+# GADS scheduled outage rate. They could be derated here instead, but we assume
+# they have some ability to schedule their outages, unlike these always-on
+# resources.
 derate_techs:
   - Small Hydroelectric
   - Biomass
+  - Waste Heat
 
-# Default value to limit the years used to calculate capacity factors.
-# PUDL currently has generation data from 2011 through the most recent final release of 923/860.
+# Years used to calculate capacity factors for plant derate_techs.
+# (These are overridden for the 2024 historical model.)
 capacity_factor_default_year_filter:
   [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
 

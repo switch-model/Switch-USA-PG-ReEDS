@@ -19,6 +19,8 @@ model_tag_names:
     # - Hydro_level
   - CapRes_1
   - CapRes_2
+  - gen_forced_outage_rate
+  - gen_scheduled_outage_rate
   - gen_is_distributed
   - MaxCapTag_Ban
   - MaxCapTag_WindGrowth
@@ -238,6 +240,15 @@ model_tag_values:
   HYDRO:
     Conventional Hydroelectric: 1
     Hydropower: 1
+  MUST_RUN:
+    # for must-run gens (baseload), Switch commits all the time and
+    # derates by scheduled outage rate in addition to forced outage rate
+    Small Hydroelectric: 1
+    Geothermal: 1
+    Wood/Wood Waste Biomass: 1
+    Biomass: 1
+    Waste Heat: 1 # tags for aggregated EIA 860 techs don't work
+    All Other: 1 # = Waste Heat subcategory
   Commit:
     Biomass: 1
     Waste Heat: 1
@@ -343,18 +354,16 @@ model_tag_values:
     Solar Photovoltaic: 0.8
     Battery: 0.95
     Hydroelectric Pumped Storage: 0.95
-  MUST_RUN:
-    Small Hydroelectric: 1
-    Geothermal: 1
-    Wood/Wood Waste Biomass: 1
-    Biomass: 1
+
     # distributed_gen: 1
   gen_is_distributed:
     Distributed_Generation: 1
   gen_forced_outage_rate:
     # TODO: find better estimates for batteries and maybe PV
-    # From NERC GADS statistical brochures: https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
-    # Conventional plants from NERC GADS Generating Unit Statistical Brochure 4 for 2020-24 (EFORd, all sizes)
+    # From NERC GADS statistical brochures:
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
+    # Conventional plants from NERC GADS Generating Unit Statistical Brochure 4
+    # for 2020-24 (EFORd, all sizes)
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-conventional/generating-unit-statistical-brochures
     Coal: 0.1019 # Coal Primary
     Petroleum Liquids: 0.0876 # 0.0632 Diesel -> 20369 MW DFO fuel; 0.1458 Oil Primary -> 8522 MW all other fuels
@@ -364,12 +373,15 @@ model_tag_values:
     Combustion Turbine: 0.0986 # Gas Turbine
     Combined Cycle: 0.0491 # Combined Cycle
     Hydro: 0.0875 # Hydro
+    # Small Hydroelectric: 0.0875 # override general Hydro entry; also gets derated for actual capacity factor
+    Small Hydroelectric: 0.0 # override general Hydro entry; use derate_techs instead
     Pumped Storage: 0.0803 # Pumped Storage
     Geothermal: 0.0452 # Geothermal
-    # Wind from NERC GADS Wind - Wind Metric Brochure for 2020-23 (1.B.12 (E-FOR) weighted by NMC):
+    # Wind from NERC GADS Wind - Wind Metric Brochure for 2018-23 (1.B.12 (E-FOR) weighted by NMC):
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-wind
+    # =SUM(AS2:AS2094*F2:F2094)/SUM(F2:F2094)/100
     # documentation: https://www.nerc.com/globalassets/programs/rapa/gads/wind/2025_gads_wind_dri.pdf
-    Wind: 0.06227
+    Wind: 0.058768319
     # Solar can eventually come from from NERC GADS Solar
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-solar
     # Until GADS data are available we use 1% median FOR from https://www.nrel.gov/news/detail/program/2024/how-extreme-weather-and-system-aging-affect-the-us-photovoltaic-fleet#:~:text=Over%20the%202008%E2%80%932022%20time%20range%20studied%2C%20the,longer%20outages%20of%20two%20weeks%20or%20more.
@@ -378,12 +390,59 @@ model_tag_values:
     # We don't have a good source for batteries, so we use 5% recommendation from CESA (2021): https://efiling.energy.ca.gov/getdocument.aspx?tn=238987
     Battery: 0.05
     Batteries: 0.05
-    Biomass: 0.1019 # assume same as coal
+    # Biomass: 0.1019 # assume same as coal
+    Biomass: 0 # uses derate_techs instead
+    # Waste Heat: 0.1019 # assume same as coal
+    Waste Heat: 0 # uses derate_techs instead
     Other_peaker: 0.0986 # assume same as combustion turbine
     distributed: 0 # assume reported production is actual (no derate)
     Imports: 0 # use reported imports with no derate
     load_growth: 0 # don't derate VPP since corresponding loads aren't derated (but maybe we should count some non-response?)
     us_exports: 1 # this is a VPP corresponding to canceling scheduled US exports (load), which should never be used
+  gen_scheduled_outage_rate:
+    # From NERC GADS statistical brochures:
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
+    # Conventional plants from NERC GADS Generating Unit Statistical Brochure 4 for 2020-24
+    # (all sizes, SOF)
+    # note: in NERC terms, "rates" like FOR (forced outage) are unavailability when needed for load
+    # and "factors" like SOF (scheduled outage) are hours unavailable divided by hours in
+    # reporting period
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-conventional/generating-unit-statistical-brochures
+    # TODO: extended to include solar and batteries.
+    Coal: 0.1322 # Coal Primary
+    Petroleum Liquids: 0.0741 # 0.0493 Diesel -> 20369 MW DFO fuel; 0.1335 Oil Primary -> 8522 MW all other fuels
+    Petroleum Coke: 0.0741 # Assume same as petroleum liquids
+    Natural Gas Steam Turbine: 0.1507 # Gas Primary
+    Nuclear: 0.0590 # Nuclear All Types
+    Combustion Turbine: 0.0744 # Gas Turbine
+    Combined Cycle: 0.1039 # Combined Cycle
+    Hydro: 0.1415 # Hydro
+    Small Hydroelectric: 0.0 # override general Hydro entry; use derate_techs instead
+    Pumped Storage: 0.1344 # Pumped Storage
+    Geothermal: 0.0250 # Geothermal
+    # Wind from NERC GADS Wind - Wind Metric Brochure for 2018-23 (1.B.7 (E-SOF) weighted by NMC):
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-wind
+    # =SUM(AN2:AN2094*F2:F2094)/SUM(F2:F2094)/100
+    # documentation: https://www.nerc.com/globalassets/programs/rapa/gads/wind/2025_gads_wind_dri.pdf
+    Wind: 0.011810723
+    # Solar can eventually come from from NERC GADS Solar
+    # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-solar
+    # Until GADS data are available we use 1%, which is similar to wind
+    Photovoltaic: 0.01
+    UtilityPV: 0.01
+    # We don't have a good source for batteries, so we use 1%, similar to wind
+    Battery: 0.01
+    Batteries: 0.01
+    # Biomass: 0.1019 # assume same as coal
+    Biomass: 0 # uses derate_techs instead
+    # Waste Heat: 0.1019 # assume same as coal
+    Waste Heat: 0 # uses derate_techs instead
+    Other_peaker: 0.0744 # assume same as combustion turbine
+    distributed: 0 # assume reported production is actual (no derate)
+    Imports: 0 # use reported imports with no derate
+    load_growth: 0 # don't derate VPP since corresponding loads aren't derated (but maybe we should count some non-response?)
+    us_exports: 0 # this is a VPP corresponding to canceling scheduled US exports (load), which should never be used
+
   gen_max_annual_availability:
     # this is set for passthrough to gen_info.csv in switch.yml
     # "" will match all technologies; set to 1 by default, but override for the

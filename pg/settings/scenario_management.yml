@@ -3401,6 +3401,8 @@ settings_management:
       model_tag_values:
         Can_Retire:
           "": 0
+      # use year-specific data for derating
+      capacity_factor_default_year_filter: [2024]
       MinCapReq: # managed by make_emission_policies.py
         MinCapTag_NY_offshorewind:
           description: NY_offshorewind

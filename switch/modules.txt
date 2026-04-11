@@ -26,6 +26,7 @@ study_modules.max_capacity_constraint
 study_modules.rps_regional
 study_modules.trans_path_expansion_limit
 study_modules.planning_reserves_extreme_days
+study_modules.scheduled_outages
 study_modules.gen_om_by_period
 # apply annual operating limits to data center backup gens
 study_modules.gen_annual_availability_limits
