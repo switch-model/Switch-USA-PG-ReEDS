@@ -10,7 +10,9 @@ distributed_gen_scenario: mid_case
 dg_as_resource: true
 
 # Distribution loss used when subtracting distributed generation from total load.
-# 4.53% comes from the original PowerGenome settings, origin is unclear.
+# original PowerGenome settings were 4.53%, origin is unclear.
 # ReEDS estimates 5.3% https://www1.eere.energy.gov/solar/pdfs/svs_appendix_a_model_descriptions_data.pdf
 # Our goal is around 5% total T&D losses to match https://www.eia.gov/tools/faqs/faq.php?id=105&t=3
-avg_distribution_loss: 0.0453
+# In early runs with 4.53% local T&D losses, total losses were 5.66% (including
+# interregional transmission), so we chose 3.87% to end up close to 5% total.
+avg_distribution_loss: 0.0387

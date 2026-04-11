@@ -168,13 +168,19 @@ utc_offset: -5
 # of 15% (which is defined as the difference between customer load and available
 # capacity).
 # https://www.nerc.com/pa/RAPA/ra/Reliability%20Assessments%20DL/SRA_About_This_Report.pdf
-# We previously used an 8.4% margin for all regions, which was the most that
-# could be maintained everywhere on top of T&D losses and possibly spinning
+# Before ~ Nov 2025, we used an 8.4% margin for all regions, which was the most
+# that could be maintained everywhere on top of T&D losses and possibly spinning
 # reserves. But that became un-meetable in the 2024 model after including forced
 # outages, so we use 2% now to reach a reasonable level of reliability across
 # the board, slightly higher than 2024 in some cases and possibly slightly lower
 # in others. (This could be adjusted by iteration with a resource adequacy phase
 # until the reliability level is just right.)
+# Note that as of Jan 2026, the highest PRM that could be met in the 2024 model
+# (on top of spinning reserves, forced outages and T&D losses), found via
+# --find-current-prm, was 0.007818, after setting `avg_distribution_loss:
+# 0.0387` (previously 0.05) to get close to 5% total T&D losses and fixing some
+# PG bugs that kept out a few EIA gens. Before these changes, the 2024 model was
+# infeasible (effective PRM < 0).
 
 regional_capacity_reserves:
   CapRes_1:
