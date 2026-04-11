@@ -1529,9 +1529,9 @@ def model_adjustment_scripts(scen_settings_dict, settings_file, out_folder):
             os.path.normpath(base_dir / options["script"]),
             str(short_fn(out_folder)),
         ]
-        if options.get("args"):
-            # note: args should be quoted/escaped in posix-compliant style if needed
-            cmd += shlex.split(options["args"])
+        if options.get("arguments"):
+            # note: arguments should be quoted/escaped in posix-compliant style if needed
+            cmd += shlex.split(options["arguments"])
         print("\n" + "=" * 80)
         print(f"Running '{desc}' script:")
         if os.name == "nt":
