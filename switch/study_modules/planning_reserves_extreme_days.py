@@ -108,6 +108,9 @@ def post_solve(m, outputs_dir):
             "\nplanning reserve margin, ignoring financial costs. Results from this run other "
             "\nthan the reserve margin calculation should be ignored.\n"
         )
+        with open(os.path.join(outputs_dir, "current_prm.csv"), "w") as f:
+            f.write("current_prm\n")
+            f.write(f"{value(m.MaxPRMargin)}\n")
     elif m.options.maximize_prm_sum:
         m.logger.info(
             "\nSolved for highest attainable sum of planning reserve margins across all timeseries."
