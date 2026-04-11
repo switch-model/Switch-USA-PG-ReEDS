@@ -3415,9 +3415,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 151941.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 121039.59999999998
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3449,9 +3446,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 166431.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 157990.36
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3494,9 +3488,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 180921.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 202331.27199999997
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3539,9 +3530,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 195411.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 255540.36639999997
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3587,9 +3575,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 209901.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 319391.27968
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3638,9 +3623,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 224391.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 396012.375616
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3691,9 +3673,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 238881.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 487957.6907392
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 100016.40000000001
@@ -3734,9 +3713,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 311331.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 1309021.999164166
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 110016.40000000001
@@ -3777,9 +3753,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 383781.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 3352092.739104177
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 199315.6
@@ -3820,9 +3793,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 456231.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 8435906.522711702
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 421520.58534399996
@@ -3863,9 +3833,6 @@ settings_management:
         MaxCapTag_WindGrowth:
           description: National Wind Growth Limit
           max_mw: 528681.5
-        MaxCapTag_SolarGrowth:
-          description: National Solar Growth Limit
-          max_mw: 21086062.03673798
         MaxCapTag_NuclearGrowth:
           description: National Nuclear Growth Limit
           max_mw: 974437.6944751819

@@ -22,7 +22,7 @@ model_tag_names:
   - gen_is_distributed
   - MaxCapTag_Ban
   - MaxCapTag_WindGrowth
-  - MaxCapTag_SolarGrowth
+  # - MaxCapTag_SolarGrowth
   - MaxCapTag_NuclearGrowth
   - MaxCapTag_GasTurbineSupply
 
@@ -417,12 +417,12 @@ model_tag_values:
     # could be moved to scenario_settings to turn it off for some cases)
     # make_emission_policies.py defines and documents the specific limit.
     Wind: 1
-  MaxCapTag_SolarGrowth:
-    # solar PV (existing and new) is subject to a national limit on additions
-    # (this could be moved to scenario_settings to turn it off for some cases)
-    # make_emission_policies.py defines and documents the specific limit.
-    Photovoltaic: 1
-    UtilityPV: 1
+  # MaxCapTag_SolarGrowth:
+  #   # solar PV (existing and new) is subject to a national limit on additions
+  #   # (this could be moved to scenario_settings to turn it off for some cases)
+  #   # make_emission_policies.py defines and documents the specific limit.
+  #   Photovoltaic: 1
+  #   UtilityPV: 1
   MaxCapTag_NuclearGrowth:
     # nuclear (existing and new)
     Nuclear: 1
