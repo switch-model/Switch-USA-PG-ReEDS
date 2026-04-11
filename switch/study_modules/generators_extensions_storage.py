@@ -242,31 +242,44 @@ def define_components(mod):
     mod.ChargeStorage = Var(mod.ALL_STORAGE_GEN_TPS, within=NonNegativeReals)
 
     # Summarize storage charging for the energy balance equations
-    # TODO: rename this StorageTotalCharging or similar (to indicate it's a
-    # sum for a zone, not a net quantity for a project)
-    def rule(m, z, t):
-        # Construct and cache a set for summation as needed
-        if not hasattr(m, "Storage_Charge_Summation_dict"):
-            m.Storage_Charge_Summation_dict = collections.defaultdict(set)
-            for g, t2 in m.ALL_STORAGE_GEN_TPS:
-                z2 = m.gen_load_zone[g]
-                m.Storage_Charge_Summation_dict[z2, t2].add(g)
-        # Use pop to free memory
-        relevant_projects = m.Storage_Charge_Summation_dict.pop((z, t), {})
-        return sum(m.ChargeStorage[g, t] for g in relevant_projects)
+    def STORAGE_GENS_IN_ZONE_PERIOD_init(m, z, p):
+        try:
+            d = m.STORAGE_GENS_IN_ZONE_PERIOD_dict
+        except AttributeError:
+            d = m.STORAGE_GENS_IN_ZONE_PERIOD_dict = {
+                (z2, p2): [] for z2 in m.LOAD_ZONES for p2 in m.PERIODS
+            }
+            # tabulate all storage gens active in each zone in each period
+            for g in m.STORAGE_GENS:
+                for p2 in m.PERIODS_FOR_GEN[g]:
+                    d[m.gen_load_zone[g], p2].append(g)
+        return d.pop((z, p))
 
-    mod.StorageNetCharge = Expression(mod.LOAD_ZONES, mod.TIMEPOINTS, rule=rule)
+    mod.STORAGE_GENS_IN_ZONE_PERIOD = Set(
+        mod.LOAD_ZONES,
+        mod.PERIODS,
+        within=mod.STORAGE_GENS,
+        initialize=STORAGE_GENS_IN_ZONE_PERIOD_init,
+    )
+
+    mod.ZoneTotalStorageCharging = Expression(
+        mod.LOAD_ZONES,
+        mod.TIMEPOINTS,
+        rule=lambda m, z, tp: sum(
+            m.ChargeStorage[g, tp]
+            for g in m.STORAGE_GENS_IN_ZONE_PERIOD[z, m.tp_period[tp]]
+        ),
+    )
     # Register net charging with zonal energy balance. Discharging is already
     # covered by DispatchGen.
-    mod.Zone_Power_Withdrawals.append("StorageNetCharge")
+    mod.Zone_Power_Withdrawals.append("ZoneTotalStorageCharging")
 
     # use fixed energy/power ratio (# hours of capacity) when specified
     mod.Enforce_Fixed_Energy_Storage_Ratio = Constraint(
         mod.STORAGE_GEN_BLD_YRS,
         rule=lambda m, g, y: (
             Constraint.Skip
-            if m.gen_storage_energy_to_power_ratio[g]
-            == float("inf")  # no value specified
+            if m.gen_storage_energy_to_power_ratio[g] == float("inf")  # no value given
             else (
                 m.BuildStorageEnergy[g, y]
                 == m.gen_storage_energy_to_power_ratio[g] * m.BuildGen[g, y]

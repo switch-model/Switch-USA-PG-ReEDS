@@ -14,7 +14,9 @@ switch_model.generators.core.commit.fuel_use
 # switch_model.generators.extensions.storage
 study_modules.generators_extensions_storage
 switch_model.generators.extensions.hydro_system
-switch_model.energy_sources.fuel_costs.simple
+# switch_model.energy_sources.fuel_costs_simple
+# patched version
+study_modules.fuel_costs_simple
 switch_model.transmission.transport.build
 switch_model.transmission.transport.dispatch
 switch_model.transmission.local_td
@@ -31,4 +33,7 @@ study_modules.gen_om_by_period
 # apply annual operating limits to data center backup gens
 study_modules.gen_annual_availability_limits
 # allow unserved load (one zone comes out infeasible in 2024)
-# switch_model.balancing.unserved_load
+# study_modules.unserved_load
+# uncomment the next two to reduce Pyomo memory (experimental):
+# study_modules.nl_solver
+# study_modules.delayed_expressions

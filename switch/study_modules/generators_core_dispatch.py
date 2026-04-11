@@ -246,6 +246,19 @@ def define_components(mod):
         ),
     )
 
+    def init(m, p):
+        try:
+            d = m.FUEL_BASED_GENS_IN_PERIOD_dict
+        except AttributeError:
+            # cache all items in one pass
+            d = m.FUEL_BASED_GENS_IN_PERIOD_dict = {p: [] for p in m.PERIODS}
+            for g in m.FUEL_BASED_GENS:
+                for p in m.PERIODS_FOR_GEN[g]:
+                    d[p].append(g)
+        return d.pop(p)
+
+    mod.FUEL_BASED_GENS_IN_PERIOD = Set(mod.PERIODS, initialize=init)
+
     mod.GenCapacityInTP = Expression(
         mod.GEN_TPS, rule=lambda m, g, t: m.GenCapacity[g, m.tp_period[t]]
     )
