@@ -363,6 +363,9 @@ def operational_files(
                 len(period_variability),
             )
 
+        # make sure there are distinct dates for use by hydro and demand response
+        # code when running with multi-day timeseries
+        timepoints_df["tp_date"] = make_tp_date(timepoints_df, timeseries_df)
         output["timeseries.csv"].append(timeseries_df)
         output["timepoints.csv"].append(timepoints_df)
 
@@ -445,6 +448,51 @@ def operational_files(
         pd.concat(dfs).drop_duplicates().to_csv(
             out_folder / file, index=False, na_rep="."
         )
+
+
+def make_tp_date(timepoints_df, timeseries_df):
+    """
+    Creates a tp_date column for timepoints_df based on the timeseries_df data.
+
+    Parameters:
+    - timepoints_df: DataFrame with rows in order for each timeseries.
+    - timeseries_df: DataFrame with unique timeseries, ts_duration_of_tp, and ts_num_tps.
+
+    Returns:
+    - A pandas Series with tp_date values, indexed the same as timepoints_df.
+
+    Raises:
+    - ValueError if ts_duration_of_tp is not a factor of 24 or if ts_duration_of_tp * ts_num_tps is not a multiple of 24.
+    """
+    ts_info = timeseries_df.set_index("timeseries")
+    tp_dates = []
+
+    for ts, group in timepoints_df.groupby("timeseries", sort=False):
+        duration = ts_info.loc[ts, "ts_duration_of_tp"]
+        num_tps = ts_info.loc[ts, "ts_num_tps"]
+
+        n_days_per_ts = num_tps * duration / 24.0
+        n_tps_per_day = 24.0 / duration
+
+        if not (n_days_per_ts.is_integer() and n_tps_per_day.is_integer()):
+            raise ValueError(
+                f"timeseries {ts} ({num_tps} * {duration} hours) cannot be "
+                "divided into separate, whole days"
+            )
+
+        # Assign tp_date for each row in the group
+        if n_days_per_ts == 1:
+            # use timeseries as date ID for single-day timeseries
+            tp_dates.extend([ts] * len(group))
+        else:
+            # use combination of timeseries and date index within timeseries
+            n_digits = int(math.log10(n_days_per_ts - 1)) + 1
+            for i in range(len(group)):
+                day = i // n_tps_per_day
+                tp_date = f"{ts}-d{day:0{n_digits}.0f}"
+                tp_dates.append(tp_date)
+
+    return pd.Series(tp_dates, index=timepoints_df.index)
 
 
 def gen_build_costs_file(gens_by_build_year, out_folder):

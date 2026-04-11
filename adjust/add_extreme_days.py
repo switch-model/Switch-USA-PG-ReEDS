@@ -128,8 +128,11 @@ def main():
     new_tp["ts_scale_to_period"] = 0
 
     # create old_x columns in new_tp and timepoints, convert standard
-    # columns to str and add "_res" to the new_tp version
-    for col in ["timepoint", "timestamp", "timeseries"]:
+    # columns to str and add "_prm" to the new_tp version
+    update_cols = ["timepoint", "timestamp", "timeseries"]
+    if "tp_date" in timepoints.columns:
+        update_cols.append("tp_date")
+    for col in update_cols:
         for df in new_tp, timepoints:
             df["old_" + col] = df[col]
             df[col] = df[col].astype(str)
