@@ -886,11 +886,10 @@ def load_pg_kmeans(load_curves: pd.DataFrame, timepoints: pd.DataFrame) -> pd.Da
     pd.DataFrame
         Tidy dataframe with columns "LOAD_ZONE" and "TIMEPOINT"
     """
-    load_curves = load_curves.astype(int)
     load_curves.columns.name = "LOAD_ZONE"  # rename from "region" or None
     load_curves["TIMEPOINT"] = timepoints["timepoint_id"].values
     load_ts = load_curves.melt(id_vars=["TIMEPOINT"], value_name="zone_demand_mw")
-    load_ts["zone_demand_mw"] = load_ts["zone_demand_mw"].astype("object")
+    load_ts["zone_demand_mw"] = load_ts["zone_demand_mw"].astype(float)
 
     # change the order of the columns
     return load_ts[["LOAD_ZONE", "TIMEPOINT", "zone_demand_mw"]]
