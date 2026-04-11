@@ -29,6 +29,14 @@ model_adjustment_scripts:
   Add reserve info:
     script: ../../adjust/add_reserve_info.py
     order: 1
+  Add demand response info:
+    script: ../../adjust/add_dr_info.py
+    # run before add_extreme_days to index off normal peak load, not super-peak
+    order: 2
+  Add energy efficiency info:
+    script: ../../adjust/add_ee_info.py
+    # run before add_extreme_days to index off normal peak load, not super-peak
+    order: 2
   Add extreme day:
     script: ../../adjust/add_extreme_days.py
     # run after all the others, because it creates a new directory copied

@@ -2,7 +2,6 @@
 import sys
 import argparse
 import shutil
-import csv
 from pathlib import Path
 import pandas as pd
 
@@ -13,6 +12,8 @@ timepoint_files = {
     "loads.csv": "TIMEPOINT",
     "variable_capacity_factors.csv": "TIMEPOINT",
     "water_node_tp_flows.csv": "TIMEPOINTS",
+    "dr_data.csv": "TIMEPOINT",
+    "ee_data.csv": "TIMEPOINT",
 }
 # from grep -rl 2024_p141_0 switch/in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
 timestamp_files = {
