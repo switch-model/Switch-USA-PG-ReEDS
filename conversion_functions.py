@@ -298,6 +298,7 @@ def gen_info_table(gens, settings):
         * gen_connect_cost_per_mw: based on spur_capex_mw_mile * spur_miles plus substation cost
         * gen_dbid: same as generation_project
         * gen_scheduled_outage_rate: from PowerGenome
+        * gen_is_distributed: from PowerGenome
         * gen_forced_outage_rate: from PowerGenome
         * gen_capacity_limit_mw: omitted for new thermal plants; upper limits on new renewables (MW total across all).
         * gen_min_load_fraction: from PowerGenome
@@ -480,6 +481,7 @@ def gen_info_table(gens, settings):
     optional_cols = [
         "gen_dbid",
         "gen_is_cogen",
+        "gen_is_distributed",
         "gen_scheduled_outage_rate",
         "gen_forced_outage_rate",
         "gen_store_to_release_ratio",

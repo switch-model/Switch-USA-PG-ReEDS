@@ -19,6 +19,7 @@ model_tag_names:
     # - Hydro_level
   - CapRes_1
   - CapRes_2
+  - gen_is_distributed
   - MaxCapTag_Ban
   - MaxCapTag_WindGrowth
   - MaxCapTag_SolarGrowth
@@ -348,6 +349,8 @@ model_tag_values:
     Wood/Wood Waste Biomass: 1
     Biomass: 1
     # distributed_gen: 1
+  gen_is_distributed:
+    Distributed_Generation: 1
   gen_forced_outage_rate:
     # TODO: find better estimates for batteries and maybe PV
     # From NERC GADS statistical brochures: https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system
