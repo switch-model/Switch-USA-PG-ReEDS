@@ -206,11 +206,59 @@ and off in the `settings_management` key (in
 `pg/settings/scenario_management.yml`). These in turn override specific keys in
 all the *.yml files with new values reflecting the flag setting.
 
-Currently, the most useful flag is `time_series`, which can be all 7 years of
-data (case ID `p1`), 4 sample weeks (case ID `s4` and `s4_flat`) or 20x1 sample
-days (case ID `s20x1`, `s20x1_flat` and `s20x1_decarb`). Cases ending with
-`_flat` have no load growth, and cases with `_decarb` have deep decarbonization
-($200 national carbon tax).
+This version of `pg_to_switch.py` also uses a custom key in the PG settings
+called `model_adjustment_scripts` to specify scripts to run after the model is
+prepared. These scripts are automatically passed the name of the Switch model
+input directory that has just been created and any other arguments specified in
+the settings. Sub-keys under `model_adjustment_scripts` can be re-assigned using
+the settings management system. This study uses this option to customize models
+beyond standard PowerGenome capabilities (e.g., switch to use 2-hour timesteps
+instead of 1-hour for most models) and to adjust these customizations for each
+scenario (e.g., block running of the down-sampling script for the weekly
+production cost models).
+
+Currently, these are the possible flags in `scenario_inputs.csv` and
+`settings_management`:
+
+- `time_series`: type of time series to use to simulate operating conditions
+  during each model investment stage
+  - `p1`: all 7 years of data (too much to solve at once, but a useful starting
+    point for production-cost models)
+  - `s1x1`, `s4x1`, `s20x1` or `s40x1`: 1, 4, 20 or 40 samples of 1 day each
+    (the shorter ones are good for testing and `s40x1` is the main one used for
+    the capacity expansion stage of this model)
+  - `s4x5` or `s10x5`: 4 or 10 samples of 5 days each
+- `load_growth_flexibility`: type of flexibility allowed for the loads added in
+  2024-2030
+  - `none` or `firm`: no load curtailment allowed
+  - `flex_001`: 1/1000th (0.1%) of load additions can be left unserved at some
+    point in the year
+- `load_growth`: amount of load growth in 2024-2030
+  - `icf`: roughly 15-20%, derived from [ICF load growth
+    study](https://www.icf.com/insights/energy/demand-growth-challenges-opportunities-utilities)
+    as of summer 2025
+  - `low`: 30% of ICF level
+  - `none`: no load growth after 2024
+- `allow_retirement`: allow economic retirement (may be obsolete or overridden
+  by `adjust/define_scenarios.py`)
+  - `yes`: allow economic retirement of coal and gas plants after 2024, based on
+    `Can_Retire` flag set elsewhere in the settings
+  - `no`: set `Can_Retire` to 0 for all generators by default (may be overridden
+    for all generators that a specific `Can_Retire` flag set; need to check)
+- `policies`:
+  - `current`: current policies in the US (plus any added by model adjustment
+    scripts or custom modules)
+  - `decarb`: deep decarbonization, driven by a $200/tCO2 carbon adder
+- `resource_limits`: (obsolete) early test of limits on various technologies
+  - `high_gas`: ban new clean energy sources (causes infeasibility due to
+    failure to comply with clean energy standards)
+  - `low_gas`: ban new natural gas capacity
+- `fuel_price_forecast`: which fuel price forecast to use for each scenario
+  - `aeo2025`: based on EIA AEO 2025, using standard PowerGenome logic
+  - `y2022`, `y2024`: historical state-level prices for 2022, 2024, etc.
+  - `hist5`: state-level average of historical prices from 2020-25
+- `split_weeks`: whether to split the Switch inputs into weekly production cost
+  models (scenario should be setup with `p1` time_series to begin with)
 
 # Generate Switch inputs
 
@@ -377,14 +425,14 @@ the script. These are the files and sections created by
   - `regional_resource_tags.yml`: generator eligibility for state RPS, CES and minimum-capacity programs
     - eligibility for max-capacity programs (the national wind ban (`MaxCapTag_WindGrowth`) and an optional ban on individual technologies (`MaxCapTag_Ban`)) are specified manually in `model_definition.yml/generator_columns`, `resource_tags.yml/model_tag_values` and possibly `scenario_management.yml/settings_management/` as needed.
 
-**"hist5" and "peak" fuel price forecasts**. The
+**"hist5" and single-year fuel price forecasts**. The
 `make_hist5_fuel_price_forecast.py` script retrieves historical fuel prices by
-state for 2020-24 using the EIA open data API, then converts them to 2024
-dollars. Prices are taken from the State Energy Data System (SEDS) if available,
+state for 2020-24 using EIA open data APIs, then converts them to 2024 dollars.
+Prices are taken from the State Energy Data System (SEDS) if available,
 otherwise from Electric Power Operational Data (EPOD) for the Electric Power
 sector (preferred) or Electric Utility sector (fallback). All years are averaged
 together to create a "persistence" forecast for later years, which we label as
-"hist5". Annual historical prices are also stored as 'forecasts' named "y2020" -
+"hist5". Annual historical prices are also stored as "forecasts" named "y2020" -
 "y2024". These are placed in the `user_fuel_price` key if the user chooses a
 case with `fuel_price_forecast` equal to "hist5", "y2024", etc., in
 pg/settings/extra_inputs/scenario_inputs.csv. Currently most scenarios are set
