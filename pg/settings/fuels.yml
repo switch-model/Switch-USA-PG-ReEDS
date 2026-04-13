@@ -14,7 +14,7 @@ aeo_fuel_usd_year: 2024
 # page https://www.eia.gov/opendata/qb.php?category=3604304
 eia_series_scenario_names:
   reference: REF2025 # Includes 111(d) policy that retires nearly all coal plants -- leads to very low coal prices
-  no_111d: nocaa111 # No 111(d) policy that would retire coal plants
+  no_111d: NOCAA111 # No 111(d) policy that would retire coal plants
   low_price: LOWPRICE # Low oil price scenario
   high_price: HIGHPRICE # High oil price scenario
   high_resource: HIGHOGS # High oil and gas resource scenario -- lowest gas prices
