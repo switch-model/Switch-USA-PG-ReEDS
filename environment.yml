@@ -4,7 +4,7 @@ dependencies:
   - git
   - python =3.10
   - switch_model =2.0.9
-  - gdown
+  - gdown =5.2 # 6.0 doesn't have gdown.download(fuzzy=True)
   - seaborn
   - pyyaml
   - pip
