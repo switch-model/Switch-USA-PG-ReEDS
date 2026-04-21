@@ -66,7 +66,7 @@ def post_solve(m, outdir):
             (z, tp): m.UnservedLoad[z, tp]
             for z in m.LOAD_ZONES
             for tp in m.TIMEPOINTS
-            if abs(value(m.UnservedLoad[z, tp])) > 1e-8
+            if abs(value(m.UnservedLoad[z, tp])) > 1e-6
         }
         write_table(
             m,
