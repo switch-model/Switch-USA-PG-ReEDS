@@ -1,4 +1,4 @@
-﻿case_id,year,time_series,load_growth_flexibility,load_growth,allow_retirement,policies,resource_limits,fuel_price_forecast,split_weeks
+﻿case_id,year,time_series,load_growth_flexibility,load_growth,allow_retirement,policies,resource_limits,fuel_price_forecast,make_split_models
 p1,2024,p1,none,none,yes,current,none,y2024,no
 p1,2030,p1,firm,icf,yes,current,none,hist5,no
 p1_low_gas,2030,p1,firm,icf,yes,current,low_gas,hist5,no
@@ -25,5 +25,5 @@ s4x1_aeo_fuel,2030,s4x1,firm,icf,yes,current,none,aeo2025,no
 s4x1_peak_fuel,2030,s4x1,firm,icf,yes,current,none,y2022,no
 s40x1_low_growth,2030,s40x1,firm,low,yes,current,none,hist5,no
 s40x1_peak_fuel,2030,s40x1,firm,icf,yes,current,none,y2022,no
-weekly,2024,p1,firm,icf,no,current,none,y2024,yes
-weekly,2030,p1,firm,icf,yes,current,none,hist5,yes
+resource_adequacy,2024,s2555x1,firm,icf,no,current,none,y2024,yes
+resource_adequacy,2030,s2555x1,firm,icf,yes,current,none,hist5,yes

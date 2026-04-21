@@ -214,8 +214,8 @@ the settings. Sub-keys under `model_adjustment_scripts` can be re-assigned using
 the settings management system. This study uses this option to customize models
 beyond standard PowerGenome capabilities (e.g., switch to use 2-hour timesteps
 instead of 1-hour for most models) and to adjust these customizations for each
-scenario (e.g., block running of the down-sampling script for the weekly
-production cost models).
+scenario (e.g., prevent running the down-sampling script when generating
+resource adequacy models).
 
 Currently, these are the possible flags in `scenario_inputs.csv` and
 `settings_management`:
@@ -224,9 +224,11 @@ Currently, these are the possible flags in `scenario_inputs.csv` and
   during each model investment stage
   - `p1`: all 7 years of data (too much to solve at once, but a useful starting
     point for production-cost models)
-  - `s1x1`, `s4x1`, `s20x1` or `s40x1`: 1, 4, 20 or 40 samples of 1 day each
-    (the shorter ones are good for testing and `s40x1` is the main one used for
-    the capacity expansion stage of this model)
+  - `s1x1`, `s4x1`, `s20x1`, `s40x1` or `s2555x1`: 1, 4, 20, 40 or 2555 samples
+    of 1 day each (the shorter ones are good for testing and `s20x1` is the
+    starting point for the capacity expansion stage of this model; `s2555x1`
+    spans all available weather days and is used for resource adequacy
+    assessment)
   - `s4x5` or `s10x5`: 4 or 10 samples of 5 days each
 - `load_growth_flexibility`: type of flexibility allowed for the loads added in
   2024-2030
@@ -257,8 +259,14 @@ Currently, these are the possible flags in `scenario_inputs.csv` and
   - `aeo2025`: based on EIA AEO 2025, using standard PowerGenome logic
   - `y2022`, `y2024`: historical state-level prices for 2022, 2024, etc.
   - `hist5`: state-level average of historical prices from 2020-25
-- `split_weeks`: whether to split the Switch inputs into weekly production cost
-  models (scenario should be setup with `p1` time_series to begin with)
+- `make_split_models`: whether to split the Switch inputs into many separate
+  resource adequacy models. 
+  - `no`: default, no special treatment
+  - `yes`: The `adjust/make_split_models.py` script will be run and will split
+    every timeseries from the PG-generated model into a separate model, which
+    can be run using the `scenarios_split.txt` scenario list. When using this,
+    the scenario should be setup with a `time_series` that spans all available
+    weather data, e.g., `s2555x1`.
 
 # Generate Switch inputs
 
@@ -272,6 +280,10 @@ needed):
 # s20x1 uses our standard assumptions and 20x1 day time sampling;
 # use s4x1 if you need a smaller and faster model for testing.
 python pg_to_switch.py pg/settings switch/in/ --case-id s20x1 --year 2030
+
+# resource_adequacy uses our standard assumptions and generates 2555
+# individual daily models, which can be used for resource adequacy testing
+python pg_to_switch.py pg/settings switch/in/ --case-id resource_adequacy --year 2030
 
 # (p1 uses all weather years (2006-13) as a single timeseries, which can't
 # be solved but is relatively quick to generate and useful for inspection)

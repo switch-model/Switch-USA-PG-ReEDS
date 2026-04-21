@@ -9,9 +9,9 @@ These will be:
 
 - gen_info.high_fossil.csv  # used for high_fossil.build case
 - gen_info.no_retire.csv    # used for high_fossil (cost evaluation) case
-- gen_info.flex.csv         # base case with 0.001 flexible loads
-- gen_info.flex.high_fossil.csv
-- gen_info.flex.no_retire.csv
+# - gen_info.flex.csv         # base case with 0.001 flexible loads
+# - gen_info.flex.high_fossil.csv
+# - gen_info.flex.no_retire.csv
 """
 
 import sys, os, re
@@ -64,22 +64,24 @@ for tag in ("", "_prm"):
     )
     gen_info_high_fossil.loc[new_clean_mask, "gen_variable_om"] += 80
 
-    for tag in ["", "high_fossil", "no_retire"]:  # , "low_fossil"]:
-        name = ("gen_info." + tag).strip(".")
-        df = locals()[name.replace(".", "_")]
-        df_flex = df.copy()
-        df_flex.loc[
-            df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
-        ] = 0.001
-        if name != "gen_info":
-            to_csv(df, name + ".csv")
-        to_csv(df_flex, name.replace("gen_info", "gen_info.flex") + ".csv")
-        # allow full flexibility to be concentrated in each weekly case
-        # if needed (for rare emergencies)
-        df_flex.loc[
-            df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
-        ] *= 52
-        to_csv(df_flex, name.replace("gen_info", "gen_info.flex_weekly") + ".csv")
+    # 0.1% interruptible load (no longer used because difficult to decide
+    # how it affects PRM or integrate into resource adequacy evaluation)
+    # for tag in ["", "high_fossil", "no_retire"]:  # , "low_fossil"]:
+    #     name = ("gen_info." + tag).strip(".")
+    #     df = locals()[name.replace(".", "_")]
+    #     df_flex = df.copy()
+    #     df_flex.loc[
+    #         df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
+    #     ] = 0.001
+    #     if name != "gen_info":
+    #         to_csv(df, name + ".csv")
+    #     to_csv(df_flex, name.replace("gen_info", "gen_info.flex") + ".csv")
+    #     # allow full flexibility to be concentrated in each weekly case
+    #     # if needed (for rare emergencies)
+    #     df_flex.loc[
+    #         df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
+    #     ] *= 52
+    #     to_csv(df_flex, name.replace("gen_info", "gen_info.flex_weekly") + ".csv")
 
     # if this is a low_growth case and there already exists a regular case with
     # the same name, create loads.low_growth.csv in the regular case, using the
@@ -164,7 +166,7 @@ for tag in ("", "_prm"):
         ],
         "high_renewable_flex": [
             "--include-module study_modules.solar_push --total-solar-gw 500",
-            "--input-alias gen_info.csv=gen_info.flex.csv",
+            # "--input-alias gen_info.csv=gen_info.flex.csv",
             "--include-module study_modules.demand_response_investment",
             "--include-module study_modules.efficiency_investment",
         ],

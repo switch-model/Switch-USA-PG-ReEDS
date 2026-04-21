@@ -3,6 +3,14 @@ Add an UnservedLoad component, which ensures the model is always feasible.
 This is often useful when the model is constrained to the edge of infeasibility,
 (e.g., when evaluating a pre-defined, just-feasible construction plan) to avoid
 spurious reports of infeasibility.
+
+Based on switch_model.hawaii.unserved_load
+
+Note: the hawaii version defines an unserved reserves penalty but doesn't apply
+the unserved reserves to help meet the reserve requirement, so we drop it here.
+Instead, reserves must always be met, and load will be shed to keep reserves
+available. This is more like standard practice and makes resource adequacy
+evaluation simpler.
 """
 
 import os
@@ -48,21 +56,6 @@ def define_components(m):
     m.Zone_Power_Injections.append("UnservedLoad")
     # add the unserved load penalty to the model's objective function
     m.Cost_Components_Per_TP.append("UnservedLoadPenalty")
-
-    # amount of unserved reserves during each timepoint
-    m.UnservedUpReserves = Var(m.TIMEPOINTS, within=NonNegativeReals)
-    m.UnservedDownReserves = Var(m.TIMEPOINTS, within=NonNegativeReals)
-    # total cost for unserved reserves (90% as high as cost of unserved load,
-    # to make the model prefer to serve load when possible)
-    m.UnservedReservePenalty = Expression(
-        m.TIMEPOINTS,
-        rule=lambda m, tp: m.tp_duration_hrs[tp]
-        * 0.9
-        * m.unserved_load_penalty_per_mwh
-        * (m.UnservedUpReserves[tp] + m.UnservedDownReserves[tp]),
-    )
-    # add the unserved load penalty to the model's objective function
-    m.Cost_Components_Per_TP.append("UnservedReservePenalty")
 
 
 def post_solve(m, outdir):

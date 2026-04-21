@@ -26,8 +26,8 @@ model_adjustment_scripts:
   #   script: ../../path/to/script.py
   #   arguments: (optional) --additional_arguments "to pass" --to 'script'
   #   order: 3  # order to run script in (optional, default 5)
-  Add reserve info:
-    script: ../../adjust/add_reserve_info.py
+  Add spinning reserve info:
+    script: ../../adjust/add_spinning_reserve_info.py
     order: 1
   Add demand response info:
     script: ../../adjust/add_dr_info.py

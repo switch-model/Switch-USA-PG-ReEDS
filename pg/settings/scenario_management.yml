@@ -29,6 +29,10 @@ settings_management:
       s40x1:
         time_domain_periods: 40
         time_domain_days_per_period: 1
+      s2555x1:
+        # all possible weather days, individually
+        time_domain_periods: 2555
+        time_domain_days_per_period: 1
       s4x5:
         time_domain_periods: 4
         time_domain_days_per_period: 5
@@ -132,13 +136,31 @@ settings_management:
         # national carbon tax at 200, to see what would be cheapest way to decarbonize
         emission_policies_fn: emission_policies_decarb.csv
         carbon_cost_dollar_per_tco2: 200
-    split_weeks:
+    make_split_models:
       yes:
         model_adjustment_scripts:
+          # drop some scripts by setting to ~:
           Increase timepoint duration to 2 hours: ~ # keep 1-hour resolution
-          Create weekly production models:
-            script: ../../adjust/create_weekly_models.py
-            arguments: switch/in/2030/s40x1
+          Add extreme day: ~
+          # add this adjustment script:
+          Make resource adequacy models:
+            script: ../../adjust/make_split_models.py
+            # identify capacity expansion scenarios to use as the basis for the RA model (--reuse-build-scenarios)
+            # and define arguments to every one-day scenario to do the following:
+            #   - reduce output
+            #   - relax environmental policies
+            #   - use unserved load instead of PRM, to avoid infeasibility and find most difficult time
+            arguments: >-
+              --reuse-build-scenarios switch/in/2030/s40x1/scenarios_build.txt
+              --include-module study_modules.reduce_reporting
+              --skip-generic-output --skip-output-files dispatch.csv
+              dispatch_wide.csv dispatch_gen_annual_summary.csv
+              dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf
+              --exclude-modules study_modules.min_capacity_constraint
+              study_modules.max_capacity_constraint study_modules.rps_regional
+              --exclude-module study_modules.scheduled_outages --exclude-module
+              study_modules.planning_reserves_extreme_days --include-module
+              study_modules.unserved_load
             order: 5
       no: ~ # default settings
     fuel_price_forecast:
