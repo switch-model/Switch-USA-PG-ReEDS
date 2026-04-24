@@ -4,53 +4,27 @@ load, and if so, adds the timeseries with the most unserved load into the
 capacity expansion (CE) models. It also labels CE models as "adequate",
 "inadquate", or "infeasible".
 
-This script will create RA versions of the CE models, i.e., new copies in
-ce_dir/ra/ce_scenario_name that have additional, difficult timeseries added with
-0 weight and the requested planning reserve margin.
-
-Please note: this script overwrites the scenario list files if they end with _ra
-before the extension and the existing CE directory if its parent directory is
-called ra. So the files and folders used for the base model first iteration
-should not have this pattern.
-
 This script is designed to be called iteratively. For the example below, the
 main CE models are defined in `in/build` and saved in
-`out/build/{scen1,scen2,...}`, the split/RA models are in
-`in/resource_adequacy`, the definitions for the CE scenarios are in
-`in/build/scenarios_build.txt` and the definitions for the RA split models are
-in `in/resource_adequacy/scenarios_split.txt`.
+`out/build/{scen1,scen2,...}`, the split/RA models are in `in/split`, the
+definitions for the CE scenarios are in `in/build/scenarios_build.txt` and the
+definitions for the RA split models are in `in/split/scenarios_split.txt`.
 
-Then this script should be used as follows:
+    # copy CE models to in/build/{scen1,scen2,...} and create initial versions of
+    # in/build/scenarios_build.ra.txt and in/split/scenarios_split.ra.txt
+    python ra_setup_iteration_models.py
 
-    delete in/build/ra if present
-    loop:
-        if first iteration:
-            ce_scens = in/build/scenarios_build.txt
-            ra_scens = in/resource_adequacy/scenarios_split.txt
-        else:
-            # _ra version of scenario lists are created by this script
-            # and show only the remaining CE cases that still have
-            # unserved load and haven't been identified as infeasible
-            ce_scens = in/build/scenarios_build_ra.txt
-            ra_scens = in/resource_adequacy/scenarios_split_ra.txt
-
-        switch solve-scenarios --scenario-list $ce_scens
-        switch solve-scenarios --scenario-list $ra_scens
-
-        if first iteration and want backup of initial plan:
-            copy `out/build/scen*` to backup location
-
-        python ra_add_difficult_timeseries.py --ce-scens-file $ce_scens --ra-scens-file $ra_scens
-
-        if `in/build/scenarios_build_ra.txt` is empty:
-            break
+    # iteratively solve CE and RA models
+    while in/build/scenarios_build_ra.txt is not empty:
+        switch solve-scenarios --scenario-list in/build/scenarios_build.ra.txt
+        switch solve-scenarios --scenario-list in/resource_adequacy/scenarios_split.ra.txt
+        python ra_add_difficult_timeseries.py in/build/scenarios_build.ra.txt in/resource_adequacy/scenarios_split.ra.txt
 
 Additional notes:
 
-For the example above, after the script runs, RA versions of the CE models,
-including the extra, difficult timeseries, will be in
-`in/build/ra/{scen1,scen2,...}` and the scenarios that need to be run for the
-next step of the iteration will be defined in `in/build/scenarios_build_ra.txt`
+At each iteration, this script overwrites the scenario list files with shorter
+versions that contain only the scenarios that should be run for the next
+iteration, i.e., still have unserved load.
 
 After `--max-prm-timeseries-count` is reached, PRMs will be multiplied by 1.25
 (rising by at least 1%) in each iteration until there is no unserved load or
@@ -58,11 +32,11 @@ until `--max-prm-level` is reached. If `--max-prm-level` is reached, the
 scenario will be marked as "infeasible" in `out/build/scen?/ra_status.txt` and
 iteration will stop.
 
-If there is unserved load, but only in timeseries that have already been added
-to the RA version of the CE model, then the iteration will switch over to
-raising the PRM, as if --max-prm-timeseries-count had been reached. Then it will
-revert to adding difficult timeseries in the next iteration if there is still
-unserved load. This generally should not occur.
+If there is unserved load but only in timeseries that have already been added to
+the CE model, then script will raise the PRM during that iteration, as if
+--max-prm-timeseries-count had been reached. On the next iteration, it will
+revert to adding difficult timeseries if there is still unserved load. This
+generally should not occur.
 """
 
 import argparse, shlex, shutil, sys, os
@@ -99,6 +73,7 @@ adequate = "adequate"
 inadequate = "inadequate"
 stalled = "stalled"
 infeasible = "infeasible"
+unknown = "unknown (incomplete RA results)"
 
 
 def get_scenario_args(scenario_file):
@@ -121,30 +96,29 @@ def get_scenario_args(scenario_file):
     return scen_info
 
 
-import argparse
-
-
 def get_script_args():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--ce-scens-file",
+        "ce_scens_file",
         type=str,
         help="""
-            Scenario list file used to define capacity expansion scenarios,
-            e.g., in/2030/s20x1/scenarios_build.txt (usually created by
-            adjust/define_scenarios.py)
+            Scenario list file used to define capacity expansion scenarios for
+            resource adequacy iteration, e.g.,
+            in/2030/s20x1/scenarios_build.ra..txt (created by
+            ra_setup_iteration_models.py and rewritten by this script)
         """,
     )
     parser.add_argument(
-        "--ra-scens-file",
+        "ra_scens_file",
         type=str,
         help="""
             Scenario list file used to define resource adequacy (split)
-            scenarios, e.g., in/2030/resource_adequacy/scenarios_split.txt
-            (usually created by adjust/create_split_models.py)
+            scenarios, e.g., in/2030/resource_adequacy/scenarios_split.ra.txt
+            (created by ra_setup_iteration_models.py and rewritten by this
+            script)
         """,
     )
     parser.add_argument(
@@ -229,101 +203,22 @@ def main(options):
     if not ra_scens:
         raise RuntimeError(f"No scenarios are defined in {options.ra_scens_file}.")
 
-    def ce_ra_path(ce_scen):
-        in_dir = Path(ce_scens[ce_scen]["inputs_dir"])
-        if in_dir.parent.name == "ra":
-            # model was run from a CE RA directory
-            return in_dir
-        else:
-            # model was run from the base CE directory,
-            # but the next model should run from the
-            # subdirectory with the RA version of this
-            # CE model
-            return in_dir / "ra" / ce_scen
-
-    def make_ce_ra_dir(ce_scen):
-        # create ce_dir/ra/ce_scen_name folder if it doesn't exist already
-        ce_dir = Path(ce_scens[ce_scen]["inputs_dir"])
-        ce_ra_dir = ce_ra_path(ce_scen)  # possibly the same dir, on re-runs
-        if ce_dir == ce_ra_dir:
-            # reusing an existing CE RA dir; double-check that it really is a CE
-            # RA dir and not a misnamed CE dir (something/ra/model, but not
-            # meant to be the RA version of a CE model)
-            if not (ce_dir.parent.parent / "switch_inputs_version.txt").is_file():
-                raise RuntimeError(
-                    f"This script will treat {ce_ra_dir} as a CE RA model directory "
-                    "because its parent's name is 'ra'. However its grandparent "
-                    f"{ce_ra_dir.parent.parent} is not a model directory, so this "
-                    "appears to be a normal model, not the RA version of a CE model. "
-                    "Terminating to avoid overwriting a normal model directory. "
-                    "To avoid this error, please rename the parent to something "
-                    "other than 'ra'."
-                )
-        else:
-            # first run; create the RA versions of the CE dir
-            if ce_ra_dir.is_dir():
-                # ra subdir exists, probably from a previous run
-                print(f"deleting pre-existing {ce_ra_dir}")
-                shutil.rmtree(ce_ra_dir)
-            # copy all files (but not subdirs) into the ce ra dir
-            ce_ra_dir.mkdir(parents=True)
-            for p in ce_dir.iterdir():
-                if p.is_file():
-                    shutil.copy2(p, ce_ra_dir / p.name)
-            print(f"Created CE RA model directory `{ce_ra_dir}`.")
-
-        # first run, copy to the new dir
-        # if ce_ra_dir.is_dir():
-        #     # ra subdir exists (should be rare); warn if this is older than
-        #     # parent, which generally indicates they recreated the main model
-        #     # dir without deleting the ra subdir
-        #     older = []
-        #     missing = []
-        #     for p in ce_dir.iterdir():
-        #         if p.is_file():
-        #             q = ce_ra_dir / p.name
-        #             if q.is_file():
-        #                 if p.stat().st_mtime > q.stat().st_mtime:
-        #                     older.append(p.name)
-        #             else:
-        #                 missing.append(p.name)
-        #     if older:
-        #         print(
-        #             f"WARNING: the following files already exist in `{ce_ra_dir}` "
-        #             f"but are older than the versions in `{ce_dir}`: "
-        #             f"{', '.join(older)}. "
-        #             f"The `{ce_ra_dir}` directory should be deleted whenever `{ce_dir}` is rebuilt."
-        #         )
-        #     if missing:
-        #         print(
-        #             f"WARNING: the following files exist in `{ce_dir}` but not in "
-        #             f"`{ce_ra_dir}`: {', '.join(missing)}. "
-        #         )
-        # else:
-        #     # dir doesn't exist; create it and copy all files (but not subdirs)
-        #     # into the ra dir
-        #     ce_ra_dir.mkdir(parents=True, exist_ok=True)
-        #     for p in ce_dir.iterdir():
-        #         if p.is_file():
-        #             shutil.copy2(p, ce_ra_dir / p.name)
-        #     print(f"Created `{ce_ra_dir}` model directory")
-
     def ra_split_tag(ra_scen):
         # parse ra split number (e.g., 0123) from an ra scenario name
         # (currently this is everything after the final underscore)
         # If this changes, also change f"{ce_scen}_{tag}" code below
         return ra_scen.rsplit("_", 1)[1]
 
-    def read_ce_ra_in(ce_scen, f):
-        # read a file from the ra version of the ce input directory
+    def read_ce_in(ce_scen, f):
+        # read a file from the ce input directory
         # we turn off low_memory when reading to handle mixed column types in
         # timeseries.csv
-        file = ce_ra_path(ce_scen) / f
+        file = Path(ce_scens[ce_scen]["inputs_dir"]) / f
         return pd.read_csv(file, na_values=".", low_memory=False)
 
-    def write_ce_ra_in(ce_scen, f, df):
-        # write a file in the ra version of the ce input directory
-        file = ce_ra_path(ce_scen) / f
+    def write_ce_in(ce_scen, f, df):
+        # write a file in the ce input directory
+        file = Path(ce_scens[ce_scen]["inputs_dir"]) / f
         df.to_csv(file, na_rep=".", index=False)
         print(f"saved {file}.")
 
@@ -353,10 +248,6 @@ def main(options):
     #     k: v for k, v in ra_scens.items() if v["ce_scen"] == "high_fossil_build"
     # }
 
-    # make sure the RA versions of the CE dir exist
-    for ce_scen in ce_scens.keys():
-        make_ce_ra_dir(ce_scen)
-
     # get mappings for timepoint -> timeseries and timeseries -> tag ('0123')
     # (could relax this assertion in later versions, but it's efficient to just
     # read the ra files once if we can get away with it)
@@ -385,30 +276,18 @@ def main(options):
     # find worst day that isn't already included in each ce scenario
     # test: ce_scen = 'high_fossil_build'; ce_info = ce_scens[ce_scen]
     for ce_scen, ce_info in ce_scens.items():
-        ce_df = read_ce_ra_in(ce_scen, "timeseries.csv")
+        ce_df = read_ce_in(ce_scen, "timeseries.csv")
         # get list of ra scens in this ce scen
         rs = ce_scens[ce_scen]["ra_scens"]
 
         # get average unserved load for each timeseries
         # read in all unserved load files, getting total for each timepoint across all zones
+        unreadable_cases = []
         unserved_load_dfs = []
         n_scens = len(rs)
         print(f"Reading unserved load files for {ce_scen}:")
         for i, r in enumerate(rs):
             try:
-                # df = (
-                #     pd.read_csv(
-                #         Path(ra_scens[r]["outputs_dir"]) / "unserved_load.csv",
-                #         usecols=["TIMEPOINT", "UnservedLoadMW"],
-                #         dtype={"TIMEPOINT": "int32", "UnservedLoadMW": "float32"},
-                #         # na_filter=False,
-                #         # engine="c",  # or "c" if pyarrow is unavailable / incompatible
-                #         engine="pyarrow",  # or "c" if pyarrow is unavailable / incompatible
-                #     )
-                #     .groupby("TIMEPOINT", sort=False)["UnservedLoadMW"]
-                #     .sum()
-                #     .reset_index()
-                # )
                 df = (
                     read_ra_out(r, "unserved_load.csv")
                     .groupby("TIMEPOINT")["UnservedLoadMW"]
@@ -417,9 +296,15 @@ def main(options):
                 )
                 unserved_load_dfs.append(df)
             except (FileNotFoundError, TimeoutError):
-                print(f"  Unable to read unserved load file for case {r}.")
+                unreadable_cases.append(r)
             if i == 0 or (i + 1) % (n_scens / 10) < 1:
                 print(f"  Read {i+1}/{n_scens} files ({(i+1)/n_scens:.0%}).")
+
+        if unreadable_cases:
+            print(
+                "WARNING: Unable to read unserved load files for these cases: "
+                + ", ".join(unreadable_cases)
+            )
 
         unserved_load = pd.concat(unserved_load_dfs).query("UnservedLoadMW > 1e-3")
 
@@ -430,17 +315,28 @@ def main(options):
         )
         unserved_load = unserved_load.query("UnservedLoadMW > 0")
         if unserved_load.empty:
-            # all load served
-            ce_info["status"] = adequate
+            if unreadable_cases:
+                # no unserved load, but not all cases could be read
+                # try again without changing the model
+                ce_info["status"] = unknown
+            else:
+                # all load served
+                ce_info["status"] = adequate
             continue
 
         candidates = unserved_load.loc[
             ~unserved_load["timeseries"].isin(ce_df["timeseries"]), :
         ]
         if candidates.empty:
-            # some unserved load, but all timeseries with unserved load are already
-            # in the model (unlikely)
-            ce_info["status"] = stalled
+            if unreadable_cases:
+                # some unserved load, but only on timeseries that are already in
+                # the model; however there may be some unreadable timeseries
+                # with unserved load, so status is unknown
+                ce_info["status"] = unknown
+            else:
+                # There is some unserved load, but all timeseries with unserved
+                # load are already in the model (unlikely)
+                ce_info["status"] = stalled
             continue
 
         # find the timeries with the most unserved load that is not currently in the ce model
@@ -463,18 +359,20 @@ def main(options):
         # version of the CE model or already added all the days with unserved
         # load ("stalled" model), incrementally increase PRM level instead (but
         # no higher than options.max_prm_level)
-        prm = read_ce_ra_in(ce_scen, "planning_reserve_margin.csv")
+        prm = read_ce_in(ce_scen, "planning_reserve_margin.csv")
         if (
             ce_info["status"] == stalled
             or len(prm["TIMESERIES"].unique()) >= options.max_prm_timeseries_count
         ):
             if ce_info["status"] == stalled:
                 print(
-                    f"Scenario {ce_scen} has unserved load on a timeseries already included in the model."
+                    f"Scenario {ce_scen} has unserved load, but only on timeseries "
+                    "that are already included in the model."
                 )
             else:
                 print(
-                    f"Reached maximum number of PRM timeseries ({options.max_prm_timeseries_count})."
+                    "Reached maximum number of PRM timeseries "
+                    f"({options.max_prm_timeseries_count})."
                 )
 
             if (prm["planning_reserve_margin"] >= options.max_prm_level).all():
@@ -494,8 +392,8 @@ def main(options):
                     # final clip in case 1% would go above max level
                     .clip(upper=options.max_prm_level)
                 )
-                print(f"Raised PRM to {prm['planning_reserve_margin'].mean():.6g}.")
-                write_ce_ra_in(ce_scen, "planning_reserve_margin.csv", prm)
+                print(f"Raised PRM to {prm['planning_reserve_margin'].mean():.6g}.\n")
+                write_ce_in(ce_scen, "planning_reserve_margin.csv", prm)
                 # convert "stalled" case to "inadequate" and try again with
                 # higher PRM
                 if ce_info["status"] == stalled:
@@ -514,7 +412,7 @@ def main(options):
         # this is similar to adjust/increase_timepoint_duration.py
         tp_dur = options.timepoint_duration
         for f in ["timeseries.csv", "timepoints.csv"]:
-            ce_df = read_ce_ra_in(ce_scen, f)
+            ce_df = read_ce_in(ce_scen, f)
             ra_df = read_ra_in(ra_scen, f).query("timeseries == @add_ts")
             if f == "timeseries.csv":
                 assert (
@@ -528,19 +426,19 @@ def main(options):
                 ra_df = ra_df.iloc[::tp_dur, :]
                 # save for cross-referencing later
                 add_tps = ra_df["timepoint_id"]
-            write_ce_ra_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+            write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
 
         # copy matching rows for other timepoint files from ra model to
-        # ra version of ce model
+        # ce model
         for f, col in timepoint_files.items():
-            ce_df = read_ce_ra_in(ce_scen, f)
+            ce_df = read_ce_in(ce_scen, f)
             ra_df = read_ra_in(ra_scen, f).query(f"{col}.isin(@add_tps)")
             # write new version to the ce ra dir
-            write_ce_ra_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+            write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
 
         # add the new timeseries to the PRM system
         f = "planning_reserve_margin.csv"
-        ce_df = read_ce_ra_in(ce_scen, f)
+        ce_df = read_ce_in(ce_scen, f)
         ra_df = pd.DataFrame(
             {
                 "LOAD_ZONE": read_ra_in(ra_scen, "load_zones.csv")["LOAD_ZONE"],
@@ -548,7 +446,7 @@ def main(options):
                 "planning_reserve_margin": options.initial_prm,
             }
         )
-        write_ce_ra_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+        write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
 
     # report current status and save in ce model outputs dir (ra_status.txt)
     print("\nStatus of most recent model runs:")
@@ -556,60 +454,49 @@ def main(options):
         status = ce_info["status"]
         print(f"{ce_scen}: {status}")
         with open(Path(ce_scens[ce_scen]["outputs_dir"]) / "ra_status.txt", "w") as f:
-            f.write(status)
+            f.write(status + "\n")
 
-    # generate new scenario files
-    ce_scen_args = []
-    for ce_scen, info in ce_scens.items():
-        if info["status"] == inadequate:
-            args = [
+    # re-write scenarios_build.ra.txt and scenarios_split.ra.txt with only the
+    # remaining scenarios
+    new_files = []
+    scen_info = [  # scens_file, scens, status function
+        (
+            options.ce_scens_file,
+            ce_scens,
+            lambda info: info["status"],
+        ),
+        (
+            options.ra_scens_file,
+            ra_scens,
+            lambda info: ce_scens[info["ce_scen"]]["status"],
+        ),
+    ]
+    for scens_file, scens, status in scen_info:
+        args = [
+            [
                 f"--scenario-name",
-                ce_scen,
-                f"--inputs-dir",
-                str(ce_ra_path(ce_scen)),
-                f"--outputs-dir",
-                info["outputs_dir"],
-            ] + info["args"]
-            ce_scen_args.append(shlex.join(args))
-
-    ra_scen_args = []
-    for ra_scen, info in ra_scens.items():
-        if ce_scens[info["ce_scen"]]["status"] == inadequate:
-            args = [
-                f"--scenario-name",
-                ra_scen,
+                info["scenario_name"],
                 f"--inputs-dir",
                 info["inputs_dir"],
                 f"--outputs-dir",
                 info["outputs_dir"],
-            ] + info["args"]
-            ra_scen_args.append(shlex.join(args))
+            ]
+            + info["args"]
+            for info in scens.values()
+            if status(info) not in {adequate, infeasible}
+        ]
 
-    # create scenarios_build_ra.txt and scenarios_split_ra.txt
-    new_files = []
-    for scens_file, args in [
-        (options.ce_scens_file, ce_scen_args),
-        (options.ra_scens_file, ra_scen_args),
-    ]:
-        p = Path(scens_file)
-        # copy to a _ra.txt file if not already such a file
-        if p.stem.endswith("_ra"):
-            next_scens_file = p
-        else:
-            next_scens_file = p.with_name(p.stem + "_ra" + p.suffix)
-        with open(next_scens_file, "w") as f:
-            f.writelines(a + "\n" for a in args)
+        with open(scens_file, "w") as f:
+            f.writelines(shlex.join(a) + "\n" for a in args)
         if args:
-            new_files.append(next_scens_file)
+            new_files.append(scens_file)
 
     if new_files:
         print(f"\nCreated new RA scenario definitions.")
         print("\nNext, run the following commands:")
-        for next_scens_file in new_files:
-            print(f"switch solve-scenarios --scenario-list {next_scens_file}")
-        print(
-            f"python {sys.argv[0]} --ce-scens-file {new_files[0]} --ra-scens-file {new_files[1]}"
-        )
+        for scens_file in new_files:
+            print(f"switch solve-scenarios --scenario-list {scens_file}")
+        print(f"python {sys.argv[0]} {' '.join(new_files)}")
     else:
         print("\nFinished iteration")
         print(
