@@ -196,13 +196,6 @@ def main(options):
     ce_scens = get_scenario_args(options.ce_scens_file)
     ra_scens = get_scenario_args(options.ra_scens_file)
 
-    # We could just report a message, but throwing an error is more likely to stop
-    # an iterative loop, which should never reach here.
-    if not ce_scens:
-        raise RuntimeError(f"No scenarios are defined in {options.ce_scens_file}.")
-    if not ra_scens:
-        raise RuntimeError(f"No scenarios are defined in {options.ra_scens_file}.")
-
     def ra_split_tag(ra_scen):
         # parse ra split number (e.g., 0123) from an ra scenario name
         # (currently this is everything after the final underscore)
@@ -239,14 +232,22 @@ def main(options):
         info["ce_scen"] = ce_scen
         ce_scens[ce_scen].setdefault("ra_scens", []).append(ra_scen)
 
-    # # testing
-    # print("=========================================")
-    # print("only using high_fossil_build for now!!!!!")
-    # print("=========================================")
-    # ce_scens = {k: v for k, v in ce_scens.items() if k == "high_fossil_build"}
-    # ra_scens = {
-    #     k: v for k, v in ra_scens.items() if v["ce_scen"] == "high_fossil_build"
-    # }
+    # We could just report a message, but throwing an error is more likely to stop
+    # an iterative loop, which should never reach here.
+    if not ce_scens:
+        raise RuntimeError(f"No scenarios are defined in {options.ce_scens_file}.")
+    if not ra_scens:
+        raise RuntimeError(f"No scenarios are defined in {options.ra_scens_file}.")
+
+    if len(set(scen["inputs_dir"] for scen in ce_scens.values())) < len(ce_scens):
+        # some scenarios share the same input directory, which will cause
+        # trouble when we update the timeseries
+        raise RuntimeError(
+            f"Some capacity expansion models in {options.ce_scens_file} share the "
+            "same inputs directory. This script must be run with unique directories "
+            "for each model. Hint: you should use the .ra.txt scenario lists created "
+            "by ra_setup_iteration_models.py."
+        )
 
     # get mappings for timepoint -> timeseries and timeseries -> tag ('0123')
     # (could relax this assertion in later versions, but it's efficient to just
