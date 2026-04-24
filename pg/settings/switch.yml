@@ -44,6 +44,7 @@ model_adjustment_scripts:
   Add extreme day:
     script: ../../adjust/add_extreme_days.py
     # run late, because it may create a new directory copied from the main one
+    # (but that behavior is incompatible with make_split_models.py)
     order: 10
   Define scenarios:
     script: ../../adjust/define_scenarios.py

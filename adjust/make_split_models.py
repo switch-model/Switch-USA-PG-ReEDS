@@ -16,19 +16,24 @@ scenario definitions for the split model. This can be useful for reducing model
 output or adjusting reliability mechanisms.
 """
 
-import argparse, math, sys, os, shlex
+import argparse, math, sys, os, shlex, shutil
 from pathlib import Path
 import pandas as pd
 import numpy as np
 
-# files to split weeks out of
+# files to split weeks out of (also see add_extreme_days.py)
 timepoint_files = {
-    # "hydro_timepoints.csv": "timepoint_id",  # not used for this project
     "loads.csv": "TIMEPOINT",
     "variable_capacity_factors.csv": "TIMEPOINT",
     "water_node_tp_flows.csv": "TIMEPOINTS",
     "dr_data.csv": "TIMEPOINT",
     "ee_data.csv": "TIMEPOINT",
+}
+# large files not needed for this study
+exclude_files = {
+    "graph_timestamp_map.csv",
+    "hydro_timepoints.csv",
+    "hydro_timeseries.csv",
 }
 
 split_scenario_file = f"scenarios_split.txt"
@@ -42,7 +47,7 @@ def parse_script_args():
         "--reuse-build-scenarios",
         default="",
         help="""
-            Name of scenarios.txt file with scenarios that should be used as the
+            Path to scenarios.txt file with scenarios that should be used as the
             basis for the split-model scenarios. These are typically the
             scenarios used for the capacity expansion stage. If provided, each
             scenario in the original scenarios.txt will be repeated for each
@@ -62,6 +67,27 @@ def parse_script_args():
 # sys.argv = ['script'] + shlex.split("switch/in/2030/resource_adequacy --reuse-build-scenarios switch/in/2030/s40x1/scenarios_build.txt --include-module study_modules.reduce_reporting --skip-generic-output --skip-output-files dispatch.csv dispatch_wide.csv dispatch_gen_annual_summary.csv dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf --exclude-modules study_modules.min_capacity_constraint study_modules.max_capacity_constraint study_modules.rps_regional --exclude-module study_modules.scheduled_outages --exclude-module study_modules.planning_reserves_extreme_days --include-module study_modules.unserved_load")
 
 
+def clone_to_split_dir(in_dir, tag):
+    # create in_dir/tag folder with hard links to in_dir files
+    base_dir = Path(in_dir)
+    split_dir = base_dir / tag
+    if split_dir.is_dir():
+        shutil.rmtree(split_dir)
+    split_dir.mkdir(parents=True)
+    # link all root-level non-time files into the split dir
+    for p in base_dir.iterdir():
+        if (
+            p.is_file()
+            and p.name not in timepoint_files
+            and p.name not in {"timeseries.csv", "timepoints.csv"}
+            and p.name not in exclude_files
+        ):
+            # make hard link: faster and smaller than copying
+            # shutil.copy2(p, split_dir / p.name)
+            (split_dir / p.name).hardlink_to(p)
+    # print(f"Created {split_dir} model directory")
+
+
 def main():
     script_options, shared_args = parse_script_args()
     in_dir = Path(script_options.in_dir)
@@ -69,9 +95,9 @@ def main():
     def read(f):
         return pd.read_csv(in_dir / f, na_values=".")
 
-    def write(df, file):
-        df.to_csv(in_dir / file, na_rep=".", index=False)
-        print(f"saved {in_dir / file}.")
+    def write_split(tag, file, df):
+        df.to_csv(in_dir / tag / file, na_rep=".", index=False)
+        # print(f"saved {in_dir / tag / file}.")
 
     tp = read("timepoints.csv").set_index("timeseries", drop=False)
     ts = read("timeseries.csv").set_index("timeseries", drop=False)
@@ -95,10 +121,14 @@ def main():
         # save df and indices for each unique timepoint
         files[file] = (df, df.groupby(col, sort=False).indices)
 
+    print(f"Creating split model subdirectories ({in_dir}/{'N'*n_digits}):")
     scens = []
     for group in range(n_groups):
         tag = f"{group:0{n_digits}d}"  # use 1-based tag in file names
         scens.append(tag)
+
+        # make sure the directory for the split model exists
+        clone_to_split_dir(in_dir, tag)
 
         cur_ts = group_ts[group]
 
@@ -111,8 +141,8 @@ def main():
             period_hours[ts_split["ts_period"].iloc[0]] / ts_hours
         )
 
-        write(ts_split, f"timeseries.{tag}.csv")
-        write(tp_split, f"timepoints.{tag}.csv")
+        write_split(tag, "timeseries.csv", ts_split)
+        write_split(tag, "timepoints.csv", tp_split)
 
         keys = tp_split["timepoint_id"].to_numpy(dtype=np.int64, copy=False)
 
@@ -122,7 +152,12 @@ def main():
             idx = np.concatenate([indices[k] for k in keys])
             idx.sort()  # use original row order
             df = all_rows.iloc[idx]
-            write(df, f"{file[:-4]}.{tag}.csv")
+            write_split(tag, file, df)
+
+        if group == 0 or (group + 1) % (n_groups / 10) < 1:
+            print(
+                f"Created {group+1}/{n_groups} model subirectories ({(group+1)/n_groups:.0%})"
+            )
 
     ##########
     # create scenario file to simplify running these cases
@@ -143,23 +178,17 @@ def main():
     odir = Path("out", *idir.parts[1:])
     scen_file = in_dir / split_scenario_file
 
-    alias_files = ["timeseries.csv", "timepoints.csv"] + list(timepoint_files.keys())
-
     # define sets of scenarios for all construction plans
     build_scens = make_build_scens(script_options.reuse_build_scenarios, shared_args)
 
     with open(scen_file, "w") as f:
         for scen, args in build_scens.items():
             for tag in scens:
-                aliases = " ".join(
-                    f"{file}={file[:-4]}.{tag}.csv" for file in alias_files
-                )
                 f.write(
-                    f"--scenario-name {scen}_{tag} --inputs-dir {idir} --outputs-dir {odir / scen / tag} "
-                    # base arguments for the build scenario (e.g., high_renwewable_flex)
+                    # scenario name and data for this split
+                    f"--scenario-name {scen}_{tag} --inputs-dir {idir / tag} --outputs-dir {odir / scen / tag} "
+                    # arguments for this capacity expansion scenario (e.g., high_renwewable_flex)
                     f"{args} "
-                    # arguments for this sub-model
-                    f"--input-aliases {aliases} "
                     "\n"
                 )
     print(f"created {scen_file}")

@@ -153,18 +153,15 @@ for tag in ("", "_prm"):
     # replace "in" with "out" to get out_dir
     odir = Path("out", *idir.parts[1:])
 
-    main_cases = {
+    # parameters used for capacity expansion model, choosing what to build
+    build_cases = {
         "high_fossil_build": [  # make build plan
             "--input-alias gen_info.csv=gen_info.high_fossil.csv",
         ],
-        "high_fossil": [  # evaluate build plan
-            "--input-alias gen_info.csv=gen_info.no_retire.csv",
-            f"--include-module study_modules.reuse_build_plan --reuse-dir {odir}_high_fossil_build",
-        ],
-        "high_renewable": [
+        "high_renewable_build": [
             "--include-module study_modules.solar_push --total-solar-gw 500",
         ],
-        "high_renewable_flex": [
+        "high_renewable_flex_build": [
             "--include-module study_modules.solar_push --total-solar-gw 500",
             # "--input-alias gen_info.csv=gen_info.flex.csv",
             "--include-module study_modules.demand_response_investment",
@@ -172,35 +169,55 @@ for tag in ("", "_prm"):
         ],
     }
 
+    # parameters used when re-running capacity expansion model with frozen
+    # construction decisions (including possibly resource-adequacy adjustments)
+    # to evaluate final costs
+    # for this study, these are the same as the build cases, except we turn off
+    # the anti-clean-power bias in the fossil case
+    eval_cases = {
+        "high_fossil": [
+            s.replace("gen_info.high_fossil.csv", "gen_info.no_retire.csv")
+            for s in build_cases["high_fossil_build"]
+        ],
+        "high_renewable": build_cases["high_renewable_build"].copy(),
+        "high_renewable_flex": build_cases["high_renewable_flex_build"].copy(),
+    }
+    # reuse plan from correct output directory (e.g., out/2030/s20x1/high_renewable)
+    for c, args in eval_cases.items():
+        args.append(
+            f"--include-module study_modules.reuse_build_plan --reuse-dir {odir / c}_build"
+        )
+
     peak_fuel_cases = {
-        f"peak_fuel_{c[:-6] if c.endswith('_build') else c}": args
-        + [
-            f"--include-module study_modules.reuse_build_plan --reuse-dir {odir}_{c}",
-            f"--input-alias fuel_cost.csv=../{idir.name}_peak_fuel/fuel_cost.csv",
-        ]
-        for c, args in main_cases.items()
-        if not "--include-module study_modules.reuse_build_plan" in " ".join(args)
+        f"peak_fuel_{c}": args
+        + [f"--input-alias fuel_cost.csv=../{idir.name}_peak_fuel/fuel_cost.csv"]
+        for c, args in eval_cases.items()
     }
 
     low_growth_cases = {
-        f"low_growth_{c[:-6] if c.endswith('_build') else c}": args
-        + [
-            f"--include-module study_modules.reuse_build_plan --reuse-dir {odir}_{c}",
-            f"--input-alias loads.csv=loads.low_growth.csv",
-        ]
-        for c, args in main_cases.items()
-        if not "--include-module study_modules.reuse_build_plan" in " ".join(args)
+        f"low_growth_{c}": args + [f"--input-alias loads.csv=loads.low_growth.csv"]
+        for c, args in eval_cases.items()
     }
 
-    cases = []
-    for c in [main_cases, peak_fuel_cases, low_growth_cases]:
-        for scen, args in c.items():
-            a = [
-                f"--scenario-name {scen} --inputs-dir {idir} --outputs-dir {odir}_{scen}"
-            ] + args
-            cases.append(" ".join(a))
+    scenario_groups = {
+        "build": [build_cases],
+        "eval": [eval_cases, peak_fuel_cases, low_growth_cases],
+    }
 
-    scenario_file = in_dir / "scenarios.txt"
-    with open(scenario_file, "w") as f:
-        f.write("\n".join(cases))
-    print(f"Created {scenario_file}.")
+    # make case defs: {'suffix': ['case 1 def', 'case 2 def', ...]}
+    cases = {}
+    for suffix, case_dicts in scenario_groups.items():
+        cases[suffix] = []
+        for c in case_dicts:
+            for scen, args in c.items():
+                a = [
+                    f"--scenario-name {scen} --inputs-dir {idir} --outputs-dir {odir / scen}"
+                ] + args
+                cases[suffix].append(" ".join(a))
+
+    # create scenarios_build.txt and scenarios_eval.txt
+    for suffix, args in cases.items():
+        scenario_file = in_dir / f"scenarios_{suffix}.txt"
+        with open(scenario_file, "w") as f:
+            f.writelines(line + "\n" for line in args)
+        print(f"Created {scenario_file}.")
