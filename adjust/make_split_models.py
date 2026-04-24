@@ -67,6 +67,50 @@ def parse_script_args():
 # sys.argv = ['script'] + shlex.split("switch/in/2030/resource_adequacy --reuse-build-scenarios switch/in/2030/s40x1/scenarios_build.txt --include-module study_modules.reduce_reporting --skip-generic-output --skip-output-files dispatch.csv dispatch_wide.csv dispatch_gen_annual_summary.csv dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf --exclude-modules study_modules.min_capacity_constraint study_modules.max_capacity_constraint study_modules.rps_regional --exclude-module study_modules.scheduled_outages --exclude-module study_modules.planning_reserves_extreme_days --include-module study_modules.unserved_load")
 
 
+# helper function for cloning files
+symlink_func = lambda src, dest: dest.symlink_to(
+    os.path.relpath(src, start=dest.parent)
+)
+hardlink_func = lambda src, dest: dest.hardlink_to(src)
+copy_func = shutil.copy2
+clone_func = symlink_func
+
+
+def clone_file(src, dest):
+    """
+    Clone a file using the most smallest/fastest/most reliable method possible
+    on this platform (relative symbolic links, with fallback to hard links, then
+    copying)
+    """
+    global clone_func
+    while True:
+        # keep trying methods until one works (usually first try) or we run out
+        # of options
+        try:
+            clone_func(src, dest)
+            break
+        except FileExistsError:
+            # remove existing file and try again
+            dest.unlink()
+        except OSError:
+            # current cloning method doesn't work, switch to another
+            if clone_func == symlink_func:
+                # likely on Windows, which requires elevated permissions to make symlinks
+                print(
+                    f"Unable to create symbolic link at {dest}; switching to hard links."
+                )
+                clone_func = hardlink_func
+            elif clone_func == hardlink_func:
+                # AWS EFS only allows 177 hard links per file, but Linux on EFS will
+                # allow symlinks, so the only way to get here should be on Windows with
+                # EFS or another file system that limits hard linking
+                print(f"Unable to create hard link at {dest}; switching to copying.")
+                clone_func = copy_func
+            else:
+                # copy failed
+                raise
+
+
 def clone_to_split_dir(in_dir, tag):
     # create in_dir/tag folder with hard links to in_dir files
     base_dir = Path(in_dir)
@@ -82,9 +126,7 @@ def clone_to_split_dir(in_dir, tag):
             and p.name not in {"timeseries.csv", "timepoints.csv"}
             and p.name not in exclude_files
         ):
-            # make hard link: faster and smaller than copying
-            # shutil.copy2(p, split_dir / p.name)
-            (split_dir / p.name).hardlink_to(p)
+            clone_file(p, split_dir / p.name)
     # print(f"Created {split_dir} model directory")
 
 
