@@ -104,6 +104,7 @@ def main(options):
 
     # generate scenario list files for the RA iteration, using the new
     # locations. These will have the original names plus a .ra.txt suffix.
+    new_files = []
     for scens_file, scens in [
         (options.ce_scens_file, ce_scens),
         (options.ra_scens_file, ra_scens),
@@ -122,11 +123,17 @@ def main(options):
         ]
         # create a .ra.txt version of the scenario list file
         p = Path(scens_file)
-        new_file = p.with_suffix(".ra" + p.suffix)
+        new_file = str(p.with_suffix(".ra" + p.suffix))
+        new_files.append(new_file)
         with open(new_file, "w") as f:
             f.writelines(shlex.join(a) + "\n" for a in args)
-        [shlex.join(a) + "\n" for a in args]
         print(f"Created scenario list `{new_file}`.")
+
+    print("\nCreated RA model folders and scenario definitions.")
+    print("Next, run the following commands:\n")
+    for scens_file in new_files:
+        print(f"switch solve-scenarios --scenario-list {scens_file}")
+    print(f"python ra_add_difficult_timeseries.py {' '.join(new_files)}")
 
 
 if __name__ == "__main__" and "ipykernel" not in sys.argv[0]:
