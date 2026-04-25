@@ -25,7 +25,8 @@
                             ],
                             "command": [
                                 "--scenario-list",
-                                "in/2030/s20x1/scenarios_build.ra.txt"
+                                "in/2030/s20x1/scenarios_build.ra.txt",
+                                "--log-run"
                             ],
                             "name": "switch-solve-scenarios-weekly-container"
                         }
@@ -39,7 +40,7 @@
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-c8a-us-east-2b-job-queue",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
         "arrayProperties": {
-            "size": 200
+            "size": 199
         },
         "ecsPropertiesOverride": {
             "taskProperties": [
