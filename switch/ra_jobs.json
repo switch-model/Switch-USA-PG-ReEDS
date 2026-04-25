@@ -1,5 +1,6 @@
 {
     "region": "us-east-2",
+    "ce_scenario_list": "in/2030/s20x1/scenarios_build.ra.txt",
     "solve_ce": {
         "jobName": "ec2-cap-exp-m8a",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
