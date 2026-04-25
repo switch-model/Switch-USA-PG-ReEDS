@@ -66,6 +66,9 @@
                     ]
                 }
             ]
+        },
+        "retryStrategy": {
+            "attempts": 3
         }
     },
     "ra_add_difficult_timeseries": {
