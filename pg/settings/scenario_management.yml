@@ -160,8 +160,11 @@ settings_management:
               study_modules.max_capacity_constraint study_modules.rps_regional
               --exclude-module study_modules.scheduled_outages --exclude-module
               study_modules.planning_reserves_extreme_days --include-module
-              study_modules.unserved_load
-            order: 5
+              study_modules.unserved_load --solver coptampl
+              --solver-options-string "lpmethod=2 crossover=0"
+            # run last because it copies everything created by other scripts into
+            # split subdirectories
+            order: 20
       no: ~ # default settings
     fuel_price_forecast:
       aeo2025: # get coal and gas from AEO 2025 reference
