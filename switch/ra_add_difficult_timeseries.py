@@ -514,9 +514,9 @@ def main(options):
             ce_info["unserved_load_df"].to_csv(
                 iter_dir / "unserved_load.csv", index=False
             )
-            p = out_dir / "gen_cap.csv"
-            if p.is_file():
-                shutil.copy2(p, iter_dir / p.name)
+            for f in ["gen_cap.csv", "cost_components.csv", "total_cost.txt"]:
+                if (out_dir / f).is_file():
+                    shutil.copy2(out_dir / f, iter_dir / f)
             # print(f"Saved iteration snapshot in {iter_dir}.")
         except Exception as err:
             print(
