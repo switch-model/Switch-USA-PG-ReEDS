@@ -39,7 +39,7 @@ revert to adding difficult timeseries if there is still unserved load. This
 generally should not occur.
 """
 
-import argparse, shlex, shutil, sys, os
+import argparse, shlex, shutil, sys, os, datetime, traceback
 from pathlib import Path
 import pandas as pd
 
@@ -226,6 +226,12 @@ def main(options):
         file = Path(ra_scens[ra_scen]["outputs_dir"]) / f
         return pd.read_csv(file, na_values=".")
 
+    t = datetime.datetime.now()
+    print(f"Starting at {t.strftime('%Y-%m-%d %H:%M:%S')}.\n")
+
+    # get start time as a sortable string to add to file names
+    timestamp = t.strftime("%Y-%m-%d_%H-%M-%S")
+
     # cross-reference ce scenarios and ra scenarios
     for ra_scen, info in ra_scens.items():
         ce_scen = ra_scen.rsplit("_", 1)[0]
@@ -314,24 +320,30 @@ def main(options):
 
         print()
 
-        unserved_load = pd.concat(unserved_load_dfs).query("UnservedLoadMW > 1e-3")
+        unserved_load_tp = pd.concat(unserved_load_dfs).query("UnservedLoadMW > 1e-3")
 
         # save peak coincident unserved load and total unserved energy
-        if unserved_load.empty:
+        if unserved_load_tp.empty:
             uns_mw = 0
             uns_gwh = 0
         else:
-            uns_mw = unserved_load["UnservedLoadMW"].max()
-            uns_gwh = unserved_load["UnservedLoad_GWh_typical_year"].sum()
+            uns_mw = unserved_load_tp["UnservedLoadMW"].max()
+            uns_gwh = unserved_load_tp["UnservedLoad_GWh_typical_year"].sum()
         ce_info["peak_unserved_load_mw"] = uns_mw
         ce_info["total_unserved_energy_gwh"] = uns_gwh
 
         # get timeseries info and calculate average unserved load per timeseries
-        unserved_load["timeseries"] = unserved_load["TIMEPOINT"].map(tp_ts)
+        unserved_load_tp["timeseries"] = unserved_load_tp["TIMEPOINT"].map(tp_ts)
+
+        # stash to save later
+        ce_info["unserved_load_df"] = unserved_load_tp
+
         unserved_load = (
-            unserved_load.groupby("timeseries")["UnservedLoadMW"].mean().reset_index()
+            unserved_load_tp.groupby("timeseries")["UnservedLoadMW"]
+            .mean()
+            .reset_index()
+            .query("UnservedLoadMW > 0")
         )
-        unserved_load = unserved_load.query("UnservedLoadMW > 0")
 
         if unserved_load.empty:
             if unreadable_cases:
@@ -470,7 +482,7 @@ def main(options):
         write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
 
     # report current status and save in ce model outputs dir (ra_status.txt)
-    print("\nStatus of most recent model runs:")
+    print("Status of most recent model runs:")
     for ce_scen, ce_info in ce_scens.items():
         status = ce_info["status"]
         print(
@@ -478,8 +490,38 @@ def main(options):
             f"{ce_info['peak_unserved_load_mw']:.6g} MW "
             f"/ {ce_info['total_unserved_energy_gwh']:.6g} GWh"
         )
-        with open(Path(ce_scens[ce_scen]["outputs_dir"]) / "ra_status.txt", "w") as f:
+        out_dir = Path(ce_scens[ce_scen]["outputs_dir"])
+        iter_dir = out_dir / f"iter_{timestamp}"
+        with open(out_dir / "ra_status.txt", "w") as f:
             f.write(status + "\n")
+        try:
+            # attempt to create iteration snapshots, but don't worry if it fails
+            iter_dir.mkdir(exist_ok=True)
+            status_df = pd.DataFrame(
+                {
+                    k: [ce_info.get(k, None)]
+                    for k in [
+                        "status",
+                        "peak_unserved_load_mw",
+                        "total_unserved_energy_gwh",
+                        "add_timeseries",
+                        "ts_unserved_load_mw",
+                    ]
+                }
+            )
+            status_df["timestamp"] = timestamp
+            status_df.to_csv(iter_dir / "status.csv", index=False)
+            ce_info["unserved_load_df"].to_csv(
+                iter_dir / "unserved_load.csv", index=False
+            )
+            p = out_dir / "gen_cap.csv"
+            if p.is_file():
+                shutil.copy2(p, iter_dir / p.name)
+            # print(f"Saved iteration snapshot in {iter_dir}.")
+        except Exception as err:
+            print(
+                f"Error saving iteration snapshot for {ce_scen}: {traceback.format_exc(limit=0).strip()}"
+            )
 
     # re-write scenarios_build.ra.txt and scenarios_split.ra.txt with only the
     # remaining scenarios
