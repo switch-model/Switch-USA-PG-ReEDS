@@ -259,7 +259,7 @@ def scenarios_to_run():
                 # move on to the next candidate
         # no more scenarios to run
         if skipped and not ran:
-            logger.warn(
+            logger.warning(
                 "Skipping all scenarios because they have already been solved. "
                 "If you would like to run these scenarios again, "
                 "please remove the {sq} directory or its contents. (rm -rf {sq})".format(
