@@ -44,13 +44,11 @@ def main():
     prev_id = None
     for job_name in job_queue:
         spec = jobs[job_name]
-        if prev_id is None:
-            # first job
-            spec["dependsOn"] = []
-        else:
-            # each job depends on prior
-            spec["dependsOn"] = [{"jobId": prev_id, "type": "SEQUENTIAL"}]
-        # print(spec)
+        if prev_id is not None:
+            # each job after the first depends on prior
+            spec["dependsOn"] = [{"jobId": prev_id}]
+        print("submitting job:")
+        print(spec)
         # job_id = "dummy"
         resp = batch.submit_job(**spec)
         job_id = resp["jobId"]
