@@ -5,16 +5,9 @@
         "jobName": "ec2-cap-exp-m8a",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-m8a-large-us-east-2b-job-queue",
-        "dependsOn": [],
         "arrayProperties": {
             "size": 3
         },
-        "timeout": {},
-        "retryStrategy": {
-            "evaluateOnExit": []
-        },
-        "consumableResourcePropertiesOverride": {},
-        "parameters": {},
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
@@ -34,7 +27,6 @@
                                 "--scenario-list",
                                 "in/2030/s20x1/scenarios_build.ra.txt"
                             ],
-                            "environment": [],
                             "name": "switch-solve-scenarios-weekly-container"
                         }
                     ]
@@ -46,7 +38,6 @@
         "jobName": "ec2-daily-c8a",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-c8a-us-east-2b-job-queue",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
-        "dependsOn": [],
         "arrayProperties": {
             "size": 200
         },
@@ -75,22 +66,12 @@
                     ]
                 }
             ]
-        },
-        "tags": {},
-        "retryStrategy": {
-            "evaluateOnExit": []
-        },
-        "consumableResourcePropertiesOverride": {},
-        "parameters": {}
+        }
     },
     "ra_add_difficult_timeseries": {
         "jobName": "ra-add-difficult-timeseries",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-m8a-large-us-east-2b-job-queue",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment:2",
-        "retryStrategy": {
-            "attempts": 1,
-            "evaluateOnExit": []
-        },
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
@@ -112,27 +93,17 @@
                                     "value": "32256",
                                     "type": "MEMORY"
                                 }
-                            ],
-                            "environment": []
+                            ]
                         }
                     ]
                 }
             ]
-        },
-        "tags": {},
-        "arrayProperties": {},
-        "timeout": {},
-        "consumableResourcePropertiesOverride": {},
-        "parameters": {}
+        }
     },
     "ra_iterate_aws": {
         "jobName": "ra-iterate",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-c8a-us-east-2b-job-queue",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment:2",
-        "retryStrategy": {
-            "attempts": 1,
-            "evaluateOnExit": []
-        },
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
@@ -158,11 +129,6 @@
                     ]
                 }
             ]
-        },
-        "tags": {},
-        "arrayProperties": {},
-        "timeout": {},
-        "consumableResourcePropertiesOverride": {},
-        "parameters": {}
+        }
     }
 }
