@@ -39,7 +39,7 @@ def main():
         "ra_add_difficult_timeseries",
         "ra_iterate_aws",
     ]
-    # batch = boto3.client("batch", region_name=jobs["region"])
+    batch = boto3.client("batch", region_name=jobs["region"])
 
     prev_id = None
     for job_name in job_queue:
