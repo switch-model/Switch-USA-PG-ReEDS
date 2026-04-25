@@ -213,7 +213,7 @@ def main(options):
         # write a file in the ce input directory
         file = Path(ce_scens[ce_scen]["inputs_dir"]) / f
         df.to_csv(file, na_rep=".", index=False)
-        print(f"saved {file}.")
+        # print(f"saved {file}.")
 
     def read_ra_in(ra_scen, f):
         # read an input file for an ra model from ra_main_dir / NNNN
@@ -284,14 +284,20 @@ def main(options):
         # get average unserved load for each timeseries
         # read in all unserved load files, getting total for each timepoint across all zones
         unreadable_cases = []
-        unserved_load_dfs = []
+        unserved_load_dfs = [
+            pd.DataFrame(
+                columns=["TIMEPOINT", "UnservedLoadMW", "UnservedLoad_GWh_typical_year"]
+            )
+        ]
         n_scens = len(rs)
         print(f"Reading unserved load files for {ce_scen}:")
         for i, r in enumerate(rs):
             try:
                 df = (
                     read_ra_out(r, "unserved_load.csv")
-                    .groupby("TIMEPOINT")["UnservedLoadMW"]
+                    .groupby("TIMEPOINT")[
+                        ["UnservedLoadMW", "UnservedLoad_GWh_typical_year"]
+                    ]
                     .sum()
                     .reset_index()
                 )
@@ -303,11 +309,22 @@ def main(options):
 
         if unreadable_cases:
             print(
-                "WARNING: Unable to read unserved load files for these cases: "
-                + ", ".join(unreadable_cases)
+                f"WARNING: Unable to read unserved load for {len(unreadable_cases)} RA cases for {ce_scen}."
             )
 
+        print()
+
         unserved_load = pd.concat(unserved_load_dfs).query("UnservedLoadMW > 1e-3")
+
+        # save peak coincident unserved load and total unserved energy
+        if unserved_load.empty:
+            uns_mw = 0
+            uns_gwh = 0
+        else:
+            uns_mw = unserved_load["UnservedLoadMW"].max()
+            uns_gwh = unserved_load["UnservedLoad_GWh_typical_year"].sum()
+        ce_info["peak_unserved_load_mw"] = uns_mw
+        ce_info["total_unserved_energy_gwh"] = uns_gwh
 
         # get timeseries info and calculate average unserved load per timeseries
         unserved_load["timeseries"] = unserved_load["TIMEPOINT"].map(tp_ts)
@@ -315,6 +332,7 @@ def main(options):
             unserved_load.groupby("timeseries")["UnservedLoadMW"].mean().reset_index()
         )
         unserved_load = unserved_load.query("UnservedLoadMW > 0")
+
         if unserved_load.empty:
             if unreadable_cases:
                 # no unserved load, but not all cases could be read
@@ -344,9 +362,8 @@ def main(options):
         ce_info["add_timeseries"] = candidates.loc[
             candidates["UnservedLoadMW"].idxmax(), "timeseries"
         ]
+        ce_info["ts_unserved_load_mw"] = candidates["UnservedLoadMW"].max()
         ce_info["status"] = inadequate
-
-    print("")
 
     # For each inadequate ce case, add the difficult timeseries to all the
     # input files for the ce case up to the maximum number of timeseries
@@ -407,7 +424,10 @@ def main(options):
         add_ts = ce_info["add_timeseries"]
         tag = ts_tag[add_ts]
         ra_scen = f"{ce_scen}_{tag}"  # same logic as ra_split_tag()
-        print(f"Adding timeseries {add_ts} to scenario {ce_scen}.")
+        print(
+            f"Adding timeseries {add_ts} with unserved load "
+            f"{ce_info['ts_unserved_load_mw']:.6g} MWa to scenario {ce_scen}."
+        )
 
         # downsample timepoints for ce model and make zero-weight
         # this is similar to adjust/increase_timepoint_duration.py
@@ -453,7 +473,11 @@ def main(options):
     print("\nStatus of most recent model runs:")
     for ce_scen, ce_info in ce_scens.items():
         status = ce_info["status"]
-        print(f"{ce_scen}: {status}")
+        print(
+            f"{ce_scen}: {status}, unserved load: "
+            f"{ce_info['peak_unserved_load_mw']:.6g} MW "
+            f"/ {ce_info['total_unserved_energy_gwh']:.6g} GWh"
+        )
         with open(Path(ce_scens[ce_scen]["outputs_dir"]) / "ra_status.txt", "w") as f:
             f.write(status + "\n")
 
