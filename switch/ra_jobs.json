@@ -69,7 +69,7 @@
             ]
         },
         "retryStrategy": {
-            "attempts": 3
+            "attempts": 10
         }
     },
     "ra_add_difficult_timeseries": {

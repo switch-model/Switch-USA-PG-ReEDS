@@ -509,12 +509,14 @@ def main(options):
                     ]
                 }
             )
+            with open(out_dir / "total_cost.txt") as f:
+                status_df["ce_model_cost"] = float(f.read().strip())
             status_df["timestamp"] = timestamp
             status_df.to_csv(iter_dir / "status.csv", index=False)
             ce_info["unserved_load_df"].to_csv(
                 iter_dir / "unserved_load.csv", index=False
             )
-            for f in ["gen_cap.csv", "cost_components.csv", "total_cost.txt"]:
+            for f in ["gen_cap.csv", "cost_components.csv"]:
                 if (out_dir / f).is_file():
                     shutil.copy2(out_dir / f, iter_dir / f)
             # print(f"Saved iteration snapshot in {iter_dir}.")
