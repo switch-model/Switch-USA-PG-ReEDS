@@ -1,8 +1,8 @@
 """
 This script checks whether resource adequacy (RA) models found any unserved
 load, and if so, adds the timeseries with the most unserved load into the
-capacity expansion (CE) models. It also labels CE models as "adequate",
-"inadquate", or "infeasible".
+planning reserve margin timeseries of the capacity expansion (CE) models. It
+also labels CE models as "adequate", "inadquate", or "infeasible".
 
 This script is designed to be called iteratively. For the example below, the
 main CE models are defined in `in/build` and saved in
@@ -26,17 +26,17 @@ At each iteration, this script overwrites the scenario list files with shorter
 versions that contain only the scenarios that should be run for the next
 iteration, i.e., still have unserved load.
 
-After `--max-prm-timeseries-count` is reached, PRMs will be multiplied by 1.25
-(rising by at least 1%) in each iteration until there is no unserved load or
-until `--max-prm-level` is reached. If `--max-prm-level` is reached, the
-scenario will be marked as "infeasible" in `out/build/scen?/ra_status.txt` and
-iteration will stop.
+After `--max-prm-timeseries-count` is reached, the PRM level will be multiplied
+by 1.2 in each iteration until there is no unserved load or until
+`--max-prm-level` is reached. If `--max-prm-level` is reached, the scenario will
+be marked as "infeasible" in `out/build/scen?/ra_status.txt` and iteration will
+stop.
 
 If there is unserved load but only in timeseries that have already been added to
-the CE model, then script will raise the PRM during that iteration, as if
---max-prm-timeseries-count had been reached. On the next iteration, it will
-revert to adding difficult timeseries if there is still unserved load. This
-generally should not occur.
+the CE model's PRM collection, then the script will raise the PRM level during
+that iteration, as if `--max-prm-timeseries-count` had been reached. On the next
+iteration, it will revert to adding difficult timeseries if there is still
+unserved load. This generally should not occur.
 """
 
 import argparse, shlex, shutil, sys, os, datetime, traceback
@@ -283,7 +283,6 @@ def main(options):
     # find worst day that isn't already included in each ce scenario
     # test: ce_scen = 'high_fossil_build'; ce_info = ce_scens[ce_scen]
     for ce_scen, ce_info in ce_scens.items():
-        ce_df = read_ce_in(ce_scen, "timeseries.csv")
         # get list of ra scens in this ce scen
         rs = ce_scens[ce_scen]["ra_scens"]
 
@@ -355,18 +354,26 @@ def main(options):
                 ce_info["status"] = adequate
             continue
 
+        ce_prm_timeseries = (
+            read_ce_in(ce_scen, "planning_reserve_margin.csv")["TIMESERIES"]
+            .unique()
+            .astype(str)
+        )
         candidates = unserved_load.loc[
-            ~unserved_load["timeseries"].isin(ce_df["timeseries"]), :
+            ~(unserved_load["timeseries"].astype("str") + "_prm").isin(
+                ce_prm_timeseries
+            ),
+            :,
         ]
         if candidates.empty:
             if unreadable_cases:
                 # some unserved load, but only on timeseries that are already in
-                # the model; however there may be some unreadable timeseries
+                # the reserve set; however there may be some unreadable timeseries
                 # with unserved load, so status is unknown
                 ce_info["status"] = unknown
             else:
                 # There is some unserved load, but all timeseries with unserved
-                # load are already in the model (unlikely)
+                # load are already in the model reserve set (unlikely)
                 ce_info["status"] = stalled
             continue
 
@@ -397,7 +404,7 @@ def main(options):
             if ce_info["status"] == stalled:
                 print(
                     f"Scenario {ce_scen} has unserved load, but only on timeseries "
-                    "that are already included in the model."
+                    "that are already included in the PRM set for the model."
                 )
             else:
                 print(
@@ -407,21 +414,26 @@ def main(options):
 
             if (prm["planning_reserve_margin"] >= options.max_prm_level).all():
                 print(
-                    f"WARNING: {ce_scen} model appears to be infeasible; there "
-                    "is unserved load even with all planning reserve margins "
-                    f"at the maximum level {options.max_prm_level:.6g}."
+                    f"WARNING: {ce_scen} model is infeasible; there is unserved "
+                    "load even with all planning reserve margins at the maximum "
+                    f"level {options.max_prm_level:.6g}."
                 )
                 ce_info["status"] = infeasible
             else:
-                # add 25% to PRM, or at least 1%, and round to nearest percent,
-                # but don't exceed max allowed PRM level
+                # # add 25% to PRM, or at least 1%, and round to nearest percent,
+                # # but don't exceed max allowed PRM level
+                # prm["planning_reserve_margin"] = (
+                #     (prm["planning_reserve_margin"] * 1.25)
+                #     .clip(prm["planning_reserve_margin"] + 0.01)
+                #     .round(2)
+                #     # final clip in case 1% would go above max level
+                #     .clip(upper=options.max_prm_level)
+                # )
+                # add 20% to PRM but don't exceed limit
+                prm["planning_reserve_margin"] = 1.2
                 prm["planning_reserve_margin"] = (
-                    (prm["planning_reserve_margin"] * 1.25)
-                    .clip(prm["planning_reserve_margin"] + 0.01)
-                    .round(2)
-                    # final clip in case 1% would go above max level
-                    .clip(upper=options.max_prm_level)
-                )
+                    prm["planning_reserve_margin"] * 1.2
+                ).clip(upper=options.max_prm_level)
                 print(f"Raised PRM to {prm['planning_reserve_margin'].mean():.6g}.\n")
                 write_ce_in(ce_scen, "planning_reserve_margin.csv", prm)
                 # convert "stalled" case to "inadequate" and try again with
@@ -440,6 +452,24 @@ def main(options):
             f"Adding timeseries {add_ts} with unserved load "
             f"{ce_info['ts_unserved_load_mw']:.6g} MWa to scenario {ce_scen}."
         )
+        print()
+
+        def add_prm_rows(ce_df, ra_df, time_cols):
+            """
+            Add "_prm" suffix to any timepoint or timeseries columns in the RA
+            dataframe to make the RA rows distinct from standard timepoints and
+            timeseries, then combine the CE rows and RA rows into one dataframe.
+            """
+            ce_df = ce_df.copy()
+            ra_df = ra_df.copy()
+            if isinstance(time_cols, str):
+                time_cols = [time_cols]
+            for col in time_cols:
+                if col in ce_df:
+                    ce_df[col] = ce_df[col].astype(str)
+                if col in ra_df:
+                    ra_df[col] = ra_df[col].astype(str) + "_prm"
+            return pd.concat([ce_df, ra_df], ignore_index=True)
 
         # downsample timepoints for ce model and make zero-weight
         # this is similar to adjust/increase_timepoint_duration.py
@@ -454,12 +484,14 @@ def main(options):
                 ra_df["ts_duration_of_tp"] = tp_dur
                 ra_df["ts_num_tps"] = ra_df["ts_num_tps"] // tp_dur
                 ra_df["ts_scale_to_period"] = 0
+                time_cols = "timeseries"
             elif f == "timepoints.csv":
                 # take every nth timepoint
                 ra_df = ra_df.iloc[::tp_dur, :]
+                time_cols = ["timepoint_id", "timestamp", "timeseries", "tp_date"]
                 # save for cross-referencing later
-                add_tps = ra_df["timepoint_id"]
-            write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+                add_tps = ra_df["timepoint_id"]  # used in query below
+            write_ce_in(ce_scen, f, add_prm_rows(ce_df, ra_df, time_cols))
 
         # copy matching rows for other timepoint files from ra model to
         # ce model
@@ -467,7 +499,7 @@ def main(options):
             ce_df = read_ce_in(ce_scen, f)
             ra_df = read_ra_in(ra_scen, f).query(f"{col}.isin(@add_tps)")
             # write new version to the ce ra dir
-            write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+            write_ce_in(ce_scen, f, add_prm_rows(ce_df, ra_df, col))
 
         # add the new timeseries to the PRM system
         f = "planning_reserve_margin.csv"
@@ -479,7 +511,7 @@ def main(options):
                 "planning_reserve_margin": options.initial_prm,
             }
         )
-        write_ce_in(ce_scen, f, pd.concat([ce_df, ra_df]))
+        write_ce_in(ce_scen, f, add_prm_rows(ce_df, ra_df, "TIMESERIES"))
 
     # report current status and save in ce model outputs dir (ra_status.txt)
     print("Status of most recent model runs:")
