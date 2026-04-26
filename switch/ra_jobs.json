@@ -2,9 +2,9 @@
     "region": "us-east-2",
     "ce_scenario_list": "in/2030/s20x1/scenarios_build.ra.txt",
     "solve_ce": {
-        "jobName": "ec2-cap-exp-m8a",
+        "jobName": "ec2-cap-exp-r8a",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-m8a-large-us-east-2b-job-queue",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-r8a-8-us-east-2b-job-queue",
         "arrayProperties": {
             "size": 3
         },
@@ -16,7 +16,7 @@
                             "resourceRequirements": [
                                 {
                                     "type": "VCPU",
-                                    "value": "8"
+                                    "value": "4"
                                 },
                                 {
                                     "type": "MEMORY",
@@ -74,7 +74,7 @@
     },
     "ra_add_difficult_timeseries": {
         "jobName": "ra-add-difficult-timeseries",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-m8a-large-us-east-2b-job-queue",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-r8a-8-us-east-2b-job-queue",
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment:2",
         "ecsPropertiesOverride": {
             "taskProperties": [
@@ -90,7 +90,7 @@
                             "name": "aws-environment",
                             "resourceRequirements": [
                                 {
-                                    "value": "8",
+                                    "value": "4",
                                     "type": "VCPU"
                                 },
                                 {
