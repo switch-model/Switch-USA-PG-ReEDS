@@ -3,19 +3,18 @@ switch_model.timescales
 switch_model.financials
 switch_model.balancing.load_zones
 switch_model.energy_sources.properties
-switch_model.generators.core.build
+# switch_model.generators.core.build
 # switch_model.generators.core.dispatch
-# patched version
+# patched versions
+study_modules.generators_core_build
 study_modules.generators_core_dispatch
 switch_model.reporting
-# switch_model.generators.core.no_commit
 switch_model.generators.core.commit.operate
 switch_model.generators.core.commit.fuel_use
 # switch_model.generators.extensions.storage
 study_modules.generators_extensions_storage
 switch_model.generators.extensions.hydro_system
 # switch_model.energy_sources.fuel_costs_simple
-# patched version
 study_modules.fuel_costs_simple
 switch_model.transmission.transport.build
 switch_model.transmission.transport.dispatch

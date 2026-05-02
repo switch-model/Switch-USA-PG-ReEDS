@@ -23,13 +23,15 @@ def define_arguments(argparser):
         "--retire",
         dest="retire_time",
         default="late",
-        choices=["early", "mid", "late"],
+        choices=["early", "mid", "late", "early_early"],
         help=(
             "Retire generation projects at the start of the period when they "
             "reach end-of-life ('early') (i.e., only run if they survive to the "
             "end of the period), or retire them if they survive past the middle "
             "of the period ('mid'), or extend operation to the end of the period "
-            "when they reach end-of-life ('late'). Late is the default."
+            "when they reach end-of-life ('late'). An 'early_early' option is "
+            "similar to GenX; plants retire if retirement year is before "
+            "or _at_ the last year of the period. Late is the default."
         ),
     )
 
@@ -447,12 +449,24 @@ def define_components(mod):
         elif m.options.retire_time == "mid":
             mid_period = m.period_start[period] + 0.5 * m.period_length_years[period]
             can_run = online <= mid_period <= retirement
-        else:
+        elif m.options.retire_time == "early":
             # user-chose retire-at-start-of-period option
             # operate if it survives across the end of the period
             # (but not if it's built right at the end, i.e., in the
             # next period)
+            can_run = online < m.period_end[period] <= retirement
+        elif m.options.retire_time == "early_early":
+            # This is included mainly to match GenX behavior for model
+            # comparisons.
+            # TODO: revisit what early and early_early mean WRT choices
+            # about whether the end of a period is equal to the start of
+            # the next or one year before the start of the next, and whether
+            # construction and retirement dates correspond to the start or
+            # end of the specified year. Maybe we should just have early_early
+            # and drop this version of early?
             can_run = online < m.period_end[period] < retirement
+        else:
+            raise RuntimeError(f"Unexpected retire_time flag {m.options.retire_time}")
         return can_run
 
     # The set of periods when a project built in a certain year will be online
@@ -813,16 +827,18 @@ def load_inputs(mod, switch_data, inputs_dir):
 
 
 def post_solve(m, outdir):
-    # report generator and storage additions in each period and and total
+    # report generator and storage additions in each build year and total
     # capital outlay for those (up-front capital outlay is not treated as a
-    # direct cost by Switch, but is often interesting to users)
+    # direct cost by Switch, but is often interesting to users). Starting in
+    # April 2026, this includes build years that are not model years for
+    # pre-existing or pre-planned additions.
     write_table(
         m,
-        m.GEN_PERIODS,
+        m.GEN_BLD_YRS,
         output_file=os.path.join(outdir, "gen_build.csv"),
         headings=(
-            "GENERATION_PROJECT",
-            "PERIOD",
+            "generation_project",
+            "build_year",
             "gen_tech",
             "gen_load_zone",
             "gen_energy_source",
@@ -836,7 +852,7 @@ def post_solve(m, outdir):
             m.gen_tech[g],
             m.gen_load_zone[g],
             m.gen_energy_source[g],
-            m.BuildGen[g, p] if (g, p) in m.BuildGen else ".",
+            m.BuildGen[g, p],
             (
                 m.BuildStorageEnergy[g, p]
                 if hasattr(m, "BuildStorageEnergy") and (g, p) in m.BuildStorageEnergy
@@ -852,8 +868,6 @@ def post_solve(m, outdir):
                     and (g, p) in m.BuildStorageEnergy
                     else 0.0
                 )
-                if (g, p) in m.BuildGen
-                else "."
             ),
         ),
     )
