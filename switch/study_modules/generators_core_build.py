@@ -230,9 +230,9 @@ def define_components(mod):
     builds that are operational (haven't reached end of life or been suspended)
     in the given period.
 
-    TotalGenFixedCosts[period] is the sum of GenCapitalCosts[g, period] and
-    GenFixedOMCosts[g, period] for all projects that could be online in the
-    target period.
+    TotalGenCapitalCosts[period] TotalGenFixedOMCosts[period] are the sum of
+    GenCapitalCosts[g, period] and GenFixedOMCosts[g, period] for all projects
+    that could be online in the target period.
 
     """
     mod.GENERATION_PROJECTS = Set(dimen=1)
@@ -708,14 +708,16 @@ def define_components(mod):
     # annual future costs in $base_year real dollars. The objective
     # function will convert these to base_year Net Present Value in
     # $base_year real dollars.
-    mod.TotalGenFixedCosts = Expression(
+    mod.TotalGenCapitalCosts = Expression(
         mod.PERIODS,
-        rule=lambda m, p: sum(
-            m.GenCapitalCosts[g, p] + m.GenFixedOMCosts[g, p]
-            for g in m.GENERATION_PROJECTS
-        ),
+        rule=lambda m, p: sum(m.GenCapitalCosts[g, p] for g in m.GENERATION_PROJECTS),
     )
-    mod.Cost_Components_Per_Period.append("TotalGenFixedCosts")
+    mod.Cost_Components_Per_Period.append("TotalGenCapitalCosts")
+    mod.TotalGenFixedOMCosts = Expression(
+        mod.PERIODS,
+        rule=lambda m, p: sum(m.GenFixedOMCosts[g, p] for g in m.GENERATION_PROJECTS),
+    )
+    mod.Cost_Components_Per_Period.append("TotalGenFixedOMCosts")
 
 
 def load_inputs(mod, switch_data, inputs_dir):
