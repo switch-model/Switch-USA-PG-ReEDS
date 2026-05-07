@@ -13,10 +13,10 @@ model_tag_names:
   - STOR
   - FLEX
   - HYDRO
-    # - LDS
+  # - LDS
   - Commit
   - New_Build
-    # - Hydro_level
+  # - Hydro_level
   - CapRes_1
   - CapRes_2
   - gen_forced_outage_rate
@@ -354,7 +354,6 @@ model_tag_values:
     Solar Photovoltaic: 0.8
     Battery: 0.95
     Hydroelectric Pumped Storage: 0.95
-
     # distributed_gen: 1
   gen_is_distributed:
     Distributed_Generation: 1
@@ -387,7 +386,8 @@ model_tag_values:
     # Until GADS data are available we use 1% median FOR from https://www.nrel.gov/news/detail/program/2024/how-extreme-weather-and-system-aging-affect-the-us-photovoltaic-fleet#:~:text=Over%20the%202008%E2%80%932022%20time%20range%20studied%2C%20the,longer%20outages%20of%20two%20weeks%20or%20more.
     Photovoltaic: 0.01
     UtilityPV: 0.01
-    # We don't have a good source for batteries, so we use 5% recommendation from CESA (2021): https://efiling.energy.ca.gov/getdocument.aspx?tn=238987
+    # We don't have a good source for batteries, so we use 5% recommendation from
+    # CESA (2021): https://efiling.energy.ca.gov/getdocument.aspx?tn=238987
     Battery: 0.05
     Batteries: 0.05
     # Biomass: 0.1019 # assume same as coal
@@ -496,6 +496,7 @@ model_tag_values:
   MaxCapTag_Ban:
     # 0 by default, but we also specify 0 to avoid a warning from PowerGenome
     "": 0
+
 # Tags for a technology in a specific region Format should be
 # regional_tag_values: <region>: <tag name>: <technology>: <tag value>
 # Technologies will be matched using str.contains(case=False, regex=False) (with

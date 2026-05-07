@@ -82,10 +82,10 @@ tech_groups:
     - Coal Integrated Gasification Combined Cycle
     - Petroleum Coke # TODO: treat as separate fuel
   Other_peaker:
-    - Natural Gas Internal Combustion Engine
-    - Natural Gas Steam Turbine
-    - Other Gases # TODO: treat as separate fuel
-    - Other Natural Gas
+    - Natural Gas Internal Combustion Engine # 6.5 GW
+    - Natural Gas Steam Turbine # 75 GW
+    - Other Gases # TODO: treat as separate fuel  # 1.6 GW
+    - Other Natural Gas # 0.35 GW
     # PG doesn't seem to have a way to represent primary generators that also have
     # storage; TODO: find a way to integrate this
     # - Natural Gas with Compressed Air Storage
@@ -118,8 +118,7 @@ derate_techs:
 
 # Years used to calculate capacity factors for plant derate_techs.
 # (These are overridden for the 2024 historical model.)
-capacity_factor_default_year_filter:
-  [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+capacity_factor_default_year_filter: [ 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 ]
 
 # LABEL SMALL HYDRO
 small_hydro: true
@@ -333,19 +332,19 @@ alt_resource_cap_recovery_years:
 # Use Class3 onshore wind, Class 3 for fixed offshore wind, and Class 12 for floating offshore wind
 # Format for each list item is <technology>, <tech_detail>, <cost_case>, <size>
 # We use Moderate case for most technologies but Advanced case for batteries because prices have
-# moved quickly since ATB 2024.
-# These settings are for 2035 and later; also see scenario_management.yml for
+# moved quickly since ATB 2024 and Conservative case for wind because costs have stalled recently.
+# These settings apply for 2035 and later; also see scenario_management.yml for
 # more restricted versions for earlier years (no new floating wind before 2030
 # or nuclear before 2035)
 atb_new_gen:
-  - [NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500]
-  - [NaturalGas, Combustion Turbine (F-Frame), Moderate, 100]
-  - [LandbasedWind, Class3, Moderate, 1]
-  - [OffShoreWind, Class12, Moderate, 1]
-  - [OffShoreWind, Class3, Moderate, 1]
-  - [UtilityPV, Class1, Moderate, 1]
-  - [Utility-Scale Battery Storage, Lithium Ion, Advanced, 1]
-  - [Nuclear, Nuclear - Large, Moderate, 1000]
+  - [ NaturalGas, 1-on-1 Combined Cycle (H-Frame), Moderate, 500 ]
+  - [ NaturalGas, Combustion Turbine (F-Frame), Moderate, 100 ]
+  - [ LandbasedWind, Class3, Conservative, 1 ]
+  - [ OffShoreWind, Class12, Conservative, 1 ]
+  - [ OffShoreWind, Class3, Conservative, 1 ]
+  - [ UtilityPV, Class1, Moderate, 1 ]
+  - [ Utility-Scale Battery Storage, Lithium Ion, Advanced, 1 ]
+  - [ Nuclear, Nuclear - Large, Moderate, 1000 ]
 
 # The settings below will generate warnings for years when these techs are not
 # in atb_new_gen due to settings in scenario_management.yml, i.e., all techs in
@@ -364,8 +363,8 @@ renewables_clusters:
         weights: mw
         q: 2
         # bins: [0, 40, 55, 76]
-      # - feature: cf
-      #   q: 2
+        # - feature: cf
+        #   q: 2
   - region: all
     technology: utilitypv
     filter:
@@ -438,25 +437,28 @@ atb_modifiers:
     # PNNL reports a $0.3/MWh VOM, which is split between Var_OM_Cost_per_MWh
     # and Var_OM_Cost_per_MWh_In (end of 3.1.6 in
     # https://www.pnnl.gov/main/publications/external/technical_reports/PNNL-28866.pdf).
-    Var_OM_Cost_per_MWh: [add, 0.15]
+    Var_OM_Cost_per_MWh: [ add, 0.15 ]
     Var_OM_Cost_per_MWh_In: 0.15 # not in database, so set directly
     # 30% federal ITC applies to batteries and geothermal
-    capex_mw: [mul, 0.7]
-    capex_mwh: [mul, 0.7]
+    capex_mw: [ mul, 0.7 ]
+    capex_mwh: [ mul, 0.7 ]
 
   geothermal:
     technology: Geothermal # not currently present in ATB
     tech_detail: "*"
     # 30% federal ITC applies to batteries and geothermal
-    capex_mw: [mul, 0.7]
+    capex_mw: [ mul, 0.7 ]
 
   # Change CC and CT baseline costs from ATB to GridLab regression for 2030 read
   # from Figures 2-3 of
-  # https://gridlab.org/portfolio-item/gas-tubine-cost-report/ We use absolute
-  # dollars/MW (presumed to be approx 2024$ and later subject to inflation(?))
-  # for simplicity. If using costs from multiple years, we need to provide
-  # annual substitutes from GridLab or else apply an appropriate multiplier
-  # ([GridLab 2030 cost] * [2022 deflator] / [ATB 2024 cost in 2022$])
+  # https://gridlab.org/portfolio-item/gas-tubine-cost-report/ 
+  # We use absolute dollars/MW (presumed to be approx 2024$ and later subject to
+  # inflation). Note that for manually specified costs like this, PowerGenome
+  # assumes they are in the correct year for the model (2024 in our case), not
+  # the base year for ATB (2022 in our case).
+  # If using costs from multiple years, we need to provide annual values from
+  # GridLab or else apply an appropriate multiplier ([GridLab 2030 cost] * [2022
+  # deflator] / [ATB 2024 cost in 2022$])
   ngcc:
     technology: NaturalGas
     tech_detail: 1-on-1 Combined Cycle (H-Frame)
@@ -494,7 +496,6 @@ modified_atb_new_gen:
     capex_mw: 0
     fixed_o_m_mw: 0
     variable_o_m_mwh: 0
-
   # example
   # NGCCS100:
   #   new_technology: NaturalGas
@@ -509,41 +510,55 @@ modified_atb_new_gen:
   #   fixed_o_m_mw: [add, 9670]
   #   variable_o_m_mwh: [mul, 1.076]
 
-######################################################
-# MODIFY THESE PARAMETERS FOR NEW REGIONAL AGGREGATIONS
-######################################################
+  ######################################################
+  # MODIFY THESE PARAMETERS FOR NEW REGIONAL AGGREGATIONS
+  ######################################################
 
-# Map user-regions to AEO Electricity Market Module (EMM) regions for cost multipliers
-# IPM regions have been pre-populated in the lists below, but any user defined regions
-# must also be added. This cannot be mapped automatically since user regions might
-# cut across EMM regions.
-# See a map at https://www.eia.gov/outlooks/aeo/pdf/nerc_map.pdf
+  # Map user-regions to AEO Electricity Market Module (EMM) regions for cost multipliers
+  # IPM regions have been pre-populated in the lists below, but any user defined regions
+  # must also be added. This cannot be mapped automatically since user regions might
+  # cut across EMM regions.
+  # See a map at https://www.eia.gov/outlooks/aeo/pdf/nerc_map.pdf
 cost_multiplier_region_map:
-  BASN: [p12, p13, p15, p16, p21, p25, p26]
-  CANO: [p9]
-  CASO: [p10, p11]
-  FRCC: [p101, p102]
-  ISNE: [p129, p130, p131, p132, p133, p134]
-  MISC: [p71, p72, p73, p81, p82, p83, p84, p105, p106, p107]
-  MISE: [p103]
-  MISS: [p58, p66, p85, p86, p87]
-  MISW: [p42, p43, p44, p68, p69, p70, p74, p75, p76, p77, p78, p79]
-  NWPP: [p1, p2, p3, p4, p5, p6, p7, p8, p14, p17, p18, p19, p20]
-  NYCW: [p128]
-  NYUP: [p127]
-  PJMC: [p80]
-  PJMD: [p99]
-  PJME: [p119, p120, p122, p123, p124, p125, p126]
-  PJMW: [p100, p104, p110, p111, p112, p113, p114, p115, p116, p117, p118, p121]
-  RMRG: [p22, p23, p24, p32, p33, p34]
-  SPPC: [p52, p53, p54, p55]
-  SPPN: [p35, p36, p37, p38, p39, p40, p41, p45, p46]
-  SPPS: [p47, p48, p49, p50, p51, p56, p57]
-  SRCA: [p95, p96, p97, p98]
-  SRCE: [p88, p92, p93, p108, p109]
-  SRSE: [p89, p90, p91, p94]
-  SRSG: [p27, p28, p29, p30, p31, p59]
-  TRE: [p60, p61, p62, p63, p64, p65, p67]
+  BASN: [ p12, p13, p15, p16, p21, p25, p26 ]
+  CANO: [ p9 ]
+  CASO: [ p10, p11 ]
+  FRCC: [ p101, p102 ]
+  ISNE: [ p129, p130, p131, p132, p133, p134 ]
+  MISC: [ p71, p72, p73, p81, p82, p83, p84, p105, p106, p107 ]
+  MISE: [ p103 ]
+  MISS: [ p58, p66, p85, p86, p87 ]
+  MISW: [ p42, p43, p44, p68, p69, p70, p74, p75, p76, p77, p78, p79 ]
+  NWPP: [ p1, p2, p3, p4, p5, p6, p7, p8, p14, p17, p18, p19, p20 ]
+  NYCW: [ p128 ]
+  NYUP: [ p127 ]
+  PJMC: [ p80 ]
+  PJMD: [ p99 ]
+  PJME: [ p119, p120, p122, p123, p124, p125, p126 ]
+  PJMW:
+    [
+      p100,
+      p104,
+      p110,
+      p111,
+      p112,
+      p113,
+      p114,
+      p115,
+      p116,
+      p117,
+      p118,
+      p121,
+    ]
+  RMRG: [ p22, p23, p24, p32, p33, p34 ]
+  SPPC: [ p52, p53, p54, p55 ]
+  SPPN: [ p35, p36, p37, p38, p39, p40, p41, p45, p46 ]
+  SPPS: [ p47, p48, p49, p50, p51, p56, p57 ]
+  SRCA: [ p95, p96, p97, p98 ]
+  SRCE: [ p88, p92, p93, p108, p109 ]
+  SRSE: [ p89, p90, p91, p94 ]
+  SRSG: [ p27, p28, p29, p30, p31, p59 ]
+  TRE: [ p60, p61, p62, p63, p64, p65, p67 ]
 
 ######################################################
 # THESE PARAMETERS ARE RARELY MODIFIED FOR NEW STUDIES
@@ -577,10 +592,10 @@ new_gen_not_available: ~
 # the folder PowerGenome/data/cost_multipliers.
 cost_multiplier_fn: AEO_2020_regional_cost_corrections.csv
 cost_multiplier_technology_map:
-  Ultra-supercritical coal (USC): [Coal_newAvgCF, Coal_newHighCF]
+  Ultra-supercritical coal (USC): [ Coal_newAvgCF, Coal_newHighCF ]
   # IGCC: [Coal_IGCCAvgCF, Coal_IGCCAvgCF]
-  USC with 30% CCS: [Coal_CCS30AvgCF, Coal_CCS30HighCF]
-  USC with 90% CCS: [Coal_CCS90AvgCF, Coal_CCS90HighCF]
+  USC with 30% CCS: [ Coal_CCS30AvgCF, Coal_CCS30HighCF ]
+  USC with 90% CCS: [ Coal_CCS90AvgCF, Coal_CCS90HighCF ]
   CT - aeroderivative: []
   CT - industrial frame:
     [
@@ -588,7 +603,7 @@ cost_multiplier_technology_map:
       NaturalGas_CTHighCF,
       NaturalGas_Combustion Turbine (F-Frame),
     ]
-  CC - single shaft: [NaturalGas_1-on-1 Combined Cycle (H-Frame)]
+  CC - single shaft: [ NaturalGas_1-on-1 Combined Cycle (H-Frame) ]
   CC - multi shaft:
     [
       NaturalGas_CCAvgCF,
@@ -613,15 +628,14 @@ cost_multiplier_technology_map:
       Nuclear_high,
       Nuclear_Nuclear - Large,
     ]
-  Biomass: [Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated]
-  Waste Heat: [Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated]
+  Biomass: [ Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated ]
+  Waste Heat: [ Biopower_CofireOld, Biopower_CofireNew, Biopower_Dedicated ]
   MSW - landfill gas: []
-  Wind: [LandbasedWind_Class3]
-  Wind offshore: [OffShoreWind_Class3, OffShoreWind_Class12]
-  Solar thermal: [CSP]
-  Solar PV - tracking: [UtilityPV_Class1, CommPV, ResPV, Imports_base] # Imports included just to avoid warnings
-  Battery storage:
-    [Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration]
+  Wind: [ LandbasedWind_Class3 ]
+  Wind offshore: [ OffShoreWind_Class3, OffShoreWind_Class12 ]
+  Solar thermal: [ CSP ]
+  Solar PV - tracking: [ UtilityPV_Class1, CommPV, ResPV, Imports_base ] # Imports included just to avoid warnings
+  Battery storage: [ Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration ]
   Geothermal:
     [
       Geothermal_HydroBinary,
@@ -631,7 +645,7 @@ cost_multiplier_technology_map:
       Geothermal_NFEGSFlash,
       Geothermal_DeepEGSFlash,
     ]
-  Conventional hydropower: [Hydropower]
+  Conventional hydropower: [ Hydropower ]
 
 # Format for ATB is <technology>_<tech_detail>, all are Mid cost case
 # Might want to change this to list format like the new generators below
@@ -696,8 +710,7 @@ proposed_min_load:
 # update the EIA 860m spreadsheet directly, as if it recorded closures from
 # Global Energy Monitor
 
-additional_retirements:
-  ~
+additional_retirements: ~
   # - [55853, 1, 2020]
   # - [55853, 2, 2020]
   # - [2442, 1, 2029] # Retire Four Corners before 2030
