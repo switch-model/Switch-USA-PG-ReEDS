@@ -509,7 +509,10 @@ def main(options):
 
         # add the new timeseries to the PRM system
         f = "planning_reserve_margin.csv"
-        ce_df = read_ce_in(ce_scen, f)
+        try:
+            ce_df = read_ce_in(ce_scen, f)
+        except FileNotFoundError:
+            ce_df = pd.DataFrame()
         ra_df = pd.DataFrame(
             {
                 "LOAD_ZONE": read_ra_in(ra_scen, "load_zones.csv")["LOAD_ZONE"],

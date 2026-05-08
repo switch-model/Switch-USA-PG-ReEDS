@@ -140,8 +140,6 @@ def main():
 
     # add new timepoints and save
     timepoints = pd.concat([timepoints, new_tp], ignore_index=True)
-    # temporary hack: only keep prm timepoints
-    # timepoints = pd.concat([new_tp], ignore_index=True)
     timeseries = timepoints[ts_cols + ["old_timeseries"]].drop_duplicates()
 
     write(
@@ -190,9 +188,6 @@ def main():
                     # e.g., df_new['tp_to_hts'] = df_new['timeseries']
                     df_new[_cols[file]] = df_new[_ref_col]
 
-            # print(
-            #     f"saving {file}, {col=}, {i=}, ref_df={df_name[id(ref_df)]}, {ref_col=}"
-            # )
             write(df_new[df.columns], file)
 
     # create planning reserves file (zone, timeseries, margin) from new_tp and prr_*

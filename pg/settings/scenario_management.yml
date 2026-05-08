@@ -140,7 +140,7 @@ settings_management:
         model_adjustment_scripts:
           # drop some scripts by setting to ~:
           Increase timepoint duration to 2 hours: ~ # keep 1-hour resolution
-          Add extreme day: ~
+          Add extreme days: ~
           # add this adjustment script:
           Make resource adequacy models:
             script: ../../adjust/make_split_models.py
@@ -150,13 +150,15 @@ settings_management:
             #   - relax environmental policies
             #   - use unserved load instead of PRM, to avoid infeasibility and find most difficult time
             arguments: >-
-              --reuse-build-scenarios switch/in/2030/s20x1/scenarios_build.txt
+              --reuse-build-scenarios switch/in/2030/ce/scenarios_build.txt
               --include-module study_modules.reduce_reporting
               --skip-generic-output --skip-output-files dispatch.csv
               dispatch_wide.csv dispatch_gen_annual_summary.csv
-              dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf
-              --exclude-modules study_modules.min_capacity_constraint
+              dispatch_zonal_annual_summary.csv dispatch_annual_summary_fuel.pdf
+              dispatch_annual_summary_tech.pdf --exclude-modules
+              study_modules.min_capacity_constraint
               study_modules.max_capacity_constraint study_modules.rps_regional
+              --include-module study_modules.report_zonal_total_dispatch
               --exclude-module study_modules.scheduled_outages --exclude-module
               study_modules.planning_reserves_extreme_days --include-module
               study_modules.unserved_load --solver coptampl
@@ -165,6 +167,11 @@ settings_management:
             # split subdirectories
             order: 20
       no: ~ # default settings
+    add_extreme_days:
+      yes: ~ # default settings
+      no:
+        model_adjustment_scripts:
+          Add extreme days: ~ # bypass script
     fuel_price_forecast:
       aeo2025:
         # get coal and gas from AEO 2025 reference
