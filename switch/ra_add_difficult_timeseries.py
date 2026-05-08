@@ -123,12 +123,16 @@ def get_script_args():
     )
     parser.add_argument(
         "--timepoint-duration",
-        default=2,
+        default=1,
         type=int,
         help="""
             Number of hours to use between timepoints when adding difficult
             timeseries from the resource adequacy models to the capacity
-            expansion models (default is 2)
+            expansion models. Using a value greater than 1 can align the
+            timesteps with other days in the capacity expansion model, but also
+            means the model may not reach adequacy for the added day, if the
+            most difficult hour is one of the ones omitted. (Default is 1, for
+            no downsampling.)
         """,
     )
     parser.add_argument(
@@ -176,7 +180,7 @@ def get_script_args():
 options = lambda: None # dummy namespace object
 options.ce_scens_file = "in/2030/s20x1/scenarios_build.txt"
 options.ra_scens_file = "in/2030/resource_adequacy/scenarios_split.txt"
-options.timepoint_duration = 2
+options.timepoint_duration = 1
 options.initial_prm = 0.02
 options.max_prm_timeseries_count = 20
 """
@@ -298,14 +302,7 @@ def main(options):
         print(f"Reading unserved load files for {ce_scen}:")
         for i, r in enumerate(rs):
             try:
-                df = (
-                    read_ra_out(r, "unserved_load.csv")
-                    .groupby("TIMEPOINT")[
-                        ["UnservedLoadMW", "UnservedLoad_GWh_typical_year"]
-                    ]
-                    .sum()
-                    .reset_index()
-                )
+                df = read_ra_out(r, "unserved_load.csv").query("UnservedLoadMW > 1e-3")
                 unserved_load_dfs.append(df)
             except (FileNotFoundError, TimeoutError):
                 unreadable_cases.append(r)
@@ -314,14 +311,32 @@ def main(options):
 
         if unreadable_cases:
             print(
-                f"WARNING: Unable to read unserved load for {len(unreadable_cases)} RA cases for {ce_scen}."
+                f"WARNING: Unable to read unserved load for {len(unreadable_cases)} "
+                "RA cases for {ce_scen}."
             )
 
         print()
 
-        unserved_load_tp = pd.concat(unserved_load_dfs).query("UnservedLoadMW > 1e-3")
+        unserved_load_lz_tp = pd.concat(unserved_load_dfs)
+        unserved_load_lz_tp["timeseries"] = unserved_load_lz_tp["TIMEPOINT"].map(tp_ts)
 
-        # save peak coincident unserved load and total unserved energy
+        # convert from GWh if there was one year of just this RA scen to GWh for
+        # one year made up of all RA scens with equal weight
+        unserved_load_lz_tp["UnservedLoad_GWh_typical_year"] /= n_scens
+
+        # stash to save later
+        ce_info["unserved_load_df"] = unserved_load_lz_tp
+
+        # get national totals per timepoint
+        unserved_load_tp = (
+            unserved_load_lz_tp.groupby(["timeseries", "TIMEPOINT"])[
+                ["UnservedLoadMW", "UnservedLoad_GWh_typical_year"]
+            ]
+            .sum()
+            .reset_index()
+        )
+
+        # save peak coincident unserved load and total unserved energy per year
         if unserved_load_tp.empty:
             uns_mw = 0
             uns_gwh = 0
@@ -331,17 +346,11 @@ def main(options):
         ce_info["peak_unserved_load_mw"] = uns_mw
         ce_info["total_unserved_energy_gwh"] = uns_gwh
 
-        # get timeseries info and calculate average unserved load per timeseries
-        unserved_load_tp["timeseries"] = unserved_load_tp["TIMEPOINT"].map(tp_ts)
-
-        # stash to save later
-        ce_info["unserved_load_df"] = unserved_load_tp
-
+        # find timeseries with greatest contribution to unserved load
         unserved_load = (
-            unserved_load_tp.groupby("timeseries")["UnservedLoadMW"]
-            .mean()
+            unserved_load_tp.groupby("timeseries")["UnservedLoad_GWh_typical_year"]
+            .sum()
             .reset_index()
-            .query("UnservedLoadMW > 0")
         )
 
         if unserved_load.empty:
@@ -377,11 +386,11 @@ def main(options):
                 ce_info["status"] = stalled
             continue
 
-        # find the timeries with the most unserved load that is not currently in the ce model
+        # find the timeries with the most unserved load that is not currently in
+        # the ce model
         ce_info["add_timeseries"] = candidates.loc[
-            candidates["UnservedLoadMW"].idxmax(), "timeseries"
+            candidates["UnservedLoad_GWh_typical_year"].idxmax(), "timeseries"
         ]
-        ce_info["ts_unserved_load_mw"] = candidates["UnservedLoadMW"].max()
         ce_info["status"] = inadequate
 
     # For each inadequate ce case, add the difficult timeseries to all the
@@ -430,7 +439,7 @@ def main(options):
                 #     .clip(upper=options.max_prm_level)
                 # )
                 # add 20% to PRM but don't exceed limit
-                prm["planning_reserve_margin"] = 1.2
+                prm["planning_reserve_margin"] *= 1.2
                 prm["planning_reserve_margin"] = (
                     prm["planning_reserve_margin"] * 1.2
                 ).clip(upper=options.max_prm_level)
@@ -448,10 +457,7 @@ def main(options):
         add_ts = ce_info["add_timeseries"]
         tag = ts_tag[add_ts]
         ra_scen = f"{ce_scen}_{tag}"  # same logic as ra_split_tag()
-        print(
-            f"Adding timeseries {add_ts} with unserved load "
-            f"{ce_info['ts_unserved_load_mw']:.6g} MWa to scenario {ce_scen}."
-        )
+        print(f"Adding timeseries {add_ts} to scenario {ce_scen}.")
         print()
 
         def add_prm_rows(ce_df, ra_df, time_cols):
@@ -471,8 +477,8 @@ def main(options):
                     ra_df[col] = ra_df[col].astype(str) + "_prm"
             return pd.concat([ce_df, ra_df], ignore_index=True)
 
-        # downsample timepoints for ce model and make zero-weight
-        # this is similar to adjust/increase_timepoint_duration.py
+        # downsample timepoints for ce model (if requested) and make zero-weight.
+        # this is similar to adjust/increase_timepoint_duration.py.
         tp_dur = options.timepoint_duration
         for f in ["timeseries.csv", "timepoints.csv"]:
             ce_df = read_ce_in(ce_scen, f)
@@ -537,7 +543,6 @@ def main(options):
                         "peak_unserved_load_mw",
                         "total_unserved_energy_gwh",
                         "add_timeseries",
-                        "ts_unserved_load_mw",
                     ]
                 }
             )
