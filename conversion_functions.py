@@ -190,7 +190,7 @@ class LogFormatterTwoLine(coloredlogs.ColoredFormatter):
             new_msg = record.levelname + ": " + new_msg
 
         # wrap the message if currently single line
-        new_msg = self.fill_by_paragraph(new_msg)
+        # new_msg = self.fill_by_paragraph(new_msg)
 
         colored_message = colored_message.replace(msg, new_msg, 1)
 
@@ -307,6 +307,7 @@ def gen_info_table(gens, settings):
         * gen_min_uptime: from PowerGenome
         * gen_min_downtime: from PowerGenome
         * gen_startup_om: from PowerGenome
+        * gen_startup_fuel: from PowerGenome
         * gen_is_cogen: from PowerGenome
         * gen_storage_efficiency: from PowerGenome
         * gen_store_to_release_ratio: batteries use 1
@@ -449,6 +450,7 @@ def gen_info_table(gens, settings):
         "Up_Time": "gen_min_uptime",
         "Down_Time": "gen_min_downtime",
         "Start_Cost_per_MW": "gen_startup_om",
+        "Start_Fuel_MMBTU_per_MW": "gen_startup_fuel",
         # gen_self_discharge_rate is not defined in main Switch 2.0.10 or earlier. Used by UCSD?
         "Self_Disch": "gen_self_discharge_rate",
         "tonne_co2_captured_mwh": "gen_ccs_load_mwh_per_tCO2",
