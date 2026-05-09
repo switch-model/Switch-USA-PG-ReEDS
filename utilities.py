@@ -7,13 +7,14 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 # setup yaml parser to preserve quotes, disable aliasing (cross-referencing) of
 # duplicate data and write None as ~ (not 'null'); also preserves comments by
-# default.
+# default. This reduces reformatting when VS Code uses the Red Hat YAML extension.
 ym = ruamel.yaml.YAML()
 ym.preserve_quotes = True
 ym.representer.ignore_aliases = lambda x: True
 ym.representer.add_representer(
     type(None), lambda self, data: self.represent_scalar("tag:yaml.org,2002:null", "~")
 )
+ym.indent(mapping=2, sequence=4, offset=2)
 
 
 def read_yaml(file, quiet=False):
@@ -120,8 +121,19 @@ def add_yaml_key(yaml_root, path, value, quiet=False):
     for node in path[:-1]:
         obj = obj.setdefault(node, CommentedMap())
 
-    obj[path[-1]] = value
-    obj.yaml_add_eol_comment(f"managed by {get_caller_filename()}", path[-1])
+    if type(value) is dict:
+        value = CommentedMap(value)
+    elif type(value) is list:
+        value = CommentedSeq(value)
+
+    flag = f"managed by {get_caller_filename()}"
+    if isinstance(value, (CommentedMap, CommentedSeq)):
+        value.yaml_set_start_comment(flag, indent=2)
+        obj[path[-1]] = value
+    else:
+        obj[path[-1]] = value
+        obj.yaml_add_eol_comment(flag, path[-1])
+
     if not quiet:
         msg = f"added {': '.join(str(p) for p in path)}"
         if isinstance(value, (CommentedMap, CommentedSeq, dict, list)):

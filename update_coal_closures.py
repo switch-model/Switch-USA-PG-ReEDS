@@ -1,55 +1,83 @@
+print("Loading libraries.")
+import re, os
 from pathlib import Path
-import openpyxl
+
 import pandas as pd
 import numpy as np
-import re
 from scipy.optimize import linprog
-from powergenome.generators import download_860m
+from ruamel.yaml.comments import CommentedSeq
+
+from powergenome.generators import load_860m
 from powergenome.util import load_settings
 from powergenome.params import DATA_PATHS
 
+from utilities import read_yaml, write_yaml, add_yaml_key, delete_yaml_keys
+
+print("Finished loading libraries.")
+
 settings_dir = "pg/settings"
+addl_retirements_file = Path(settings_dir) / "resources.yml"
 
-
-eia_skiprows = 2
-eia_skipfooter = 2
-eia_sheet_name = "Operating"
 
 settings = load_settings(settings_dir)
 eia_860m_fn = settings.get("eia_860m_fn")
 if not eia_860m_fn:
     raise ValueError(f"No `eia_860m_fn` parameter defined in {settings_dir}")
 
+gem_fn = settings.get("GEM_coal_tracker_fn")
+if not gem_fn:
+    raise ValueError(f"No `GEM_coal_tracker_fn` parameter defined in {settings_dir}")
+
 # GEM_coal_tracker_url = settings.get("GEM_coal_tracker_url")
-GEM_coal_tracker_file = (
-    Path(settings["input_folder"]) / "Global-Coal-Plant-Tracker-July-2025.xlsx"
+GEM_coal_tracker_file = Path(settings["input_folder"]) / gem_fn
+
+abs_860 = DATA_PATHS["eia_860m"]
+path_860 = abs_860
+if_shorter = lambda p: p if len(str(p)) < len(str(path_860)) else path_860
+# shorten the path name if we can
+try:
+    path_860 = if_shorter(abs_860.relative_to(Path.cwd()))
+except:
+    pass
+if os.name == "posix":
+    try:
+        path_860 = if_shorter("~" / abs_860.relative_to(Path.home()))
+    except:
+        pass
+
+print(f"Reading 860M workbook from {path_860 / eia_860m_fn}.")
+
+# Use 860M workbook specified for PowerGenome, but rename some columns
+# back to the EIA version for easier cross-referencing to the workbook
+data_dict = load_860m(settings)
+eia = (
+    data_dict["operating"]
+    .rename(
+        columns={
+            "plant_id_eia": "Plant ID",
+            "plant_name": "Plant Name",
+            "generator_id": "Generator ID",
+            "capacity_mw": "Nameplate Capacity (MW)",
+            "technology_description": "Technology",
+            "operating_year": "Operating Year",
+            "planned_retirement_year": "Planned Retirement Year",
+            "latitude": "Latitude",
+            "longitude": "Longitude",
+        }
+    )
+    .copy()
 )
 
-# Force re-download of the EIA workbook (will also force re-creation of
-# the cached "operating" worksheet next time PowerGenome runs)
-eia_wb_path = DATA_PATHS["eia_860m"] / eia_860m_fn
-if eia_wb_path.exists():
-    eia_wb_path.unlink()
-download_860m(eia_860m_fn)  # re-create file at wb_path
-
-# read EIA data using settings for ~2025 workbooks
-eia = pd.read_excel(
-    eia_wb_path,
-    sheet_name=eia_sheet_name,
-    na_values=[" ", ""],
-    keep_default_na=False,
-    skiprows=eia_skiprows,
-    skipfooter=eia_skipfooter,
-)
 # tag each generator with the corresponding row in the Excel sheet
-# (1-based to match the view in Excel)
-eia["eia_row"] = eia.index + eia_skiprows + 2  # 0->1 and skip header
+# (4-based to match the view in Excel)
+eia["eia_row"] = eia.index + 4  # 0->4
 # only keep coal plants
 eia = eia[eia["Technology"].str.contains("Coal")]
 # GEM only covers plants >= 30 MW
 eia = eia[eia["Nameplate Capacity (MW)"] >= 30]
 
 # get data from GEM coal closures workbook
+print(f"Reading GEM workbook from {GEM_coal_tracker_file}")
 gem = pd.read_excel(GEM_coal_tracker_file, sheet_name="Units")
 gem["gem_row"] = gem.index + 2  # 0->1 and skip header
 gem = gem[gem["Country/Area"] == "United States"].copy()
@@ -58,8 +86,7 @@ gem["Unit name"] = gem["Unit name"].str.replace(", timepoint 1", "")
 # treat actual retirements as planned retirements (some of these are not in EIA)
 gem["Planned retirement"] = gem["Planned retirement"].fillna(gem["Retired year"])
 
-# open EIA 860m workbook and GEM coal closures workbook,
-# then calculate the "distance" from each generator in 860m to each generator in
+# Calculate the "distance" from each generator in 860m to each generator in
 # GEM, based on
 # candidates:
 # - spatial distance < 3 miles (boolean)
@@ -80,6 +107,8 @@ def haversine_km(lat1, lon1, lat2, lon2):
     a = np.sin(dφ / 2) ** 2 + np.cos(φ1) * np.cos(φ2) * np.sin(dλ / 2) ** 2
     return 2 * R * np.arcsin(np.sqrt(a))
 
+
+print("Matching GEM generators to EIA generators.")
 
 # calculate "distance" from each eia row to each gem row
 distances = []
@@ -105,14 +134,10 @@ for i, e in eia.iterrows():
     # start year difference (1 year treated as equivalent to 1 MW); sometimes missing for cancelled projects
     d = d + (g["Start year"] - e["Operating Year"]).abs().fillna(100)
     distances.extend((e["eia_row"], r_, d_) for d_, r_ in zip(d, g["gem_row"]))
-    if e["eia_row"] == 13369:
-        break
 
-# Use a linear program to
-# assign eia rows to gem rows, minimizing a distance score
-# This prioritizes assigning each row to a partner, and then
-# secondarily minimizing the sum of the distances between
-# the partners.
+# Use a linear program to assign eia rows to gem rows, minimizing a distance
+# score. This prioritizes assigning each row to a partner, and then secondarily
+# minimizing the sum of the distances between the partners.
 penalty = 100000  # penalty for leaving rows unmatched
 eia_rows = sorted({i for i, _, _ in distances})
 gem_rows = sorted({j for _, j, _ in distances})
@@ -182,10 +207,14 @@ if eia_shortfall or missing_candidates:
     print(f"Unmatched EIA rows:")
     for (e, g), d in zip(pairs, c_w):
         if e in eia_shortfall:
-            alt_match = f" (-> eia {eia_for_gem[g]})" if g in eia_for_gem else ""
-            print(f"eia {e}, gem {g}{alt_match}: dist={d}, weight={weights[e, g]}")
+            alt_match = (
+                f" (matches EIA row {eia_for_gem[g]})" if g in eia_for_gem else ""
+            )
+            print(
+                f"EIA row {e}, GEM row {g}{alt_match}: dist={d}, weight={weights[e, g]}"
+            )
     for e in missing_candidates:
-        print(f"eia {e}: no candidates in gem")
+        print(f"EIA row {e}: no candidates in GEM tracker")
 
 gem_operating = set(gem[gem["Status"] == "operating"]["gem_row"])
 missing_candidates = gem_operating - set(gem_rows)
@@ -193,10 +222,16 @@ if gem_shortfall or missing_candidates:
     print(f"Unmatched GEM rows:")
     for (e, g), d in sorted(zip(pairs, c_w), key=lambda x: (x[0][1], x[0][0])):
         if g in gem_shortfall and g in gem_operating:
-            alt_match = f" (-> gem {gem_for_eia[e]})" if e in gem_for_eia else ""
-            print(f"gem {g}, eia {e}{alt_match}: dist={d}, weight={weights[e, g]}")
+            alt_match = (
+                f" (already assigned to GEM row {gem_for_eia[e]})"
+                if e in gem_for_eia
+                else ""
+            )
+            print(
+                f"GEM row {g}: matches EIA row {e}{alt_match}: dist={d}, weight={weights[e, g]}"
+            )
     for g in missing_candidates:
-        print(f"gem {g}: no candidates in eia")
+        print(f"GEM row {g}: no matching EIA coal plants")
 
 # check that status for matched GEM projects is online or retired
 assert set(gem[gem["gem_row"].isin(eia_for_gem)]["Status"].unique()) == {
@@ -205,36 +240,43 @@ assert set(gem[gem["gem_row"].isin(eia_for_gem)]["Status"].unique()) == {
 }
 
 # calculate new retirement date for each row in EIA table, based on best matching GEM
-# warn of any cases where
 new_retirement_year = (
     eia["eia_row"].map(gem_for_eia).map(gem.set_index("gem_row")["Planned retirement"])
 )
 
 # apply new retirement year unless it is nan (sometimes they disagree, but we assume
 # gem is more up to date); then convert remaining NaNs to " " to match EIA workbook
-eia["new_retirement_year"] = new_retirement_year.fillna(eia["Planned Retirement Year"])
+eia["GEM Retirement Year"] = new_retirement_year.fillna(eia["Planned Retirement Year"])
 
-# save results back to EIA 860 workbook
-print(f"Opening {eia_wb_path}.")
-eia_wb = openpyxl.load_workbook(eia_wb_path)
-print(f"Updating workbook.")
-eia_ws = eia_wb["Operating"]
-month_col = eia.columns.get_loc("Planned Retirement Month") + 1  # openpyxl is 1-based
+# save results to PowerGenome settings
 year_col = eia.columns.get_loc("Planned Retirement Year") + 1
-for i, (row, new_year, old_year) in eia[
-    ["eia_row", "new_retirement_year", "Planned Retirement Year"]
+# records will be (EIA plant ID, EIA generator ID, retirement year)
+addl_retirements = []
+for i, (row, plant_id, gen_id, old_year, new_year) in eia[
+    [
+        "eia_row",
+        "Plant ID",
+        "Generator ID",
+        "Planned Retirement Year",
+        "GEM Retirement Year",
+    ]
 ].iterrows():
-    # only update values that have changed, to simplify inspection of the workbook
+    # save any retirement years that have changed
     if new_year != old_year and not (np.isnan(new_year) and np.isnan(old_year)):
-        if np.isnan(new_year):
-            year = " "
-            month = " "
-        else:
-            year = new_year
-            month = 6  # assume mid-year
-        eia_ws.cell(row=row, column=year_col).value = year
-        eia_ws.cell(row=row, column=month_col).value = month
+        try:
+            # convert to int if possible to reduce quoting and reformatting in VS Code
+            # PG will convert back
+            gen_id = int(gen_id)
+        except:
+            pass
+        new_year = None if np.isnan(new_year) else int(new_year)
+        row = CommentedSeq([plant_id, gen_id, new_year])
+        row.fa.set_flow_style()  # show whole record on one row
+        addl_retirements.append(row)
 
-print(f"Saving workbook.")
-eia_wb.save(eia_wb_path)
-print(f"Finished updating {eia_wb_path}.")
+# Replace any existing additional_retirements key with the new list
+ar = read_yaml(addl_retirements_file)
+# delete_yaml_keys(ar, ["additional_retirements"])
+add_yaml_key(ar, ["additional_retirements"], addl_retirements)
+write_yaml(ar, addl_retirements_file)
+# print(f"Updated additional_retirements key in {addl_retirements_file}.")
