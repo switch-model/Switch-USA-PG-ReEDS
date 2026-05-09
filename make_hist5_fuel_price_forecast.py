@@ -46,10 +46,6 @@ from powergenome.financials import get_cpi_data
 
 from utilities import read_yaml, write_yaml, add_yaml_key, delete_yaml_keys
 
-# date range to retrieve prices for
-start_year = 2020
-end_year = 2024
-
 settings_path = Path("pg/settings")
 
 yaml_files = {
@@ -61,7 +57,12 @@ yaml_files = {
 print(f"loading PowerGenome settings from {settings_path}")
 settings = load_settings(settings_path)
 # year to inflate prices to
-base_year = settings.get("target_usd_year") or end_year
+base_year = settings.get("target_usd_year")
+
+# date range to retrieve prices for
+end_year = settings.get("hist5_forecast_end_year")
+start_year = end_year - 4  # 5 years, inclusive
+
 
 print(f"checking EIA API key")
 eia_api_key_file = Path(settings["input_folder"]) / "eia_api_key.txt"

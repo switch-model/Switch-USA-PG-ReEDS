@@ -144,7 +144,7 @@ region_aggregations: ~
 
 # Dollar year that all outputs will be converted to (must be a historical year
 # so CPI data are available)
-target_usd_year: 2024
+target_usd_year: 2025
 
 # Allowed model year(s) and first planning year(s). When PowerGenome is run for
 # just one year it will downsample these as needed.
@@ -381,7 +381,7 @@ generator_columns:
   - Var_OM_Cost_per_MWh_In
   - Inv_Cost_Charge_per_MWyr
   - Fixed_OM_Cost_Charge_per_MWyr
-    # - Externality_cost_MWh
+  # - Externality_cost_MWh
   - Start_Cost_per_MW
   - Start_Fuel_MMBTU_per_MW
   - Heat_Rate_MMBTU_per_MWh

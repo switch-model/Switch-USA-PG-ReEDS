@@ -1,9 +1,15 @@
 # EIA AEO FUEL PRICE VARIABLES
 
-# Which year of AEO to use. Note that different years have different scenario names
-# so those may need to be modified accordingly.
-fuel_eia_aeo_year: 2025
-aeo_fuel_usd_year: 2024
+# Which year of AEO to use and what dollar-year it uses. Note that different
+# years have different scenario names so those may need to be modified
+# accordingly. (Costs will be inflated from here to target_usd_year.)
+fuel_eia_aeo_year: 2025 # version of AEO to use
+aeo_fuel_usd_year: 2024 # dollar-year used by this version of AEO
+
+# ending year for "hist5" forecast produced by make_hist5_fuel_price_forecast.py
+# (will create hist5 forecasts in scenario_management.yml with averages for 5 
+# historical years up to and including this one)
+hist5_forecast_end_year: 2025
 
 # FUEL SCENARIOS
 # These parameters map the EIA scenario names to user names (e.g. reference is used inplace
@@ -30,8 +36,8 @@ eia_series_fuel_names:
   # distillate: DFO
   # uranium: U
 
-# added in scenario_settings key so AEO prices can be skipped if needed
-# (dummy entry is to prevent creation of default dict when this is left empty)
+  # added in scenario_settings key so AEO prices can be skipped if needed
+  # (dummy entry is to prevent creation of default dict when this is left empty)
 aeo_fuel_scenarios:
   dummy: reference
   # coal: reference
@@ -39,10 +45,10 @@ aeo_fuel_scenarios:
   # distillate: reference
   # uranium: reference
 
-# Need to make choices about fuel regions when user-defined regions cross AEO fuel regions.
-# Regions are included here only as a guide. All user regions must be mapped to AEO regions.
-# See the PowerGenome wiki for a map of Census Divisions and IPM regions
-# https://github.com/PowerGenome/PowerGenome/wiki/Geospatial-Mappings
+  # Need to make choices about fuel regions when user-defined regions cross AEO fuel regions.
+  # Regions are included here only as a guide. All user regions must be mapped to AEO regions.
+  # See the PowerGenome wiki for a map of Census Divisions and IPM regions
+  # https://github.com/PowerGenome/PowerGenome/wiki/Geospatial-Mappings
 
 aeo_fuel_region_map:
   east_north_central:
@@ -69,8 +75,7 @@ aeo_fuel_region_map:
       p83,
     ]
   east_south_central: [p108, p109, p110, p87, p88, p89, p90, p92, p93]
-  middle_atlantic:
-    [p115, p119, p120, p122, p126, p127, p128, p144, p145, p146, p147]
+  middle_atlantic: [p115, p119, p120, p122, p126, p127, p128, p144, p145, p146, p147]
   mountain:
     [
       p12,
@@ -119,7 +124,24 @@ aeo_fuel_region_map:
       p156,
     ]
   pacific:
-    [p1, p10, p11, p135, p136, p137, p138, p139, p2, p3, p4, p5, p6, p7, p8, p9]
+    [
+      p1,
+      p10,
+      p11,
+      p135,
+      p136,
+      p137,
+      p138,
+      p139,
+      p2,
+      p3,
+      p4,
+      p5,
+      p6,
+      p7,
+      p8,
+      p9,
+    ]
   south_atlantic:
     [
       p100,
@@ -240,6 +262,7 @@ fuel_emission_factors:
   naturalgas: 0.05306
   coal: 0.09552 # EIA value for electric power sector
   distillate: 0.07315
+
 #######
 # Note: The section below is obsolete; instead we make state-level
 # forecasts for coal and gas as the average state-level cost in 2020-23.
@@ -408,4 +431,3 @@ fuel_emission_factors:
 #   p132: {naturalgas: [mul, 1.267]}
 #   p133: {naturalgas: [mul, 1.267]}
 #   p134: {naturalgas: [mul, 1.267]}
-

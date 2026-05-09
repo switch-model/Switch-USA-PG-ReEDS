@@ -72,6 +72,8 @@ eia = (
 # (4-based to match the view in Excel)
 eia["eia_row"] = eia.index + 4  # 0->4
 # only keep coal plants
+# TODO: also keep others, but treat fuel switch as high cost in the scoring
+# and only report fuel switches, don't update retirement
 eia = eia[eia["Technology"].str.contains("Coal")]
 # GEM only covers plants >= 30 MW
 eia = eia[eia["Nameplate Capacity (MW)"] >= 30]

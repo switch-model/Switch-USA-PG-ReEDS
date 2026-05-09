@@ -408,7 +408,6 @@ model_tag_values:
     # and "factors" like SOF (scheduled outage) are hours unavailable divided by hours in
     # reporting period
     # https://www.nerc.com/programs/reliability-assessment--performance-analysis/generating-availability-data-system/gads-conventional/generating-unit-statistical-brochures
-    # TODO: extended to include solar and batteries.
     Coal: 0.1322 # Coal Primary
     Petroleum Liquids: 0.0741 # 0.0493 Diesel -> 20369 MW DFO fuel; 0.1335 Oil Primary -> 8522 MW all other fuels
     Petroleum Coke: 0.0741 # Assume same as petroleum liquids

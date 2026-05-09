@@ -47,7 +47,13 @@ pg_reeds_tech_map = pd.read_csv(
 )
 
 # last year of historical data (e.g., in EIA 860m)
-last_hist_year = 2024
+last_hist_year = 2025
+
+# location to retrieve ReEDS emission policy data from
+# corresponds to https://github.com/ReEDS-Model/ReEDS/tree/2026.04.17/inputs
+reeds_inputs_url = (
+    "https://github.com/ReEDS-Model/ReEDS/raw/refs/tags/2026.04.17/inputs"
+)
 
 max_growth_limits = [
     # tag, selector, limit, description
@@ -55,12 +61,12 @@ max_growth_limits = [
     # limit can be a number or a tuple of number of historical years to consider
     # and an aggregation function to apply to annual totals
     # wind: use maximum over 10 years before last_hist_year
-    # (14490 MW in 2020 in EIA 860M)
+    # (14862.7 MW in 2020 in EIA 860M)
     (
         "MaxCapTag_WindGrowth",
         "energy_source_code_1 == 'WND'",
         # (10, "max"),
-        14490,
+        14862.7,
         "National Wind Growth Limit",
     ),
     # solar: start with 2024 additions (30792.3) and allow 20%/year growth from
@@ -92,7 +98,7 @@ max_growth_limits = [
     (
         "MaxCapTag_GasTurbineSupply",
         "technology_description.isin(['Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine'])",
-        58000 / (2030 - 2024),
+        58000 / (2030 - 2025),
         "Gas Turbine Supply-Chain Limit",
     ),
 ]
@@ -149,9 +155,7 @@ esr_dfs = []
 for prog in ["ces", "rps"]:
     # prog = 'rps'
 
-    frac = pd.read_csv(
-        f"https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/state_policies/{prog}_fraction.csv"
-    )
+    frac = pd.read_csv(f"{reeds_inputs_url}/state_policies/{prog}_fraction.csv")
     # do various possible renames
     frac = frac.rename(
         columns={"*t": "year", "t": "year", "rps_all": "rps", "Value": "ces"}
@@ -167,9 +171,9 @@ for prog in ["ces", "rps"]:
 
     # add limits on out-of-state fractions for URECs as if they were a different
     # ESR (starting with "UREC_Limit_")
-    oos_limit = pd.read_csv(
-        "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/state_policies/oosfrac.csv"
-    ).set_index("*st")["value"]
+    oos_limit = pd.read_csv(f"{reeds_inputs_url}/state_policies/oosfrac.csv").set_index(
+        "*st"
+    )["value"]
     oos = (
         frac.assign(program="UREC_Limit_" + frac["program"])
         .assign(target=frac["st"].map(oos_limit))
@@ -195,9 +199,7 @@ esr_wide = esr_wide[sorted(esr_wide.columns)]
 # After gathering eligible ReEDS technologies, we convert them to PG technology terms
 # to generate the eligibility flags (as a .yml file)
 # TODO: finer-scale CES rules later in the file, based on emission rates of technologies
-techs = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/tech-subset-table.csv"
-)
+techs = pd.read_csv(f"{reeds_inputs_url}/tech-subset-table.csv")
 techs = techs.rename(columns={techs.columns[0]: "reeds_tech"})
 
 # fmt: off
@@ -228,10 +230,10 @@ ce_techs = techs.loc[
     techs[["RE", "NUCLEAR", "HYDRO", "CCS", "CANADA"]].notna().any(axis=1), "reeds_tech"
 ]
 techs_banned_ces = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/state_policies/techs_banned_ces.csv"
+    f"{reeds_inputs_url}/state_policies/techs_banned_ces.csv"
 )
 techs_banned_rps = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/state_policies/techs_banned_rps.csv"
+    f"{reeds_inputs_url}/state_policies/techs_banned_rps.csv"
 )
 # virtual ban on can-imports in states bordering Mexico, because Canadian and
 # Mexican imports will both be interpreted as generic imports but imports from
@@ -263,9 +265,7 @@ prog_rules = {
 # trade direction is col (ast) -> row (st)
 # see https://github.com/NREL/ReEDS-2.0/blob/92e8fa7cc9f870006ca2df52d98fd11f1db68dbe/b_inputs.gms#L3034)
 # note: the table allows trade from each state to itself, but we treat that as local, so ignore
-trade_table = pd.read_csv(
-    "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/state_policies/rectable.csv",
-)
+trade_table = pd.read_csv(f"{reeds_inputs_url}/state_policies/rectable.csv")
 trade_partners = trade_table.melt(
     id_vars="st", var_name="ast", value_name="trade"
 ).query("st != ast and trade > 0")
@@ -350,14 +350,14 @@ tax_states = ["CA", "WA", "NY"]
 # start with the RGGI caps, then add CA and WA with a zero cap (they'll just pay
 # the slack price)
 rggi_cap = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/emission_constraints/rggicon.csv",
+    f"{reeds_inputs_url}/emission_constraints/rggicon.csv",
     names=["year", "cap"],
     header=None,
 ).query("year.isin(@possible_model_years)")
 # convert from tonnes to million tonnes
 rggi_cap["cap"] *= 0.000001
 rggi_states = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/emission_constraints/rggi_states.csv"
+    f"{reeds_inputs_url}/emission_constraints/rggi_states.csv"
 ).rename(columns={"*st": "st"})
 
 co2 = (
@@ -440,9 +440,7 @@ decarb_co2_wide = pd.concat(
 
 # "st", "2019", "2020", ...
 # CA, 0, 0, 100, ...
-osw_req = pd.read_csv(
-    "https://github.com/NREL/ReEDS-2.0/raw/refs/heads/main/inputs/state_policies/offshore_req_default.csv"
-)
+osw_req = pd.read_csv(f"{reeds_inputs_url}/state_policies/offshore_req_default.csv")
 osw_req["program"] = "MinCapTag_" + osw_req["st"] + "_offshorewind"
 
 # update YAML 'settings_management' key, preserving existing quotes and comments
@@ -544,7 +542,7 @@ def make_const_func(lim):
 wb = load_860m(settings)
 lims = []
 for tag, selector, limit, description in max_growth_limits:
-    subset = wb["operating"].query(selector)
+    subset = wb["operating"].query("~state.isin(['HI', 'AK'])").query(selector)
     if isinstance(limit, tuple):
         # apply limit query
         n_years, agg = limit

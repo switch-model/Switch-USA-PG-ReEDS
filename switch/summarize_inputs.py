@@ -27,7 +27,7 @@ from pathlib import Path
 # in_dir = "test_gem"
 # in_dir = "test_flex"
 
-# for testing: sys.argv[1] = "in/test_flex/2024/s4"
+# for testing: sys.argv[1] = "switch/in/yaml_gem_rets/2030/ce"
 # for testing: sys.argv[1] = "switch/in/test/2030/p1"
 # sys.argv[1] = "in/2030/s40x1"
 
@@ -49,6 +49,7 @@ print("Processing data files")
 
 info = icsv("gen_info.csv")
 build = icsv("gen_build_predetermined.csv")
+base_year = icsv("financials.csv")["base_financial_year"].item()
 
 # calculate existing cap and max possible cap
 # use that to calculate existing vs. possible additions
@@ -171,6 +172,8 @@ energy_colors = {
     "water": "blue",
     "coal": "black",
     "naturalgas": "gray",
+    "distillate": "darkgray",
+    "waste heat": "orange",
     "uranium": "yellow",
     "geothermal": "seagreen",
     "sun": "gold",
@@ -260,11 +263,15 @@ def make_tech_fig(col, value_name, value_units):
 
 
 tech_plots = [
-    ("gen_overnight_cost", "Gen Capital Cost", "2024$/MW"),
-    ("gen_storage_energy_overnight_cost", "Gen Storage Capital Cost", "2024$/MWh"),
-    ("gen_connect_cost_per_mw", "Gen Connection Capital Cost", "2024$/MW"),
-    ("gen_variable_om", "Gen Variable O&M", "2024$/MWh"),
-    ("gen_fixed_om", "Gen Fixed O&M", "2024$/MW-year"),
+    ("gen_overnight_cost", "Gen Capital Cost", f"{base_year}$/MW"),
+    (
+        "gen_storage_energy_overnight_cost",
+        "Gen Storage Capital Cost",
+        f"{base_year}$/MWh",
+    ),
+    ("gen_connect_cost_per_mw", "Gen Connection Capital Cost", f"{base_year}$/MW"),
+    ("gen_variable_om", "Gen Variable O&M", f"{base_year}$/MWh"),
+    ("gen_fixed_om", "Gen Fixed O&M", f"{base_year}$/MW-year"),
     ("annual_cap_factor", "VRE Capacity Factor", "fraction"),
 ]
 
@@ -285,7 +292,7 @@ fuel_fig = px.box(
     title="Fuel Cost by Fuel Type",
 )
 fuel_fig.update_layout(
-    yaxis_title="Fuel Cost (2024$/MMBtu)", xaxis_title="Fuel", boxmode="group"
+    yaxis_title=f"Fuel Cost ({base_year}$/MMBtu)", xaxis_title="Fuel", boxmode="group"
 )
 figs.append(fuel_fig)
 
@@ -299,6 +306,11 @@ total_cap = (
 total_cap["technology"] = total_cap["technology"].str.replace(
     "(2030)", "(2030 limit)", regex=False
 )
+
+# save total cap df for analysis
+cap_file = f"{label}_gen_cap.csv"
+total_cap.to_csv(cap_file, index=False, float_format="%.15g")
+print(f"saved {cap_file}")
 
 # total generator capacity (existing) or limit (2030) (MW) of each type
 cap_fig = px.bar(
@@ -358,143 +370,143 @@ except:
 
 import geopandas as gpd
 
-# has columns WKT, rb (zone); filter to US zones only and convert to geometry and load_zone
-# a shapefile with more info (state, RTO, interconnect and major region) is at
-# https://github.com/NREL/ReEDS-2.0/tree/main/inputs/shapefiles/US_PCA
-df = pd.read_csv(
-    "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/shapefiles/US_CAN_MEX_PCA_polygons.csv"
-)
-df = df[df["rb"].str[1:].astype(int) <= 134]
-zones = (
-    gpd.GeoDataFrame(
-        df,
-        geometry=gpd.GeoSeries.from_wkt(df["WKT"]),
-        crs="EPSG:4326",
-    )
-    .rename(columns={"rb": "load_zone"})
-    .drop(columns="WKT")
-    .set_index("load_zone", drop=False)
-)
-col = "CCGT capex ($/kW)"
-zones[col] = (
-    zones["load_zone"]
-    .map(
-        info.query("gen_tech == 'NaturalGas_1-on-1 Combined Cycle (H-Frame)_Moderate'")
-        .groupby("gen_load_zone")["gen_overnight_cost"]
-        .mean()
-        * 0.001
-    )
-    .round()
-)
+# # has columns WKT, rb (zone); filter to US zones only and convert to geometry and load_zone
+# # a shapefile with more info (state, RTO, interconnect and major region) is at
+# # https://github.com/NREL/ReEDS-2.0/tree/main/inputs/shapefiles/US_PCA
+# df = pd.read_csv(
+#     "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/shapefiles/US_CAN_MEX_PCA_polygons.csv"
+# )
+# df = df[df["rb"].str[1:].astype(int) <= 134]
+# zones = (
+#     gpd.GeoDataFrame(
+#         df,
+#         geometry=gpd.GeoSeries.from_wkt(df["WKT"]),
+#         crs="EPSG:4326",
+#     )
+#     .rename(columns={"rb": "load_zone"})
+#     .drop(columns="WKT")
+#     .set_index("load_zone", drop=False)
+# )
+# col = "CCGT capex ($/kW)"
+# zones[col] = (
+#     zones["load_zone"]
+#     .map(
+#         info.query("gen_tech == 'NaturalGas_1-on-1 Combined Cycle (H-Frame)_Moderate'")
+#         .groupby("gen_load_zone")["gen_overnight_cost"]
+#         .mean()
+#         * 0.001
+#     )
+#     .round()
+# )
 
-# # Albers projected version (no basemap)
-# zones = zones.to_crs(4326)  # WGS 84 (lat/lon) for plotly
-# fig = px.choropleth(
+# # # Albers projected version (no basemap)
+# # zones = zones.to_crs(4326)  # WGS 84 (lat/lon) for plotly
+# # fig = px.choropleth(
+# #     zones,
+# #     geojson=json.loads(zones.to_json()),
+# #     locations=zones.index,
+# #     # featureidkey="properties.rb",
+# #     color=capex_col,
+# #     projection="albers usa"
+# # )
+# # fig.update_geos(
+# #     showcountries=True,
+# #     showcoastlines=True,
+# #     showland=True,
+# #     fitbounds="locations"
+# # )
+
+# # Polygons
+# fig = px.choropleth_map(
 #     zones,
 #     geojson=json.loads(zones.to_json()),
-#     locations=zones.index,
-#     # featureidkey="properties.rb",
-#     color=capex_col,
-#     projection="albers usa"
+#     locations=zones.index,  # unique id per feature
+#     color=col,
+#     # opacity=0.5,
+#     title=f"{col} by model zone",
 # )
-# fig.update_geos(
-#     showcountries=True,
-#     showcoastlines=True,
-#     showland=True,
-#     fitbounds="locations"
+# fig.update_traces(marker_line_width=0.5, marker_line_color="white")
+
+# # Labels at representative points
+# # centers = zones.geometry.representative_point()
+# # zones["label_lon"] = centers.x
+# # zones["label_lat"] = centers.y
+# # fig.add_trace(
+# #     go.Scattermap(
+# #         lon=zones["label_lon"],
+# #         lat=zones["label_lat"],
+# #         mode="text",
+# #         text=zones["load_zone"],
+# #         textfont=dict(size=12),
+# #         hoverinfo="text",
+# #     )
+# # )
+
+# # Center/zoom
+# minx, miny, maxx, maxy = zones.total_bounds
+# fig.update_layout(
+#     # map_style="open-street-map",  # no token needed
+#     map_zoom=3.3,  # exact level depends on browser width
+#     map_center={"lat": (miny + maxy) / 2, "lon": (minx + maxx) / 2},
+#     margin=dict(l=0, r=0, t=0, b=0),
 # )
 
-# Polygons
-fig = px.choropleth_map(
-    zones,
-    geojson=json.loads(zones.to_json()),
-    locations=zones.index,  # unique id per feature
-    color=col,
-    # opacity=0.5,
-    title=f"{col} by model zone",
-)
-fig.update_traces(marker_line_width=0.5, marker_line_color="white")
+# # insert after main capex graphs
+# figs.insert(2, fig)
 
-# Labels at representative points
-# centers = zones.geometry.representative_point()
-# zones["label_lon"] = centers.x
-# zones["label_lat"] = centers.y
-# fig.add_trace(
-#     go.Scattermap(
-#         lon=zones["label_lon"],
-#         lat=zones["label_lat"],
-#         mode="text",
-#         text=zones["load_zone"],
-#         textfont=dict(size=12),
-#         hoverinfo="text",
+
+# print("Preparing load growth map")
+# # make a map of load growth by ReEDS region and insert after capex map
+# import json
+# import geopandas as gpd
+
+# # has columns WKT, rb (zone); filter to US zones only and convert to geometry and load_zone
+# # a shapefile with more info (state, RTO, interconnect and major region) is at
+# # https://github.com/NREL/ReEDS-2.0/tree/main/inputs/shapefiles/US_PCA
+# df = pd.read_csv(
+#     "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/shapefiles/US_CAN_MEX_PCA_polygons.csv"
+# )
+# df = df[df["rb"].str[1:].astype(int) <= 134]
+# zones = (
+#     gpd.GeoDataFrame(
+#         df,
+#         geometry=gpd.GeoSeries.from_wkt(df["WKT"]),
+#         crs="EPSG:4326",
 #     )
+#     .rename(columns={"rb": "load_zone"})
+#     .drop(columns="WKT")
+#     .set_index("load_zone", drop=False)
 # )
 
-# Center/zoom
-minx, miny, maxx, maxy = zones.total_bounds
-fig.update_layout(
-    # map_style="open-street-map",  # no token needed
-    map_zoom=3.3,  # exact level depends on browser width
-    map_center={"lat": (miny + maxy) / 2, "lon": (minx + maxx) / 2},
-    margin=dict(l=0, r=0, t=0, b=0),
-)
+# growth = pd.read_csv("../growth_rates/zone_growth.csv").set_index("load_zone")
+# for col, growth_col in [
+#     ("2025-35 avg load growth (%)", "avg_growth"),
+#     ("2025-35 peak load growth (%)", "peak_growth"),
+# ]:
+#     zones[col] = zones["load_zone"].map(growth[growth_col])
 
-# insert after main capex graphs
-figs.insert(2, fig)
+#     # Polygons
+#     fig = px.choropleth_map(
+#         zones,
+#         geojson=json.loads(zones.to_json()),
+#         locations=zones.index,  # unique id per feature
+#         color=col,
+#         # opacity=0.5,
+#         title=f"{col} by model zone",
+#     )
+#     fig.update_traces(marker_line_width=0.5, marker_line_color="white")
 
+#     # Center/zoom
+#     minx, miny, maxx, maxy = zones.total_bounds
+#     fig.update_layout(
+#         # map_style="open-street-map",  # no token needed
+#         map_zoom=3.3,  # exact level depends on browser width
+#         map_center={"lat": (miny + maxy) / 2, "lon": (minx + maxx) / 2},
+#         margin=dict(l=0, r=0, t=0, b=0),
+#     )
 
-print("Preparing load growth map")
-# make a map of load growth by ReEDS region and insert after capex map
-import json
-import geopandas as gpd
-
-# has columns WKT, rb (zone); filter to US zones only and convert to geometry and load_zone
-# a shapefile with more info (state, RTO, interconnect and major region) is at
-# https://github.com/NREL/ReEDS-2.0/tree/main/inputs/shapefiles/US_PCA
-df = pd.read_csv(
-    "https://raw.githubusercontent.com/NREL/ReEDS-2.0/refs/heads/main/inputs/shapefiles/US_CAN_MEX_PCA_polygons.csv"
-)
-df = df[df["rb"].str[1:].astype(int) <= 134]
-zones = (
-    gpd.GeoDataFrame(
-        df,
-        geometry=gpd.GeoSeries.from_wkt(df["WKT"]),
-        crs="EPSG:4326",
-    )
-    .rename(columns={"rb": "load_zone"})
-    .drop(columns="WKT")
-    .set_index("load_zone", drop=False)
-)
-
-growth = pd.read_csv("../growth_rates/zone_growth.csv").set_index("load_zone")
-for col, growth_col in [
-    ("2025-35 avg load growth (%)", "avg_growth"),
-    ("2025-35 peak load growth (%)", "peak_growth"),
-]:
-    zones[col] = zones["load_zone"].map(growth[growth_col])
-
-    # Polygons
-    fig = px.choropleth_map(
-        zones,
-        geojson=json.loads(zones.to_json()),
-        locations=zones.index,  # unique id per feature
-        color=col,
-        # opacity=0.5,
-        title=f"{col} by model zone",
-    )
-    fig.update_traces(marker_line_width=0.5, marker_line_color="white")
-
-    # Center/zoom
-    minx, miny, maxx, maxy = zones.total_bounds
-    fig.update_layout(
-        # map_style="open-street-map",  # no token needed
-        map_zoom=3.3,  # exact level depends on browser width
-        map_center={"lat": (miny + maxy) / 2, "lon": (minx + maxx) / 2},
-        margin=dict(l=0, r=0, t=0, b=0),
-    )
-
-    # add to list of graphs
-    figs.append(fig)
+#     # add to list of graphs
+#     figs.append(fig)
 
 
 # %%
