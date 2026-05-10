@@ -57,15 +57,16 @@ for tag in ("", "_prm"):
     gen_info_no_retire.loc[fossil_mask, "gen_can_retire_early"] = 0
     gen_info_no_retire.loc[fossil_mask, "gen_max_age"] = 1000
 
-    # apply a $80/MWh "production tax" to new clean generation to indicate
-    # a preference for fossil power
+    # apply a $200/MWh "production tax" to new clean generation to indicate
+    # a strong preference for fossil power (a lower value around $80/MWh can
+    # make the high-fossil-build case slow to solve)
     gen_info_high_fossil = gen_info_no_retire.copy()
     # substrings that will identify new-build clean techs but not existing ones
     new_clean_techs = "Battery Storage|LandbasedWind|UtilityPV|OffShoreWind"
     new_clean_mask = gen_info_high_fossil["gen_tech"].str.contains(
         new_clean_techs, case=False, na=False
     )
-    gen_info_high_fossil.loc[new_clean_mask, "gen_variable_om"] += 80
+    gen_info_high_fossil.loc[new_clean_mask, "gen_variable_om"] += 200
 
     for tag in ["", "high_fossil", "no_retire"]:  # , "low_fossil"]:
         name = ("gen_info." + tag).strip(".")

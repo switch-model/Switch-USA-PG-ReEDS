@@ -471,27 +471,28 @@ model_tag_values:
     peaker: 1
     Petroleum: 0 # assume there's some reason people are keeping these online
   MaxCapTag_WindGrowth:
-    # all wind technologies are subject to a national limit on additions (this
-    # could be moved to scenario_settings to turn it off for some cases)
+    # new-build wind technologies are subject to a national limit on additions
+    # (this could be moved to scenario_settings to turn it off for some cases)
     # make_emission_policies.py defines and documents the specific limit.
-    Wind: 1
+    LandbasedWind: 1
+    OffshoreWind: 1
   # MaxCapTag_SolarGrowth:
-  #   # solar PV (existing and new) is subject to a national limit on additions
+  #   # solar PV (new only) is subject to a national limit on additions
   #   # (this could be moved to scenario_settings to turn it off for some cases)
   #   # make_emission_policies.py defines and documents the specific limit.
-  #   Photovoltaic: 1
+  #   # Photovoltaic: 1 # existing
   #   UtilityPV: 1
   MaxCapTag_NuclearGrowth:
-    # nuclear (existing and new)
-    Nuclear: 1
+    # limit installation of new nuclear
+    Nuclear_Nuclear: 1
   MaxCapTag_GasTurbineSupply:
-    # all gas turbine technologies (new or planned/existing) are subject to a
-    # national limit on additions (this could be moved to scenario_settings to
-    # turn it off for some cases)
+    # all new gas turbine technologies are subject to a national limit on
+    # additions (this could be moved to scenario_settings to turn it off for
+    # some cases)
     # make_emission_policies.py defines and documents the specific limit.
     NaturalGas: 1 # new-build CC and CT
-    Natural Gas Fired Combined Cycle: 1 # existing/planned CC
-    Natural Gas Fired Combustion Turbine: 1 # existing/planned CT
+    # Natural Gas Fired Combined Cycle: 1 # existing/planned CC
+    # Natural Gas Fired Combustion Turbine: 1 # existing/planned CT
   MaxCapTag_Ban:
     # 0 by default, but we also specify 0 to avoid a warning from PowerGenome
     "": 0

@@ -61,12 +61,12 @@ max_growth_limits = [
     # limit can be a number or a tuple of number of historical years to consider
     # and an aggregation function to apply to annual totals
     # wind: use maximum over 10 years before last_hist_year
-    # (14862.7 MW in 2020 in EIA 860M)
+    # (14862.7 MW in 2020 in EIA 860M) minus the average additions
+    # already planned/approved for 2026-30 (this will only apply to new wind)
     (
         "MaxCapTag_WindGrowth",
-        "energy_source_code_1 == 'WND'",
-        # (10, "max"),
-        14862.7,
+        "technology_description == 'xyz'",  # don't add existing gens to limit
+        lambda y: 14862.7 - ((21794.4 / 5) if y <= 2030 else 0),
         "National Wind Growth Limit",
     ),
     # solar: start with 2024 additions (30792.3) and allow 20%/year growth from
@@ -80,10 +80,10 @@ max_growth_limits = [
     #     "National Solar Growth Limit",
     # ),
     # Nuclear: no new build possible before 2035; up to 10 GW possible in 2035,
-    # rising by 20%/year thereafter (based on general market assessment)
+    # rising by 20%/year thereafter (based on general market assessment).
     (
         "MaxCapTag_NuclearGrowth",
-        "technology_description == 'Nuclear'",
+        "technology_description == 'xyz'",  # don't add existing gens to limit
         lambda y: 0 if y < 2035 else 10000 * 1.2 ** (y - 2035),
         "National Nuclear Growth Limit",
     ),
@@ -97,8 +97,9 @@ max_growth_limits = [
     # https://rmi.org/gas-turbine-supply-constraints-threaten-grid-reliability-more-affordable-near-term-solutions-can-help/
     (
         "MaxCapTag_GasTurbineSupply",
-        "technology_description.isin(['Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine'])",
-        58000 / (2030 - 2025),
+        "technology_description == 'xyz'",  # don't add existing gens to limit
+        # 58000 in 2026-2030 minus 17719 already approved/planned
+        (58000 - 17719.2) / (2030 - 2025),
         "Gas Turbine Supply-Chain Limit",
     ),
 ]
@@ -559,11 +560,15 @@ for tag, selector, limit, description in max_growth_limits:
         lim_func = limit
     else:
         raise ValueError(f"Unknown type for limit {limit}: {type(limit)}")
-    # TODO: maybe have different baselines for each future year as retirements roll through?
+    # note: prior to April 2026, we dropped any plants that were retiring (ever)
+    # from the baseline, but that created problems with a nuclear cap below the
+    # actual capacity in place. We considered subtracting retirements from the
+    # baseline, but that causes problems if plant lives are extended, and
+    # requires getting the retirement year to exactly match Switch's treatement.
+    # So for now, we just ignore planned retirements, basically assuming plants
+    # can be repowered in addition to whatever the cap says.
     baseline_capacity = float(
-        subset.query(
-            f"operating_year <= {last_hist_year} and planned_retirement_year.isna()"
-        )["winter_capacity_mw"].sum()
+        subset.query(f"operating_year <= {last_hist_year}")["winter_capacity_mw"].sum()
     )
     lims.append((tag, description, lim_func, baseline_capacity))
 
