@@ -18,8 +18,7 @@ long solver jobs are running. Multiple solver scripts can also use
 scenarios_to_run() in separate processes to select the next job to run.
 """
 
-from __future__ import print_function, absolute_import
-import sys, os, time
+import sys, os, random, time
 import argparse, shlex, socket, io, glob, multiprocessing
 from collections import OrderedDict
 
@@ -201,12 +200,14 @@ def run_scenario(args):
 
 
 def scenarios_to_run():
-    """Generator function which returns argument lists for each scenario that should be run.
+    """
+    Generator function which returns argument lists for each scenario that should be run.
 
     Note: each time a new scenario is required, this re-reads the scenario_list file
     and then returns the first scenario that hasn't already started running.
     This allows multiple copies of the script to be run and allocate scenarios among
-    themselves."""
+    themselves.
+    """
 
     skipped = []
     ran = []
@@ -218,7 +219,7 @@ def scenarios_to_run():
             completed = False
             scenario_args = (
                 scenario_option_file_args
-                + get_scenario_dict()[scenario_name]
+                + read_scenario_list()[scenario_name]
                 + scenario_cmd_line_args
             )
             # flag the scenario as being run; then run it whether or not it was previously run
@@ -226,47 +227,99 @@ def scenarios_to_run():
             yield (scenario_name, scenario_args)
         # no more scenarios to run
         return
-    else:  # no specific scenarios requested
-        # Run every scenario in the list, with queue management
-        # This is done by repeatedly scanning the scenario list and choosing
-        # the first scenario that hasn't been run. This way, users can edit the
-        # list and this script will adapt to the changes as soon as it finishes
-        # the current scenario.
-        all_done = False
-        while not all_done:
-            all_done = True
-            # cache a list of scenarios that have been run, to avoid trying to checkout every one.
-            # This list is found by retrieving the names of the lock-directories.
-            already_run = set(os.listdir(scenario_queue_dir))
-            for scenario_name, base_args in get_scenario_dict().items():
+
+    # no specific scenarios requested
+    # Run every scenario in the list, with queue management
+    # This is done by repeatedly scanning the scenario list and choosing
+    # the first scenario that hasn't been run. This way, users can edit the
+    # list and this script will adapt to the changes as soon as it finishes
+    # the current scenario.
+    first_pass = True
+    # there may be hundreds of workers, so we stagger out their starts a bit
+    time.sleep(random.random() * 5)
+    while True:
+        # Identify scenarios that have been run by retrieving the names of the
+        # lock directories. This is faster than trying to checkout every one,
+        # especially if there are many workers. (This may miss a few that are
+        # currently being checked out by other workers, but we'll catch those
+        # during the checkouts and retries later.)
+        logger.info("Reading scenario definitions.")
+        all_scens = read_scenario_list()
+        logger.info(
+            f"Scanning scenario queue for checked-out scenarios ({scenario_queue_dir})."
+        )
+        already_run = set(os.listdir(scenario_queue_dir))
+
+        # Identify scenarios that still need to be run
+        scen_info = {s: a for s, a in all_scens.items() if s not in already_run}
+        del all_scens, already_run
+
+        if not scen_info:
+            # no more scenarios to run
+            if first_pass:
+                cmd = "rmdir /s /q" if os.name == "nt" else "rm -rf"
+                logger.warning(
+                    "Skipping all scenarios because they have already been solved. "
+                    "To run all the scenarios again, remove the scenario queue directory "
+                    f"{scenario_queue_dir} or its contents ({cmd} {scenario_queue_dir}) "
+                    "and then use switch solve-scenarios again."
+                )
+            else:
+                logger.info("All scenarios have been solved; exiting.")
+            break
+
+        first_pass = False
+
+        # Choose randomly from the first N remaining scenarios, where N starts
+        # with 1. If that one is already checked out, drop it from the candidate
+        # pool, double N, wait a bit and try again with a broader search. We do
+        # this instead of going through the list sequentially, to reduce the
+        # chance of many workers contending to checkout the same next scenario.
+        # With hundreds of workers, that can cause them to spend more time
+        # trying to checkout a scenario than actually running it. On the other
+        # hand, we start with small N in order to preferentially checkout the
+        # earliest scenarios in the queue.
+
+        to_run = list(scen_info.keys())
+        N = 1
+        rescan = False
+        while to_run and not rescan:
+            next_scen = random.randrange(min(N, len(to_run)))
+            scenario_name = to_run[next_scen]
+            if checkout(scenario_name):
+                # run this scenario, then start again with a fresh scenario list
                 scenario_args = (
-                    scenario_option_file_args + base_args + scenario_cmd_line_args
+                    scenario_option_file_args
+                    + scen_info[scenario_name]
+                    + scenario_cmd_line_args
                 )
-                if scenario_name not in already_run and checkout(scenario_name):
-                    # run this scenario, then start again at the top of the list
-                    ran.append(scenario_name)
-                    yield (scenario_name, scenario_args)
-                    all_done = False
-                    break
+                rescan = True
+                yield (scenario_name, scenario_args)
+            else:
+                logger.info(
+                    f"Tried to checkout scenario {scenario_name} but it was already in use."
+                )
+                # drop this scenario from the candidate pool
+                del to_run[next_scen]
+                # decide whether to rescan or widen the search space for next time
+                if N > 8 * len(to_run):
+                    # we've had 3+ failed checkouts after expanding the search
+                    # to the whole scenario list; try a fresher set of available
+                    # scenarios (scanning the dir is ~200 times more expensive
+                    # than trying a checkout, but may be needed once the pool is
+                    # mostly or completely tapped out)
+                    rescan = True
                 else:
-                    if scenario_name not in skipped and scenario_name not in ran:
-                        skipped.append(scenario_name)
-                        logger.info(
-                            "Skipping {} because it was already run.".format(
-                                scenario_name
-                            )
-                        )
-                # move on to the next candidate
-        # no more scenarios to run
-        if skipped and not ran:
-            logger.warning(
-                "Skipping all scenarios because they have already been solved. "
-                "If you would like to run these scenarios again, "
-                "please remove the {sq} directory or its contents. (rm -rf {sq})".format(
-                    sq=scenario_queue_dir
-                )
-            )
-        return
+                    # ~double the search space and wait a bit to reduce
+                    # contention. We approximately double rather than exactly, so
+                    # that the pool of workers will be spread across various
+                    # widths of search spaces, not stairstepped at 1, 2, 4, 8,
+                    # etc. (may not matter)
+                    N = int(N * (1.5 + random.random()) + 0.5)
+                    time.sleep(random.random() * 0.5)
+
+    # broke from the infinite loop because there were no more scenarios to run
+    return
 
 
 def parse_arg(arg, args=sys.argv[1:], **parse_kw):
@@ -294,7 +347,7 @@ def last_index(lst, val):
         return -1
 
 
-def get_scenario_dict():
+def read_scenario_list():
     # note: we read the list from the disk each time so that we get a fresher
     # version if the standard list is changed during a long solution effort.
     # This ignores comments in the scenario list (possibly starting mid-line),
