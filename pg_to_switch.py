@@ -770,7 +770,7 @@ def graph_color_tables(out_folder, gen_info):
 
 
 """
-testing: use gc and scen_settings_dict from main()
+testing: use scen_settings_dict from main()
 """
 
 
@@ -946,7 +946,11 @@ def gen_tables(
     generic_units = generic_units.merge(
         generic_gen_build_info(generic_units, first_value(scen_settings_dict)),
         on="Resource",
-        how="left",
+        # switched from left join to inner join in Apr 2026; general idea
+        # is to let zero-capacity generic projects go through if we get them
+        # from PowerGenome, but also acknowledge that there is no corresponding
+        # build plan to go into gen_build_predetermined.csv
+        # how="left",
     )
     units_by_model_year = (
         pd.concat([units_by_model_year[~generic], generic_units])
@@ -1017,9 +1021,17 @@ def gen_tables(
     # turn off "new_build" flag if set; those will be duplicated in
     # new_gens_by_build_year
     existing_gens["new_build"] = False
-    existing_gens_by_build_year = existing_gens.merge(
-        build_year_info, on="Resource", how="left"
-    )
+
+    # Merge build year info for existing units. From April 2026 onward, we allow
+    # existing gens with no capacity in any model year to carry through in
+    # gens_by_model_year, but drop them from gens_by_build_year so they won't
+    # show up in gen_build_predetermined (for which there's no valid info); that
+    # means using an inner join below instead of left. These are generally
+    # generic resources with no capacity, so they could be dropped from
+    # gens_by_model_year too, but we let them through since that best reflects
+    # what the user has setup; they may want to define gen_build_predetermined
+    # or build costs exogenously.
+    existing_gens_by_build_year = existing_gens.merge(build_year_info, on="Resource")
 
     # Create dataframe showing when the new generators can be built and
     # consolidating by build year instead of model year. This is simple, since
@@ -1050,12 +1062,18 @@ def gen_tables(
     # drop rows for existing gens with 0 capacity additions
     # (these didn't show up in MIP but do show up with ReEDS data)
     # TODO: check whether these are an error with ReEDS data
-    gens_by_build_year = gens_by_build_year.loc[
-        (gens_by_build_year["existing"] == 0)
-        | (gens_by_build_year["Existing_Cap_MW"] > 0)
-        | (gens_by_build_year["Existing_Cap_MWh"] > 0),
-        :,
-    ]
+    # Note: starting April 2026, we do not drop rows with 0
+    # Existing_Cap_MW or Existing_Cap_MWh because they are
+    # potentially needed to link up with unit-level data, for
+    # models that may cancel the scheduled retirement plan.
+    # But will this cause problems where these are defined
+    # for some models but retire too early?
+    # gens_by_build_year = gens_by_build_year.loc[
+    #     (gens_by_build_year["existing"] == 0)
+    #     | (gens_by_build_year["Existing_Cap_MW"] > 0)
+    #     | (gens_by_build_year["Existing_Cap_MWh"] > 0),
+    #     :,
+    # ]
 
     # Remove 0-capacity values for new_build gens (other code may expect NaNs instead)
     for col in ["Existing_Cap_MW", "Existing_Cap_MWh"]:
@@ -1129,7 +1147,7 @@ def eia_build_info(gc: GeneratorClusters):
     # don't have an online date so PG couldn't assign a retirement date)
     units = units.query("retirement_year.notna()")
 
-    # Use object attribute -- set in main() -- to determine if PG bug should be replicated
+    # Use gc.pg_unit_bug -- set in main() -- to determine if PG bug should be replicated
     if getattr(gc, "pg_unit_bug", False):
         units["true_retirement_year"] = units.loc[:, "retirement_year"]
         units["retirement_year"] = (
@@ -1984,7 +2002,7 @@ def short_fn(filename, target=None):
 # settings for testing
 settings_file = "pg/settings"
 results_folder = "/tmp/test"
-case_id = ["p1"] # p1, s4 or s20_1
+case_id = ["s20x1"] # p1, s4 or s20_1
 year = [2030]  # 2024 or 2030
 myopic = True
 pg_unit_bug = False
