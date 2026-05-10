@@ -1,10 +1,10 @@
 {
     "region": "us-east-2",
-    "ce_scenario_list": "in/2030/s20x1/scenarios_build.ra.txt",
+    "ce_scenario_list": "in/2030/ce/scenarios_build.ra.txt",
     "solve_ce": {
-        "jobName": "ec2-cap-exp-r8a",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-r8a-8-us-east-2b-job-queue",
+        "jobName": "solve-scenarios-ce",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "arrayProperties": {
             "size": 3
         },
@@ -25,7 +25,7 @@
                             ],
                             "command": [
                                 "--scenario-list",
-                                "in/2030/s20x1/scenarios_build.ra.txt",
+                                "in/2030/ce/scenarios_build.ra.txt",
                                 "--log-run"
                             ],
                             "name": "switch-solve-scenarios-weekly-container"
@@ -36,11 +36,11 @@
         }
     },
     "solve_ra": {
-        "jobName": "ec2-daily-c8a",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-c8a-us-east-2b-job-queue",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
+        "jobName": "solve-scenarios-ra",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "arrayProperties": {
-            "size": 199
+            "size": 500
         },
         "ecsPropertiesOverride": {
             "taskProperties": [
@@ -49,7 +49,7 @@
                         {
                             "command": [
                                 "--scenario-list",
-                                "in/2030/resource_adequacy/scenarios_split.ra.txt"
+                                "in/2030/ra/scenarios_split.ra.txt"
                             ],
                             "name": "switch-solve-scenarios-weekly-container",
                             "resourceRequirements": [
@@ -58,7 +58,7 @@
                                     "type": "VCPU"
                                 },
                                 {
-                                    "value": "1638",
+                                    "value": "1024",
                                     "type": "MEMORY"
                                 }
                             ],
@@ -74,8 +74,8 @@
     },
     "ra_add_difficult_timeseries": {
         "jobName": "ra-add-difficult-timeseries",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-r8a-8-us-east-2b-job-queue",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment:2",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:1",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
@@ -84,8 +84,8 @@
                             "command": [
                                 "python",
                                 "ra_add_difficult_timeseries.py",
-                                "in/2030/s20x1/scenarios_build.ra.txt",
-                                "in/2030/resource_adequacy/scenarios_split.ra.txt"
+                                "in/2030/ce/scenarios_build.ra.txt",
+                                "in/2030/ra/scenarios_split.ra.txt"
                             ],
                             "name": "aws-environment",
                             "resourceRequirements": [
@@ -106,8 +106,8 @@
     },
     "ra_iterate_aws": {
         "jobName": "ra-iterate",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/ec2-c8a-us-east-2b-job-queue",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment:2",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:1",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
