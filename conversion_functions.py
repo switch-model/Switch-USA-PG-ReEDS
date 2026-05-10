@@ -134,6 +134,86 @@ class LogFormatter(coloredlogs.ColoredFormatter):
         return colored_message
 
 
+# class LogFormatterTwoLineRunIn(coloredlogs.ColoredFormatter):
+#     """
+#     Shows a colored log message with a hanging indent.
+#     Assumes the message is the last element in the log line.
+#     """
+
+#     # precompiled regex for ANSI escape sequences
+#     ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+#     def __init__(self, width=90, **kwargs):
+#         args = dict(
+#             fmt="\n%(name)s %(message)s",
+#             level_styles={"warning": {"color": "red"}, "info": {"color": None}},
+#             field_styles={"name": {"color": "blue"}},
+#         )
+#         args.update(kwargs)
+#         super().__init__(**args)
+#         self.width = width
+
+#     def fill_by_paragraph(
+#         self, text, initial_indent="", subsequent_indent="", **kwargs
+#     ):
+#         paras = []
+#         for line in text.splitlines():
+#             if paras:  # after first line
+#                 initial_indent = subsequent_indent
+#             if line.strip():
+#                 paras.append(
+#                     textwrap.fill(
+#                         line,
+#                         initial_indent=initial_indent,
+#                         subsequent_indent=subsequent_indent,
+#                         **kwargs,
+#                     )
+#                 )
+#             else:
+#                 paras.append("")
+#         return "\n".join(paras)
+
+#     def format(self, record):
+#         # record.shortlevelname = "" if record.levelname == "INFO" else record.levelname+" "
+#         # return super().format(record)
+
+#         # add colon here so it gets colored
+#         record.name += ":"
+
+#         # color the message as normal, then add the level name to the msg part
+#         # if needed
+#         colored_message = super().format(record)
+#         msg = record.getMessage()
+
+#         if not msg:
+#             return colored_message
+
+#         if record.levelname != "INFO":
+#             # insert the levelname as part of the message (for attention
+#             # and coloring)
+#             new_msg = record.levelname + ": " + msg
+#             colored_message = colored_message.replace(msg, new_msg)
+#             msg = new_msg
+
+#         # Calculate visible prefix length, ignoring ANSI codes
+#         plain_message = self.ANSI_ESCAPE_RE.sub("", colored_message)
+#         prefix_len = plain_message.find(msg)
+#         if prefix_len < 0:
+#             return colored_message
+
+#         # Wrap the uncolored message, with a dummy indent of the right size
+#         # on the first line, then trim the indent and insert into colored
+#         # message
+#         wrapped = self.fill_by_paragraph(
+#             msg, width=self.width, initial_indent=" " * prefix_len, subsequent_indent=""
+#         )
+#         # Remove the first-line indent
+#         wrapped = wrapped[prefix_len:]
+#         colored_message = colored_message.replace(msg, wrapped, 1)
+
+#         return colored_message
+
+
 class LogFormatterTwoLine(coloredlogs.ColoredFormatter):
     """
     Shows a colored log message with module name on first line then message
@@ -427,6 +507,15 @@ def gen_info_table(gens, settings):
     gen_info["gen_variable_om"] = gen_info["Var_OM_Cost_per_MWh_mean"].fillna(0)
     cols.append("gen_variable_om")
 
+    # startup should only be specified for fuel-based plants; we just assume if
+    # a non-zero value is provided, it should be passed through, otherwise left
+    # blank
+    if "Start_Fuel_MMBTU_per_MW" in gen_info.columns:
+        gen_info["gen_startup_fuel"] = gen_info["Start_Fuel_MMBTU_per_MW"].replace(
+            0, None
+        )
+        cols.append("gen_startup_fuel")
+
     # both VRE (renewables) and FLEX (demand response) have limiting profiles
     gen_info["gen_is_variable"] = (
         (gen_info["VRE"] > 0) | (gen_info["FLEX"] > 0)
@@ -450,7 +539,6 @@ def gen_info_table(gens, settings):
         "Up_Time": "gen_min_uptime",
         "Down_Time": "gen_min_downtime",
         "Start_Cost_per_MW": "gen_startup_om",
-        "Start_Fuel_MMBTU_per_MW": "gen_startup_fuel",
         # gen_self_discharge_rate is not defined in main Switch 2.0.10 or earlier. Used by UCSD?
         "Self_Disch": "gen_self_discharge_rate",
         "tonne_co2_captured_mwh": "gen_ccs_load_mwh_per_tCO2",
