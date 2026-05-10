@@ -50,6 +50,9 @@ for tag in ("", "_prm"):
     # gen_info_low_fossil.loc[fossil_mask, "gen_variable_om"] += 80
 
     # prevent age- or economics-based retirement of fossil plants
+    # (any that are online as of the date of the model setup -- i.e., on the EIA
+    # 860M "Operating" page with online status -- will continue running through
+    # the study period)
     gen_info_no_retire = gen_info.copy()
     gen_info_no_retire.loc[fossil_mask, "gen_can_retire_early"] = 0
     gen_info_no_retire.loc[fossil_mask, "gen_max_age"] = 1000
@@ -86,7 +89,8 @@ for tag in ("", "_prm"):
     # if this is a low_growth case and there already exists a regular case with
     # the same name, create loads.low_growth.csv in the regular case, using the
     # same time sampling as the regular case, but with peak and average matched
-    # to this case
+    # to this case (we can't just link back to loads.csv in the _low_growth folder
+    # because it uses different sample dates)
     reg_dir = in_dir.with_name(in_dir.name.replace("_low_growth", ""))
     if in_dir != reg_dir and reg_dir.exists():
         load = {}
