@@ -28,7 +28,7 @@
 # prevents small infeasibilities in chained solutions
 # --solver "/Applications/copt71/bin/coptampl" --solver-options-string "lp:method=2 lp:crossover=0 tech:outlev=1" 
 # --solver "/Applications/copt80/bin/coptampl" --solver-options-string "lpmethod=2 crossover=1"
---solver coptampl --solver-options-string "lpmethod=2 crossover=1"
+--solver coptampl --solver-options-string "LpMethod=2 Crossover=1 Scaling=1 BarHomogeneous=1 Presolve=2"
 
 # --solver appsi_highs --solver-options-string "solver=ipm parallel=on run_crossover=off threads=10"
 
