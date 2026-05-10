@@ -235,7 +235,7 @@ class NLSolver(SystemCallSolver):
 
         t_start = time.time()
 
-        print(f"nl_solver: writing nl_file {nl_file}")
+        print(f"nl_solver: will create nl_file {nl_file}", flush=True)
         model_info = write_nl_file(model, nl_file)
 
         # Gather options together
@@ -251,7 +251,7 @@ class NLSolver(SystemCallSolver):
             str(k) + ("" if v is True or v == "" else f"={v}") for k, v in opt.items()
         ]
 
-        print("nl_solver: calling solver")
+        print("nl_solver: calling solver", flush=True)
         if os.path.exists(sol_file):
             os.remove(sol_file)
 
@@ -268,7 +268,7 @@ class NLSolver(SystemCallSolver):
 
         # write solution to Pyomo vars in same order as sent to solver
         if load_solutions:
-            print(f"nl_solver: loading solution into model")
+            print(f"nl_solver: loading solution into model", flush=True)
             solver_msg = process_sol_file(model, sol_file, model_info)
             # take a guess if we got this far
         else:
@@ -283,7 +283,7 @@ class NLSolver(SystemCallSolver):
         solver_status = SolverStatus.ok
 
         # ---- build a minimal SolverResults object -----------------------------
-        print(f"nl_solver: preparing results object")
+        print(f"nl_solver: preparing results object", flush=True)
         results = SolverResults()
         results.solver.name = "nl_solver"
         results.solver.status = solver_status
@@ -295,7 +295,7 @@ class NLSolver(SystemCallSolver):
         results.problem.sense = model_info["objective_sense"]
         results.solver.wallclock_time = time.time() - t_start
 
-        print(f"nl_solver: returning results: {results}")
+        print(f"nl_solver: returning results: {results}", flush=True)
         if not keepfiles:
             shutil.rmtree(tempdir)
         return results
@@ -365,7 +365,7 @@ def write_nl_file(model, file):
     # the real header
     model_info = {}
 
-    print("nl_solver: building variable list")
+    print("nl_solver: building variable list", flush=True)
     model_info["binary_variable_count"], model_info["integer_variable_count"], vars = (
         vars_for_solver(model)
     )
@@ -415,7 +415,7 @@ def write_nl_file(model, file):
     # TODO: therefore, access each component only once, including the objective,
     # which gives us the flexibility to use delayed generation if we want to
     # further minimize memory, or use full contruction so we can get duals, etc.
-    print("nl_solver: building constraint list")
+    print("nl_solver: building constraint list", flush=True)
     for i, c in enumerate(
         model.component_data_objects(pyo.Constraint, active=True, descend_into=True)
     ):
@@ -443,7 +443,7 @@ def write_nl_file(model, file):
     model_info["constraint_coefficient_count"] = len(c_var_coeff)
 
     # gather and count objective terms
-    print("nl_solver: gathering objective terms")
+    print("nl_solver: gathering objective terms", flush=True)
     # number of vars referenced in objective n (for the array data type, we
     # assume in worst case all variables in the problem could appear in one
     # objective)
@@ -477,7 +477,7 @@ def write_nl_file(model, file):
     # use the optimization sense from the last active objective for reporting
     model_info["objective_sense"] = o_sense[-1]
 
-    print(f"nl_solver: writing NL file {file}")
+    print(f"nl_solver: writing NL file {file}", flush=True)
     with open(file, "w") as nl:
         nl.write(header_str(model_info))
 
