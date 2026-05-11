@@ -10,7 +10,7 @@ def define_components(m):
         "switch_model.reporting",
         "study_modules.unserved_load",
         "study_modules.planning_reserves_extreme_days",
-        "study_modules.report_zonal_dispatch",
+        "study_modules.report_zonal_total_dispatch",
     }
     for module in m.get_modules():
         if hasattr(module, "post_solve") and module.__name__ not in allowed_post_solve:
