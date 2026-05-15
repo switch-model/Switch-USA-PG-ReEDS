@@ -7,6 +7,7 @@ switch_model.energy_sources.properties
 # switch_model.generators.core.dispatch
 # patched versions
 study_modules.generators_core_build
+study_modules.gen_amortization_period
 study_modules.generators_core_dispatch
 switch_model.reporting
 switch_model.generators.core.commit.operate
@@ -34,5 +35,5 @@ study_modules.gen_annual_availability_limits
 # allow unserved load (one zone comes out infeasible in 2024)
 # study_modules.unserved_load
 # uncomment the next two to reduce Pyomo memory (experimental):
-# study_modules.nl_solver
-# study_modules.delayed_expressions
+study_modules.nl_solver
+study_modules.delayed_expressions
