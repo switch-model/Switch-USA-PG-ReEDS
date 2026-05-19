@@ -37,6 +37,12 @@ model_adjustment_scripts:
     script: ../../adjust/add_ee_info.py
     # run before add_extreme_days to index off normal peak load, not super-peak
     order: 2
+  Convert to going-forward costs:
+    # apply new-build generator costs to EIA planned gens in 2026 or later and
+    # zero out transmission costs
+    script: ../../adjust/make_going_forward_costs.py
+    # updates gen_build_costs.csv and trans_params.csv; should be pretty independent of other scripts
+    order: 3
   Increase timepoint duration to 2 hours:
     script: ../../adjust/increase_timepoint_duration.py
     # run before add_extreme_days; alters some files used by that script
