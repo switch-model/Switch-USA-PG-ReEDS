@@ -227,6 +227,30 @@ inflator = (
 )
 state_prices["price_real"] = state_prices["price"] * state_prices["year"].map(inflator)
 
+# fill missing years
+
+price_col = "price_real"
+state_fuels = state_prices[["st", "fuel"]].drop_duplicates()
+years = state_prices[["year"]].drop_duplicates()
+full_index = pd.MultiIndex.from_frame(
+    state_fuels.merge(years, how="cross")[["st", "fuel", "year"]]
+)
+state_prices = (
+    state_prices.set_index(["st", "fuel", "year"]).reindex(full_index).sort_index()
+)
+
+# report any missing values that will be filled
+missing = state_prices[state_prices[price_col].isna()].index.to_frame()
+if not missing.empty:
+    print("Filling the following fuel prices from prior years:")
+    print(missing.to_string(index=False))
+
+# Forward-fill within each state-fuel group
+state_prices[price_col] = state_prices.groupby(level=["st", "fuel"])[price_col].ffill()
+# drop the helper index
+state_prices = state_prices.reset_index()
+
+
 # make hist5 and peak forecasts
 fcst_info = [("hist5", state_prices["year"].unique())] + [
     (f"y{y}", [y]) for y in range(start_year, end_year + 1)

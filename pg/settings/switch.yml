@@ -37,6 +37,10 @@ model_adjustment_scripts:
     script: ../../adjust/add_ee_info.py
     # run before add_extreme_days to index off normal peak load, not super-peak
     order: 2
+  Add ITC data:
+    # creates itc.csv with data from `itc` key below
+    script: ../../adjust/add_itc_data.py
+    order: 2
   Convert to going-forward costs:
     # apply new-build generator costs to EIA planned gens in 2026 or later and
     # zero out transmission costs
@@ -68,3 +72,15 @@ model_adjustment_scripts:
 # https://icapcarbonaction.com/en/ets/usa-washington-cap-and-invest-program
 # also see  for which policies apply
 carbon_cost_dollar_per_tco2: 33.43
+
+# solar: 175 MW based on midpoint of 216-240 GW(dc), converted to AC with 1.3
+# ILR.
+# https://www.woodmac.com/news/opinion/the-state-of-safe-harbouring-a-strategic-outlook-for-us-utility-scale-solar-development/
+# Crux (below) estimate 145 GW for solar, but Wood Mac seems more authoritative.
+# wind: we assume all currently planned wind in EIA 860m as of March 2026 (23167
+# MW winter capacity) is safe-harbored; this aligns with Crux estimate of 23 GW.
+# https://www.cruxclimate.com/insights/developers-and-manufacturer-takeaways-from-2025-market-intelligence-report
+itc:
+  # energy source, start year, end year, ITC rate, eligible MW (or omit for infinite)
+  - [sun, 2026, 2030, 0.3, 175000]
+  - [wind, 2026, 2030, 0.3, 23167]
