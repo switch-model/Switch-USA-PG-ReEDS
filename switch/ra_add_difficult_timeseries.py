@@ -213,6 +213,17 @@ def main(options):
         file = Path(ce_scens[ce_scen]["inputs_dir"]) / f
         return pd.read_csv(file, na_values=".", low_memory=False)
 
+    def read_ce_prm_in(ce_scen):
+        # special handling for reading "planning_reserve_margin.csv", which may
+        # not exist yet
+        try:
+            df = read_ce_in(ce_scen, "planning_reserve_margin.csv")
+        except FileNotFoundError:
+            df = pd.DataFrame(
+                columns=["LOAD_ZONE", "TIMESERIES", "planning_reserve_margin"]
+            )
+        return df
+
     def write_ce_in(ce_scen, f, df):
         # write a file in the ce input directory
         file = Path(ce_scens[ce_scen]["inputs_dir"]) / f
@@ -363,11 +374,7 @@ def main(options):
                 ce_info["status"] = adequate
             continue
 
-        ce_prm_timeseries = (
-            read_ce_in(ce_scen, "planning_reserve_margin.csv")["TIMESERIES"]
-            .unique()
-            .astype(str)
-        )
+        ce_prm_timeseries = read_ce_prm_in(ce_scen)["TIMESERIES"].unique().astype(str)
         candidates = unserved_load.loc[
             ~(unserved_load["timeseries"].astype("str") + "_prm").isin(
                 ce_prm_timeseries
@@ -405,7 +412,7 @@ def main(options):
         # version of the CE model or already added all the days with unserved
         # load ("stalled" model), incrementally increase PRM level instead (but
         # no higher than options.max_prm_level)
-        prm = read_ce_in(ce_scen, "planning_reserve_margin.csv")
+        prm = read_ce_prm_in(ce_scen)
         if (
             ce_info["status"] == stalled
             or len(prm["TIMESERIES"].unique()) >= options.max_prm_timeseries_count
@@ -508,11 +515,7 @@ def main(options):
             write_ce_in(ce_scen, f, add_prm_rows(ce_df, ra_df, col))
 
         # add the new timeseries to the PRM system
-        f = "planning_reserve_margin.csv"
-        try:
-            ce_df = read_ce_in(ce_scen, f)
-        except FileNotFoundError:
-            ce_df = pd.DataFrame()
+        ce_df = read_ce_prm_in(ce_scen)
         ra_df = pd.DataFrame(
             {
                 "LOAD_ZONE": read_ra_in(ra_scen, "load_zones.csv")["LOAD_ZONE"],
@@ -520,7 +523,11 @@ def main(options):
                 "planning_reserve_margin": options.initial_prm,
             }
         )
-        write_ce_in(ce_scen, f, add_prm_rows(ce_df, ra_df, "TIMESERIES"))
+        write_ce_in(
+            ce_scen,
+            "planning_reserve_margin.csv",
+            add_prm_rows(ce_df, ra_df, "TIMESERIES"),
+        )
 
     # report current status and save in ce model outputs dir (ra_status.txt)
     print("Status of most recent model runs:")
