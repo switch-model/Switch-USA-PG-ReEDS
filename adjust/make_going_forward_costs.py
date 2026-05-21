@@ -87,7 +87,7 @@ cost_crosswalk = gen_crosswalk.merge(
     gen_costs, left_on="new_gen_proj", right_on="GENERATION_PROJECT"
 )
 assert (
-    len(cost_crosswalk["BUILD_YEAR"].unique()) == 1
+    len(cost_crosswalk["BUILD_YEAR"].unique()) <= 1
 ), "Found costs for multiple years."
 
 # add the connect cost to the capex per MW
@@ -113,9 +113,10 @@ unmatched = gen_costs.query(
 )
 if not unmatched.empty:
     print(
-        f"The following {len(unmatched)} generation projects do not "
-        "have costs assigned because they do not have a matching new-build "
-        "project definition:"
+        f"The following {len(unmatched)} generation projects have not had "
+        "costs assigned because they do not have matching new-build project "
+        "definitions: ",
+        end="",
     )
     print(
         ", ".join(
