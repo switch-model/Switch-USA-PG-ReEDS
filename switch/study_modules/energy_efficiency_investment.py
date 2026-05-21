@@ -1,6 +1,3 @@
-# Copyright (c) 2015-2024 The Switch Authors. All rights reserved.
-# Licensed under the Apache License, Version 2, which is in the LICENSE file.
-
 """
 Allows load to be reduced by a specified amount each timepoint,
 in exchange for an annual payment.
@@ -12,6 +9,7 @@ years afterward (possibly multiple opportunities per zone/period)
 
 import os
 from pyomo.environ import *
+from switch_model.reporting import write_table
 
 
 def define_components(m):
@@ -73,6 +71,33 @@ def define_components(m):
         m.Zone_Power_Withdrawals.append("EEDemandReduction")
 
     m.Cost_Components_Per_Period.append("EEAnnualCost")
+
+
+def post_solve(m, outputs_dir):
+    write_table(
+        m,
+        m.LOAD_ZONES,
+        m.PERIODS,
+        output_file=os.path.join(outputs_dir, "energy_efficiency_investment.csv"),
+        headings=[
+            "load_zone",
+            "period",
+            "DeployEEShare",
+            "DeployEEMW",
+            "DeployEEGWh_per_year",
+        ],
+        values=lambda m, z, p: (
+            z,
+            p,
+            m.DeployEEShare[z, p],
+            max(-value(m.EEDemandReduction[z, tp]) for tp in m.TPS_IN_PERIOD[p]),
+            -0.001
+            * sum(
+                m.EEDemandReduction[z, tp] * m.tp_weight_in_year[tp]
+                for tp in m.TPS_IN_PERIOD[p]
+            ),
+        ),
+    )
 
 
 def load_inputs(m, switch_data, inputs_dir):

@@ -1,6 +1,3 @@
-# Copyright (c) 2015-2024 The Switch Authors. All rights reserved.
-# Licensed under the Apache License, Version 2, which is in the LICENSE file.
-
 """
 Defines a simple Demand Response Shift Service for the Switch model.
 Load in a certain load zone may be shifted between timepoints belonging to the
@@ -9,14 +6,13 @@ demand shifting. This does not include a Shed Service (curtailment of load),
 nor a Shimmy Service (fast dispatch for load following or regulation).
 
 This version is identical to switch_model.balancing.demand_response.simple,
-except that it adds an optional annual cost to deploy the DR service.
+except that it adds an optional annual cost to deploy the DR service and
+reports the capacity provided.
 """
 
 import os
 from pyomo.environ import *
-
-dependencies = "switch_model.timescales", "switch_model.balancing.load_zones"
-optional_dependencies = "switch_model.transmission.local_td"
+from switch_model.reporting import write_table
 
 
 def define_components(m):
@@ -102,6 +98,23 @@ def define_components(m):
         m.Zone_Power_Withdrawals.append("ShiftDemand")
 
     m.Cost_Components_Per_Period.append("DRAnnualCost")
+
+
+def post_solve(m, outputs_dir):
+    write_table(
+        m,
+        m.LOAD_ZONES,
+        m.PERIODS,
+        output_file=os.path.join(outputs_dir, "demand_response_investment.csv"),
+        headings=["load_zone", "period", "DeployDRShare", "DeployDRMW"],
+        values=lambda m, z, p: (
+            z,
+            p,
+            m.DeployDRShare[z, p],
+            m.DeployDRShare[z, p]
+            * max(m.dr_shift_down_limit[z, tp] for tp in m.TPS_IN_PERIOD[p]),
+        ),
+    )
 
 
 def load_inputs(m, switch_data, inputs_dir):
