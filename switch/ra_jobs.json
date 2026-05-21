@@ -13,22 +13,56 @@
                 {
                     "containers": [
                         {
-                            "resourceRequirements": [
-                                {
-                                    "type": "VCPU",
-                                    "value": "4"
-                                },
-                                {
-                                    "type": "MEMORY",
-                                    "value": "32256"
-                                }
-                            ],
+                            "name": "switch-solve-scenarios-container",
                             "command": [
                                 "--scenario-list",
                                 "in/2030/ce/scenarios_build.ra.txt",
                                 "--log-run"
                             ],
-                            "name": "switch-solve-scenarios-weekly-container"
+                            "resourceRequirements": [
+                                {
+                                    "type": "VCPU",
+                                    "value": "8"
+                                },
+                                {
+                                    "type": "MEMORY",
+                                    "value": "32768"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "solve_ce_eval": {
+        "jobName": "solve-scenarios-ce-eval",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
+        "arrayProperties": {
+            "size": 9
+        },
+        "ecsPropertiesOverride": {
+            "taskProperties": [
+                {
+                    "containers": [
+                        {
+                            "name": "switch-solve-scenarios-container",
+                            "command": [
+                                "--scenario-list",
+                                "in/2030/ce/scenarios_eval.txt",
+                                "--log-run"
+                            ],
+                            "resourceRequirements": [
+                                {
+                                    "type": "VCPU",
+                                    "value": "8"
+                                },
+                                {
+                                    "type": "MEMORY",
+                                    "value": "32768"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -47,18 +81,18 @@
                 {
                     "containers": [
                         {
+                            "name": "switch-solve-scenarios-container",
                             "command": [
                                 "--scenario-list",
                                 "in/2030/ra/scenarios_split.ra.txt"
                             ],
-                            "name": "switch-solve-scenarios-weekly-container",
                             "resourceRequirements": [
                                 {
                                     "value": "1",
                                     "type": "VCPU"
                                 },
                                 {
-                                    "value": "1024",
+                                    "value": "2048",
                                     "type": "MEMORY"
                                 }
                             ],
@@ -74,7 +108,7 @@
     },
     "ra_add_difficult_timeseries": {
         "jobName": "ra-add-difficult-timeseries",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:1",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:2",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "ecsPropertiesOverride": {
             "taskProperties": [
@@ -94,7 +128,7 @@
                                     "type": "VCPU"
                                 },
                                 {
-                                    "value": "32256",
+                                    "value": "20480",
                                     "type": "MEMORY"
                                 }
                             ]
@@ -106,7 +140,7 @@
     },
     "ra_iterate_aws": {
         "jobName": "ra-iterate",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:1",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/aws-environment-fargate-arm:2",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "ecsPropertiesOverride": {
             "taskProperties": [
@@ -124,7 +158,7 @@
                                     "type": "VCPU"
                                 },
                                 {
-                                    "value": "1638",
+                                    "value": "2048",
                                     "type": "MEMORY"
                                 }
                             ],
