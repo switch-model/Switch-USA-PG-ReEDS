@@ -23,7 +23,7 @@ import scipy
 import sqlalchemy as sa
 import typer
 
-from joblib import Memory
+# from joblib import Memory
 
 from powergenome.generators import (
     GeneratorClusters,
@@ -93,9 +93,10 @@ from conversion_functions import (
 from conversion_functions import LogFormatterTwoLine as LogFormatter
 
 # cache some functions to speed up repeated execution
-memory = Memory("cache", verbose=0)
-make_generator_variability = memory.cache(make_generator_variability)
-kmeans_time_clustering = memory.cache(kmeans_time_clustering)
+# (doesn't seem to be very effective and consumes a lot of disk space)
+# memory = Memory("cache", verbose=0)
+# make_generator_variability = memory.cache(make_generator_variability)
+# kmeans_time_clustering = memory.cache(kmeans_time_clustering)
 
 
 # turn on info-level logging with colored messages at the root level
@@ -882,9 +883,40 @@ def gen_tables(
         # identify storage gens for the next few steps
         storage_gens = (gen_df["STOR"] > 0).astype(bool)
 
+        # TODO: use code like this (from pg.nrelatb.atb_fixed_var_om_existing)
+        # to copy capex_mw, capex_mwh and regional_cost_multiplier from
+        # new-build gens to existing ones, to get a better estimate of total
+        # system costs.
+
+        # techs = {}
+        # missing_techs = []
+        # for eia, atb in settings["eia_atb_tech_map"].items():
+        #     if not isinstance(atb, list):
+        #         atb = [atb]
+        #     missing = True
+        #     for tech_detail in atb:
+        #         tech, detail = tech_detail.split("_")
+        #         if not atb_hr_df.query(
+        #             "technology == @tech and tech_detail == @detail"
+        #         ).empty:
+        #             techs[eia] = [tech, detail]
+        #             missing = False
+        #             break
+        #     if missing is True and eia in results["technology"].unique():
+        #         missing_techs.append(eia)
+
+        # if missing_techs:
+        #     s = (
+        #         f"The EIA technologies {missing_techs} do not have an ATB counterpart with a "
+        #         "valid heat rate. Not all ATB technologies *should* have a valid heat rate "
+        #         "(e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your "
+        #         "settings file(s) if you think one of these technologies should be mapped to "
+        #         "an ATB technology with a valid heat rate."
+        #     )
+        #     logger.info(s)
+
         # Use $0 as capex and fixed O&M for existing plants (our settings don't
         # have all of these for existing plants as of Mar 2024)
-        # sometimes
         per_mw = ["capex_mw", "Fixed_OM_Cost_per_MWyr"]
         per_mwh = ["capex_mwh", "Fixed_OM_Cost_per_MWhyr"]
         # some may be missing for no-new-build cases, so make sure they're there
