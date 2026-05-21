@@ -163,14 +163,19 @@ for tag in ("", "_prm"):
         "high_fossil_build": [  # make build plan
             "--input-alias gen_info.csv=gen_info.high_fossil.csv",
         ],
-        "high_renewable_build": [
-            "--include-module study_modules.solar_push --total-solar-gw 500",
-        ],
-        "high_renewable_flex_build": [
-            "--include-module study_modules.solar_push --total-solar-gw 500",
-            # "--input-alias gen_info.csv=gen_info.flex.csv",
+        "least_cost_build": [
             "--include-module study_modules.demand_response_investment",
-            "--include-module study_modules.efficiency_investment",
+            "--include-module study_modules.energy_efficiency_investment",
+        ],
+        "clean_400_build": [
+            "--include-module study_modules.solar_push --total-solar-gw 400",
+            "--include-module study_modules.demand_response_investment",
+            "--include-module study_modules.energy_efficiency_investment",
+        ],
+        "clean_500_build": [
+            "--include-module study_modules.solar_push --total-solar-gw 500",
+            "--include-module study_modules.demand_response_investment",
+            "--include-module study_modules.energy_efficiency_investment",
         ],
     }
 
@@ -180,12 +185,11 @@ for tag in ("", "_prm"):
     # for this study, these are the same as the build cases, except we turn off
     # the anti-clean-power bias in the fossil case
     eval_cases = {
-        "high_fossil": [
+        c.replace("_build", ""): [
             s.replace("gen_info.high_fossil.csv", "gen_info.no_retire.csv")
-            for s in build_cases["high_fossil_build"]
-        ],
-        "high_renewable": build_cases["high_renewable_build"].copy(),
-        "high_renewable_flex": build_cases["high_renewable_flex_build"].copy(),
+            for s in args
+        ]
+        for c, args in build_cases.items()
     }
     # reuse plan from correct output directory (e.g., out/2030/s20x1/high_renewable)
     for c, args in eval_cases.items():
