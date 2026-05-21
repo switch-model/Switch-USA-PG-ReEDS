@@ -280,6 +280,10 @@ def define_components(m: AbstractModel):
     # for each zone, find all requirements groups (requirements in effect in
     # some zone with some overlap with some member of an eligiblity group in
     # this zone) (TODO: update this comment)
+    # TODO: update this to use a more traditional method of constructing
+    # a dictionary, then using that to construct the set. The current method
+    # gives numerous warnings for duplicate items added to the set before
+    # Pyomo 6.9
     @m.BuildAction()
     def populate_requirements_groups(m):
         # Scan RPS zones to find all requirements groups (unique combinations of

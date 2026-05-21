@@ -3,8 +3,8 @@
 
 def define_components(m):
     allowed_post_solve = {
-        # These modules report info that is needed even for daily/weekly models, but some
-        # also have their own flags to reduce the output more finely
+        # These modules report info that is needed even for daily/weekly models,
+        # and/or have their own flags to reduce the output more finely
         "study_modules.generators_core_dispatch",
         "switch_model.generators.core.dispatch",
         "switch_model.reporting",

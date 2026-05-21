@@ -22,6 +22,7 @@ for details on available solvers.
 For proprietary solvers, you will also need to obtain and install a license.
 
 TODO: handle infeasible or unbounded models
+TODO: don't go down path that leads to "component is out of sync" when indexed constraint is like (0 <= 100)
 
 TODO: maybe implement this as a model writer instead of a solver via
 @WriterFactory.register('nl', doc). (see notes at end of file)
@@ -416,6 +417,7 @@ def write_nl_file(model, file):
     # which gives us the flexibility to use delayed generation if we want to
     # further minimize memory, or use full contruction so we can get duals, etc.
     print("nl_solver: building constraint list", flush=True)
+    last_time = time.time()
     for i, c in enumerate(
         model.component_data_objects(pyo.Constraint, active=True, descend_into=True)
     ):
@@ -432,6 +434,9 @@ def write_nl_file(model, file):
         c_term_count.append(len(repn.linear_coefs))
         c_var_num.extend(var_num[id(x)] for x in repn.linear_vars)
         c_var_coeff.extend(float(x) for x in repn.linear_coefs)
+        if time.time() > last_time + 10:
+            print(f"nl_solver: processed {i+1:,} constraints", flush=True)
+            last_time = time.time()
 
     model_info["constraint_count"] = len(c_term_count)
     model_info["constraint_range_count"] = sum(
