@@ -236,7 +236,6 @@ class NLSolver(SystemCallSolver):
 
         t_start = time.time()
 
-        print(f"nl_solver: will create nl_file {nl_file}", flush=True)
         model_info = write_nl_file(model, nl_file)
 
         # Gather options together
@@ -749,20 +748,35 @@ results = self.process_output(self._rc)   # self._rc was stored by self._apply_s
 """
 
 """
-NOTES ON PARALLEL GENERATION OF CONSTRAINT DATA
-This will not be easy because process forking is not available on Windows and is
-considered unsafe on macOS. So spawning may be needed instead. But spawning
-requires pickling any context data to pass it to the process, and Pyomo models
-(specifically the lambdas we use for rules, but maybe other elements) can't be
-pickled to do this. So we'd have to build the model and variable list separately
-in each worker as background data, then call the workers with constraint names
-and indices to get chunks of data to add to the constraint arrays. That should
-work, especially since model construction is quite fast with the delayed
-expressions and constraints. But it will be tough to setup and will depend on
-sharp determinism between the different models (i.e., constraint and var
-elements created in exactly the same order in each one). It will also require
-extra memory for each process, so we'll probably want to squeeze the model
-memory down further, e.g., with delayed generation of the objective expression.
+NOTES ON PARALLEL GENERATION OF CONSTRAINT DATA This will not be easy because
+process forking is not available on Windows and is considered unsafe on macOS.
+So spawning may be needed instead. But spawning requires pickling any context
+data to pass it to the process, and Pyomo models (specifically the lambdas we
+use for rules, but maybe other elements) can't be pickled to do this.
+multiprocess/dill can do this, but take more time and memory than single-thread
+construction of the model. ** But they might work better if we defined
+__getstate__ and __setstate__ methods for delayed expressions and constraints?
+Or maybe we can find a way to pass just the relevant elements of the model
+through when setting up the workers? (i.e., Set and Param components with data,
+defining rules for Expressions and Constraints, m.options, and nothing else, i.e.,
+create a "mock" model that can be passed efficiently with dill.) Otherwise, any
+parallelism will require passing in a "construct new, identical model" function,
+which we can use to setup the workers (see below).
+
+So we probably have to build the model and variable list separately in each
+worker as background data, then call the workers with constraint names and
+indices to get chunks of data to add to the constraint arrays. That should work
+for ~4 workers plus main thread, since model construction is quite fast with the
+delayed expressions and constraints (about 11s, 1 GB for a model that will need
+90s to construct constraint list, 5-6 GB in solver and 155s in solver). But it
+will be tough to setup and will depend on sharp determinism between the
+different models (i.e., constraint and var elements created in exactly the same
+order in each one). It will also require extra memory for each process, so we
+may want to squeeze the model memory down further, e.g., with delayed generation
+of the objective expression. Workers will also each need to make their own var
+-> varnum mapping. Once this is setup, it may work to use multiprocessing
+starmap for all the indexes of each component to get back the data to append to
+the constraint list.
 
 As a starting point for parallel constraint processing, you could use `for comp
 in model.component_objects(pyo.Constraint, active=True, descend_into=True):`
