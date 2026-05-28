@@ -163,16 +163,11 @@ for tag in ("", "_prm"):
         "high_fossil_build": [  # make build plan
             "--input-alias gen_info.csv=gen_info.high_fossil.csv",
         ],
-        "least_cost_build": [
-            "--include-module study_modules.demand_response_investment",
-            "--include-module study_modules.energy_efficiency_investment",
-        ],
-        "clean_400_build": [
-            "--include-module study_modules.solar_push --total-solar-gw 400",
-            "--include-module study_modules.demand_response_investment",
-            "--include-module study_modules.energy_efficiency_investment",
-        ],
-        "clean_500_build": [
+        # "least_cost_build": [
+        #     "--include-module study_modules.demand_response_investment",
+        #     "--include-module study_modules.energy_efficiency_investment",
+        # ],
+        "clean_build": [
             "--include-module study_modules.solar_push --total-solar-gw 500",
             "--include-module study_modules.demand_response_investment",
             "--include-module study_modules.energy_efficiency_investment",
