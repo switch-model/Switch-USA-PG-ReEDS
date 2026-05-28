@@ -1,4 +1,6 @@
 import os, math
+from collections import defaultdict
+from types import SimpleNamespace
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -11,15 +13,17 @@ from switch_model.utilities import unique_list
 """
 This module models regional RPS/CES compliance by tracking REC production from
 eligible generators. Each generator is assigned to an "eligibility group",
-identifying all the RPS/CES programs that it is eligible to participate in.
-Generation from each eligibility group may either create local RECs for programs
-that cover the generator's zone, or be exported to other requirements groups as
-bundled RECs, which require matching transmission flows, or unbundled RECs,
-which are tracked by period without transmission constraints. RECs delivered to
-a requirements group (a set of RPS/CES programs covering some geographic region)
-may support all eligible RPS/CES programs represented by that group, e.g., the
-same RECs can be used for both RPS and CES in a particular state, if they are
-eligible for both.
+identifying all the RPS/CES programs that it is eligible to participate in. Sets
+of RPS/CES programs covering a particular geographic region are labeled as
+"requirements groups". Generation from each eligibility group may either create
+local RECs for programs that cover the generator's zone, or be exported to one
+or more requirements groups as bundled RECs (BRECs) or unbundled RECs (URECs).
+BRECs are tracked for each timepoint and require matching transmission flows.
+URECs are tracked by period without transmission constraints. RECs delivered to
+a requirements group may support all eligible RPS/CES programs included in that
+group, e.g., a requirements group could consist of both RPS and CES programs in
+a paritcular state, and then the same RECs can be used for both simultaneously
+if the plant has been marked eligible for both.
 
 Distributed generation and VPP generators (interruptible loads)
 (gen_is_distributed or gen_is_vpp) are subtracted from load before the RPS
@@ -37,6 +41,342 @@ requirements group.
 Note: this module runs best with Pyomo 6.8 or later; earlier versions will give
 a lot of warnings about adding duplicate items to sets via Set.add().
 """
+
+
+def progs_to_group(progs):
+    """
+    Turn a set of RPS programs into a stable group name. `progs` contains either
+    RPS program names or tuples of (RPS program, local flag, bundled flag,
+    unbundled flag).
+    """
+    if progs:
+        if not isinstance(progs, list):
+            progs = list(progs)
+        if isinstance(progs[0], tuple):
+            return " / ".join(
+                sorted(
+                    pr
+                    + " "
+                    + "+".join(
+                        (["local"] if l else [])
+                        + (["BREC"] if b else [])
+                        + (["UREC"] if u else [])
+                    )
+                    for pr, l, b, u in progs
+                )
+            )
+        elif isinstance(progs[0], str):
+            return " / ".join(sorted(pr for pr in progs))
+    return ""
+
+
+def sorted_tuple(values):
+    return tuple(sorted(values))
+
+
+def sorted_tuple_dict(d):
+    return defaultdict(tuple, {key: sorted_tuple(values) for key, values in d.items()})
+
+
+def make_pyomo_compatible(ns):
+    """
+    Convert attributes in namespace `ns` into Pyomo-compatible initializers, in
+    place. (Pyomo ordered Sets cannot be initialized from raw Python sets.)
+    """
+    for attr, val in vars(ns).items():
+        if isinstance(val, set):
+            setattr(ns, attr, sorted_tuple(val))
+        elif isinstance(val, defaultdict) and val.default_factory is set:
+            setattr(ns, attr, sorted_tuple_dict(val))
+
+
+def build_rps_policy_topology(m):
+    """
+    Build all derived RPS/CES topology tables in one pass. Pyomo components are
+    initialized from this cache instead of repeating similar scans in multiple
+    BuildActions.
+    """
+    t = SimpleNamespace(
+        zone_reqs=defaultdict(set),
+        zones_in_rps_program_period=defaultdict(set),
+        gens_in_rps_program_period=defaultdict(set),
+        rps_gens_in_period=defaultdict(set),
+        rps_programs_for_gen_period=defaultdict(set),
+        create_local_recs={},
+        eligibility_groups=set(),
+        rps_programs_for_eligibility_group=defaultdict(set),
+        zone_eligibility_group_periods=set(),
+        gens_in_zone_eligibility_group_period=defaultdict(set),
+        brec_progs_for_eligibility_group=defaultdict(set),
+        urec_progs_for_eligibility_group=defaultdict(set),
+        local_progs_for_eligibility_group=defaultdict(set),
+        requirements_groups=set(),
+        requirements_group_periods=set(),
+        zones_in_requirements_group_period=defaultdict(set),
+        rgs_for_rps_program_period=defaultdict(set),
+        brec_routes=set(),
+        urec_routes=set(),
+        brec_routes_for_zone_eligibility_group_period=defaultdict(set),
+        urec_routes_for_zone_eligibility_group_period=defaultdict(set),
+        brec_routes_for_rps_program_period=defaultdict(set),
+        urec_routes_for_rps_program_period=defaultdict(set),
+        local_zone_eligibility_group_periods_for_rps_program_period=defaultdict(set),
+    )
+
+    # Program-period requirements define the zones covered by each program and
+    # the requirement groups used as REC destinations.
+    # (RPS_RULES are the first 3 columns of rps_requirements.csv)
+    for pr, pe, z in m.RPS_RULES:
+        t.zones_in_rps_program_period[pr, pe].add(z)
+        t.zone_reqs[z, pe].add(pr)
+
+    # Generator eligibility rows define eligible gens, reverse indexes, and
+    # whether each program-period-gen can create local RECs.
+    # (RPS_PROGRAM_PERIOD_GENS are the first 3 columns of rps_generators.csv)
+    for pr, pe, g in m.RPS_PROGRAM_PERIOD_GENS:
+        t.rps_gens_in_period[pe].add(g)
+        t.gens_in_rps_program_period[pr, pe].add(g)
+        t.rps_programs_for_gen_period[g, pe].add(pr)
+        t.create_local_recs[pr, pe, g] = (
+            m.gen_load_zone[g] in t.zones_in_rps_program_period[pr, pe]
+        )
+
+    # Eligibility groups aggregate generators with identical REC destinations.
+    for pe in m.PERIODS:
+        for g in t.rps_gens_in_period[pe]:
+            progs = [
+                (
+                    pr,
+                    t.create_local_recs[pr, pe, g],
+                    bool(m.send_bundled_recs[pr, pe, g]),
+                    bool(m.send_unbundled_recs[pr, pe, g]),
+                )
+                for pr in t.rps_programs_for_gen_period[g, pe]
+            ]
+            eg = progs_to_group(progs)
+            z = m.gen_load_zone[g]
+            t.eligibility_groups.add(eg)
+            t.zone_eligibility_group_periods.add((z, eg, pe))
+            t.gens_in_zone_eligibility_group_period[z, eg, pe].add(g)
+
+            for pr, local, bundled, unbundled in progs:
+                # list of programs served by each eligibility group
+                t.rps_programs_for_eligibility_group[eg].add(pr)
+                # programs that RECs can be sent to from each eligibility group
+                if local:
+                    t.local_progs_for_eligibility_group[eg].add(pr)
+                if bundled:
+                    t.brec_progs_for_eligibility_group[eg].add(pr)
+                if unbundled:
+                    t.urec_progs_for_eligibility_group[eg].add(pr)
+
+    # Requirements groups aggregate zones with identical program obligations
+    for (z, pe), progs in t.zone_reqs.items():
+        rg = progs_to_group(progs)
+        t.requirements_groups.add(rg)
+        t.requirements_group_periods.add((rg, pe))
+        t.zones_in_requirements_group_period[rg, pe].add(z)
+        # Requirements groups that each RPS program/period participates in
+        for pr in progs:
+            t.rgs_for_rps_program_period[pr, pe].add(rg)
+
+    # BREC/UREC route tables and inverse indexes for efficient summations
+    for z, eg, pe in t.zone_eligibility_group_periods:
+        for pr in t.rps_programs_for_eligibility_group[eg]:
+            routes = {(z, eg, rg, pe) for rg in t.rgs_for_rps_program_period[pr, pe]}
+            if pr in t.brec_progs_for_eligibility_group[eg]:
+                t.brec_routes.update(routes)
+                t.brec_routes_for_zone_eligibility_group_period[z, eg, pe].update(
+                    routes
+                )
+                t.brec_routes_for_rps_program_period[pr, pe].update(routes)
+            if pr in t.urec_progs_for_eligibility_group[eg]:
+                t.urec_routes.update(routes)
+                t.urec_routes_for_zone_eligibility_group_period[z, eg, pe].update(
+                    routes
+                )
+                t.urec_routes_for_rps_program_period[pr, pe].update(routes)
+            if pr in t.local_progs_for_eligibility_group[eg]:
+                t.local_zone_eligibility_group_periods_for_rps_program_period[
+                    pr, pe
+                ].add((z, eg, pe))
+
+    make_pyomo_compatible(t)
+    return t
+
+
+def build_brec_transmission_topology(m):
+    """
+    Map each policy-valid BREC route onto the transmission network. This
+    includes the least-loss path, cumulative delivery efficiency, and inverse
+    line/period indexes used by transmission constraints.
+    """
+    t = SimpleNamespace(
+        zones_on_brec_route={},
+        brec_route_zones=[],
+        brec_route_efficiency_to_zone={},
+        brec_routes_using_directional_tx_in_period=defaultdict(set),
+        directional_tx_periods_on_any_brec_route=set(),
+        brec_tx_period_timepoints=[],
+    )
+
+    # Find the lowest-loss route from zone `z` to any zone in the requirements
+    # group `rg` in period `pe` for all (z, eg, rg, pe) in m.BREC_ROUTES. Then
+    # use that to populate m.ZONES_ON_BREC_ROUTE[z, eg, rg, pe]. This uses
+    # Dijkstra's method to find the routes from all zones in rg to all source
+    # zones at the same time, to improve efficiency.
+
+    # First, cluster routes with common rg and period, then for each rg/period,
+    # find the paths to all the relevant zones, then use that to fill in
+    # m.ZONES_ON_BREC_ROUTE[z, eg, rg, pe] for all the relevant routes.
+    # We could simplify this by creating EXTERNAL_ZONE_REQUIRMENT_GROUPS and
+    # defining ZONES_ON_BREC_ROUTE over that instead of over all BREC_ROUTES,
+    # but that might make the overall code a little harder to follow. So instead
+    # we (1) find all zones that feed into each rg; (2) find the shortest path
+    # (list of zone hops) from each of those zones to the rg; and (3) apply that
+    # path to all BREC routes that use that zone and rg.
+
+    # create a list of tuples of "costs" to move power from any zone to a
+    # neighbor for the route-finder; this uses the negative log of efficiency so
+    # that minimizing the sum of this "cost" across hops minimizes 1/(eff1 *
+    # eff2 * ...), i.e., minimizes 1/efficiency, i.e., maximizes efficiency.
+    edges = [
+        (z1, z2, -math.log(eff))
+        for z1, z2 in m.DIRECTIONAL_TX
+        for eff in [value(m.trans_efficiency[m.trans_d_line[z1, z2]])]
+        if eff > 0
+    ]
+
+    # find all zones that export BRECS to each rg in each period
+    source_zones_for_rg_period = defaultdict(set)
+    for source_z, eg, rg, pe in m.BREC_ROUTES:
+        source_zones_for_rg_period[rg, pe].add(source_z)
+
+    # For each rg/period, find the "shortest" path from all zones that export to
+    # it
+    routes_to_rg_period = {}
+    for (rg, pe), source_zones in source_zones_for_rg_period.items():
+        routes_to_rg_period[rg, pe] = find_paths(
+            from_zones=source_zones,
+            to_zones=m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe],
+            edges=edges,
+        )
+
+    # Apply assembled paths to all matching BREC routes
+    for rte in m.BREC_ROUTES:
+        source_z, eg, rg, pe = rte
+        steps = routes_to_rg_period[rg, pe][source_z]
+        if steps is None:
+            rg_zones = ", ".join(m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe])
+            raise ValueError(
+                f"No transmission route could be found from zone '{source_z}' "
+                f"to requirements group '{rg}' in period '{pe}' ({rg_zones}). "
+                "Either the transmission network is incomplete or generators "
+                "in an unconnected zone have been marked eligible for bundled "
+                "REC trade, which is not possible."
+            )
+
+        t.zones_on_brec_route[rte] = tuple(steps)
+        prev_z = None
+        prev_efficiency = 1.0
+        for z in steps:
+            if prev_z is None:
+                route_efficiency = 1.0
+            else:
+                line = m.trans_d_line[prev_z, z]
+                route_efficiency = prev_efficiency * value(m.trans_efficiency[line])
+                t.brec_routes_using_directional_tx_in_period[prev_z, z, pe].add(rte)
+                # transmission corridor/period combos that are affected by BREC trade
+                t.directional_tx_periods_on_any_brec_route.add((prev_z, z, pe))
+
+            t.brec_route_zones.append(rte + (z,))
+            t.brec_route_efficiency_to_zone[rte + (z,)] = route_efficiency
+            prev_z = z
+            prev_efficiency = route_efficiency
+
+    for z_from, z_to, pe in t.directional_tx_periods_on_any_brec_route:
+        for tp in m.TPS_IN_PERIOD[pe]:
+            t.brec_tx_period_timepoints.append((z_from, z_to, pe, tp))
+
+    make_pyomo_compatible(t)
+    return t
+
+
+def find_paths(from_zones, to_zones, edges):
+    """
+    For each zone in `from_zones`, find the least-cost path to any zone in
+    `to_zones` using non-negative directed edge costs [(from_zone, to_zone,
+    cost), ...]. Returns a dict {from_zone1: [zone1, zone2, ..., to_zone]}. If a
+    source cannot reach any destination, value will be None.
+    """
+    # TODO: improve documentation, maybe simplify code
+
+    # Build node index map (strings -> ints)
+    nodes = set()
+    for u, v, _ in edges:
+        nodes.add(u)
+        nodes.add(v)
+    nodes.update(from_zones)
+    nodes.update(to_zones)
+    nodes = sorted(nodes)
+    n = len(nodes)
+    index = {z: i for i, z in enumerate(nodes)}
+
+    # Build sparse adjacency (forward) and transpose (reversed)
+    rows = np.fromiter((index[u] for u, _, _ in edges), dtype=int, count=len(edges))
+    cols = np.fromiter((index[v] for _, v, _ in edges), dtype=int, count=len(edges))
+    data = np.fromiter((float(w) for _, _, w in edges), dtype=float, count=len(edges))
+    A = csr_matrix((data, (rows, cols)), shape=(n, n))
+
+    AT = A.T  # reversed graph
+
+    # Multi-source Dijkstra from all to_zones on reversed graph dist[i, j] =
+    # distance from to_zones[i] to node j (in reversed graph), which equals
+    # distance from node j to to_zones[i] in the forward graph.
+    sources = [index[z] for z in to_zones]
+    dist, pred = dijkstra(AT, directed=True, indices=sources, return_predecessors=True)
+
+    # Convert to 2D if there's a single source
+    if dist.ndim == 1:
+        dist = dist[np.newaxis, :]
+        pred = pred[np.newaxis, :]
+
+    # For each from_zone, pick the best destination and reconstruct path
+    def reconstruct_path(u_idx: int, src_row: int) -> List[str]:
+        """
+        Reconstruct forward path: u -> ... -> m (where m == to_zones[src_row]).
+        Uses predecessor row for that specific source.
+        """
+        path = [u_idx]
+        cur = u_idx
+        pr = pred[src_row]
+        # Walk predecessors until we reach the destination source node
+        dest_idx = sources[src_row]
+        # If unreachable, pred[cur] == -9999 (SciPy sentinel)
+        while cur != dest_idx:
+            cur = pr[cur]
+            if cur == -9999:
+                return []  # unreachable
+            path.append(cur)
+        return [nodes[i] for i in path]
+
+    results = {}
+    for fz in from_zones:
+        j = index[fz]
+        # distances from each destination to this source (in reversed search)
+        col = dist[:, j]
+        k = int(np.argmin(col))
+        best = col[k]
+        if not np.isfinite(best):
+            results[fz] = None
+            continue
+        path = reconstruct_path(j, k)
+        if path:
+            results[fz] = path
+        else:
+            results[fz] = None
+
+    return results
 
 
 def define_components(m: AbstractModel):
@@ -80,15 +420,6 @@ def define_components(m: AbstractModel):
         initialize=lambda m: unique_list((pr, pe) for pr, pe, z in m.RPS_RULES),
     )
 
-    # set of zones that participate in a particular RPS program in a particular period
-    # TODO: build these more efficiently
-    m.ZONES_IN_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS,
-        within=m.LOAD_ZONES,
-        initialize=lambda m, pr, pe: unique_list(
-            _z for (_pr, _pe, _z) in m.RPS_RULES if (_pr, _pe) == (pr, pe)
-        ),
-    )
     # Set of all valid program/period/generator combinations (i.e., gens
     # participating in each program in each period). Any eligible gens that are
     # not in a home zone for the RPS program in that period will need to be
@@ -96,38 +427,11 @@ def define_components(m: AbstractModel):
     m.RPS_PROGRAM_PERIOD_GENS = Set(
         dimen=3, within=m.RPS_PROGRAM_PERIODS * m.GENERATION_PROJECTS
     )
-    # gens in each program/period and programs for each gen/period
-    m.GENS_IN_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS, within=m.GENERATION_PROJECTS
-    )
-    m.RPS_GENS_IN_PERIOD = Set(m.PERIODS, within=m.GENERATION_PROJECTS)
-    m.RPS_PROGRAMS_FOR_GEN_PERIOD = Set(m.GENERATION_PROJECTS, m.PERIODS, within=Any)
 
-    m.RPS_PROGRAM_PERIOD_GENS_HAVE_RULES = m.BuildCheck(
+    m.RPS_PROGRAM_PERIOD_GENS_Have_Rules = m.BuildCheck(
         m.RPS_PROGRAM_PERIOD_GENS,
         rule=lambda m, pr, pe, g: (pr, pe) in m.RPS_PROGRAM_PERIODS,
     )
-
-    # populate the sets efficiently
-    # (from https://pyomo.readthedocs.io/en/6.4.0/pyomo_modeling_components/Sets.html
-    # and later)
-    @m.BuildAction()
-    def populate_rps_program_gens(m):
-        for pr, pe, g in m.RPS_PROGRAM_PERIOD_GENS:
-            m.RPS_GENS_IN_PERIOD[pe].add(g)
-            m.GENS_IN_RPS_PROGRAM_PERIOD[pr, pe].add(g)
-            m.RPS_PROGRAMS_FOR_GEN_PERIOD[g, pe].add(pr)
-
-    #############
-    # Bundled REC (BREC) flows. These are cases where power is scheduled to flow
-    # into an RPS's region from an RPS-eligible generator in a zone outside that
-    # region. We pre-identify the lowest-loss routes and assume power will
-    # always be scheduled to flow along those. Then we require that a matching
-    # amount of power is dispatched along these lines. Note that this means
-    # bundled RECs can't be applied to one program in one zone and a different
-    # program in another zone.
-    # Note: in the code below, "BREC-eligible gens" means gens that are
-    # eligible to deliver bundled RECs to other zones for RPS programs there.
 
     # Flags indicating whether each gen is able to send bundled or unbundled
     # RECs to each program it participates in.
@@ -147,13 +451,25 @@ def define_components(m: AbstractModel):
     m.send_unbundled_recs = Param(
         m.RPS_PROGRAM_PERIOD_GENS, within=Binary, default=True
     )
+
+    @m.BuildAction()
+    def build_rps_topology_action(m):
+        m.rps_topology = build_rps_policy_topology(m)
+
+    # Initialize topology sets from m.rps_topology (there are a lot of them)
+    m.ZONES_IN_RPS_PROGRAM_PERIOD = Set(
+        m.RPS_PROGRAM_PERIODS,
+        within=m.LOAD_ZONES,
+        initialize=lambda m, pr, pe: m.rps_topology.zones_in_rps_program_period[pr, pe],
+    )
+
     # Flag identifying whether each gen can create RECs directly (locally) for
     # each RPS program it participates in during each period.
     m.create_local_recs = Param(
         m.RPS_PROGRAM_PERIOD_GENS,
         within=Binary,
-        initialize=lambda m, pr, pe, g: (
-            m.gen_load_zone[g] in m.ZONES_IN_RPS_PROGRAM_PERIOD[pr, pe]
+        initialize=lambda m, pr, pe, g: int(
+            m.rps_topology.create_local_recs[pr, pe, g]
         ),
     )
 
@@ -163,6 +479,17 @@ def define_components(m: AbstractModel):
         rule=lambda m, pr, pe, g: bool(m.create_local_recs[pr, pe, g])
         ^ bool(m.send_bundled_recs[pr, pe, g] or m.send_unbundled_recs[pr, pe, g]),
     )
+
+    #############
+    # Bundled REC (BREC) flows. These are cases where power is scheduled to flow
+    # into an RPS's region from an RPS-eligible generator in a zone outside that
+    # region. We pre-identify the lowest-loss routes and assume power will
+    # always be scheduled to flow along those. Then we require that a matching
+    # amount of power is dispatched along these lines. Note that this means
+    # bundled RECs can't be applied to one program in one zone and a different
+    # program in another zone.
+    # Note: in the code below, "BREC-eligible gens" means gens that are
+    # eligible to deliver bundled RECs to other zones for RPS programs there.
 
     # **Eligibility groups** (EGs) are unique combinations of local program,
     # remote bundled and remote unbundled program that power can go to from each
@@ -176,118 +503,39 @@ def define_components(m: AbstractModel):
     # program in that EG. UREC routes connect each EG to any RGs that include
     # any UREC-eligible program in that EG.
 
-    # BREC flows are scheduled on each route an hourly basis. UREC flows are
+    # BREC flows are scheduled on each route every timepoint. UREC flows are
     # scheduled on each UREC route per period. Anything left over each period is
     # considered a local REC.
-
-    ################
-    # Bundled REC trading
-
-    # 1. find zone + eligibility groups from gens (and designate gens in each)
-    # 2. find requirement groups
-    # 3. find BREC routes (requirement groups with any member in each zone
-    #    eligibility group)
-
-    # The next few sets are populated by populate_eligibility_groups() below.
 
     # IDs for eligibility groups; each of these represents a unique collection
     # of programs (and REC methods) that one or more generation projects are
     # eligible for, e.g., 'ESR_AZ_rps local / ESR_CA_ces BREC / ESR_CA_rps BREC'
-    m.ELIGIBILITY_GROUPS = Set(within=Any)
-
-    # list of RPS_PROGRAMs served by each eligibility group, e.g.,
-    # 'ESR_AZ_rps local / ESR_CA_ces BREC / ESR_CA_rps BREC':
-    # {'ESR_AZ_rps', 'ESR_CA_ces', 'ESR_CA_rps'}
-    m.RPS_PROGRAMS_FOR_ELIGIBILITY_GROUP = Set(
-        m.ELIGIBILITY_GROUPS, dimen=1, within=Any
+    m.ELIGIBILITY_GROUPS = Set(
+        within=Any, initialize=lambda m: m.rps_topology.eligibility_groups
     )
 
     # valid combos of load zone, eligibility group and period
     # (may or may not have REC trading allowed), e.g.,
     # ('p27', 'ESR_AZ_rps local / ESR_CA_ces BREC / ESR_CA_rps BREC', 2030), ...
     m.ZONE_ELIGIBILITY_GROUP_PERIODS = Set(
-        dimen=3, within=m.LOAD_ZONES * m.ELIGIBILITY_GROUPS * m.PERIODS
+        dimen=3,
+        within=m.LOAD_ZONES * m.ELIGIBILITY_GROUPS * m.PERIODS,
+        initialize=lambda m: m.rps_topology.zone_eligibility_group_periods,
     )
 
     # list of gens in zone z that are part of eligibility group eg in period pe
     # (each gen is in exactly one zone-eligibility group per period, so total
     # RECs produced for that group of programs = total production from all gens
-    # in the group)
+    # in the group). e.g.,
     # ('p27', 'ESR_AZ_rps local / ESR_CA_ces BREC / ESR_CA_rps BREC', 2030):
-    # {'p27_conventional_hydroelectric_1', 'p27_landbasedwind_class3_conservative_1', ...}
+    #   {'p27_conventional_hydroelectric_1', 'p27_landbasedwind_class3_conservative_1', ...}
     m.GENS_IN_ZONE_ELIGIBILITY_GROUP_PERIOD = Set(
-        m.ZONE_ELIGIBILITY_GROUP_PERIODS, within=m.GENERATION_PROJECTS
+        m.ZONE_ELIGIBILITY_GROUP_PERIODS,
+        within=m.GENERATION_PROJECTS,
+        initialize=lambda m, z, eg, pe: (
+            m.rps_topology.gens_in_zone_eligibility_group_period[z, eg, pe]
+        ),
     )
-
-    # programs RECs can be sent to from each eligibility group
-    m.BREC_PROGS_FOR_ELIGIBILITY_GROUP = Set(m.ELIGIBILITY_GROUPS)
-    m.UREC_PROGS_FOR_ELIGIBILITY_GROUP = Set(m.ELIGIBILITY_GROUPS)
-    m.LOCAL_PROGS_FOR_ELIGIBILITY_GROUP = Set(m.ELIGIBILITY_GROUPS)
-
-    def progs_to_group(progs):
-        """
-        Turn a set of RPS programs into a unique group name. prog consists of
-        either an RPS program or a tuple of (RPS program, send_bundled flag,
-        send_unbundled flag)
-        """
-        if progs:
-            if not isinstance(progs, list):
-                progs = list(progs)
-            # list of tuples of (program, local-eligible, bundled-eligible,
-            # unbundled-eligible) (generally an eligibility group for some gen);
-            # convert into text like "OH_RPS BREC / IN_RPS local / IL_CES UREC+BREC"
-            if isinstance(progs[0], tuple):
-                return " / ".join(
-                    sorted(
-                        pr
-                        + " "
-                        + "+".join(
-                            (["local"] if l else [])
-                            + (["BREC"] if b else [])
-                            + (["UREC"] if u else [])
-                        )
-                        for pr, l, b, u in progs
-                    )
-                )
-            elif isinstance(progs[0], str):
-                # list of progs with no bundled/unbundled flags (generally a
-                # requirements group in some zone): convert into text like
-                # "OH_RPS / OH_CES"
-                return " / ".join(sorted(pr for pr in progs))
-        return ""  # default
-
-    @m.BuildAction()
-    def populate_eligibility_groups(m):
-        # gather info on all REC programs that each gen is eligible for and
-        # create a unique hash for that eligibility group (EG); use these to
-        # build sets of unique EGs and cache information about where RECs from
-        # this EG can be used
-        for pe in m.PERIODS:
-            for g in m.RPS_GENS_IN_PERIOD[pe]:
-                progs = [
-                    # tuples of (program, local flag, bundled flag, unbundled flag)
-                    (
-                        pr,
-                        bool(m.create_local_recs[pr, pe, g]),
-                        bool(m.send_bundled_recs[pr, pe, g]),
-                        bool(m.send_unbundled_recs[pr, pe, g]),
-                    )
-                    for pr in m.RPS_PROGRAMS_FOR_GEN_PERIOD[g, pe]
-                ]
-                eg_name = progs_to_group(progs)
-                m.ELIGIBILITY_GROUPS.add(eg_name)
-                m.ZONE_ELIGIBILITY_GROUP_PERIODS.add((m.gen_load_zone[g], eg_name, pe))
-                m.GENS_IN_ZONE_ELIGIBILITY_GROUP_PERIOD[
-                    m.gen_load_zone[g], eg_name, pe
-                ].add(g)
-                for pr, l, b, u in progs:
-                    m.RPS_PROGRAMS_FOR_ELIGIBILITY_GROUP[eg_name].add(pr)
-                    if l:
-                        m.LOCAL_PROGS_FOR_ELIGIBILITY_GROUP[eg_name].add(pr)
-                    if b:
-                        m.BREC_PROGS_FOR_ELIGIBILITY_GROUP[eg_name].add(pr)
-                    if u:
-                        m.UREC_PROGS_FOR_ELIGIBILITY_GROUP[eg_name].add(pr)
 
     # names of all requirements groups (sets of RPS/CES programs with the same
     # geographic coverage in a period); these are the destinations for BREC and
@@ -295,40 +543,24 @@ def define_components(m: AbstractModel):
     # e.g., 'ESR_CA_ces / ESR_CA_rps' <- CES and RPS in CA will be enforced
     # over the same generators, and imported BRECs and/or URECs may be applied
     # toward this.
-    m.REQUIREMENTS_GROUPS = Set(dimen=1, within=Any)
+    m.REQUIREMENTS_GROUPS = Set(
+        dimen=1, within=Any, initialize=lambda m: m.rps_topology.requirements_groups
+    )
     # valid combinations of requirements group and period
     m.REQUIREMENTS_GROUP_PERIODS = Set(
-        dimen=2, within=m.REQUIREMENTS_GROUPS * m.PERIODS
+        dimen=2,
+        within=m.REQUIREMENTS_GROUPS * m.PERIODS,
+        initialize=lambda m: m.rps_topology.requirements_group_periods,
     )
     # Set of zones that are part of each requirements group in each period
     # (have the same RPS requirements in that period)
     m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD = Set(
-        m.REQUIREMENTS_GROUP_PERIODS, within=m.LOAD_ZONES
+        m.REQUIREMENTS_GROUP_PERIODS,
+        within=m.LOAD_ZONES,
+        initialize=lambda m, rg, pe: (
+            m.rps_topology.zones_in_requirements_group_period[rg, pe]
+        ),
     )
-    # Set of requirements groups that each RPS program participates in during
-    # each period; only used as intermediate set to build later ones.
-    m.RGS_FOR_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS, within=m.REQUIREMENTS_GROUPS
-    )
-
-    # For each zone, find all requirements groups (requirements in effect in
-    # some zone with some overlap with some member of an eligiblity group in
-    # this zone)
-    @m.BuildAction()
-    def populate_requirements_groups(m):
-        # Scan RPS zones to find all requirements groups (unique combinations of
-        # RPS programs in effect in any zone/period) and make lists of matching
-        # RPS programs for each requirements group.
-        zone_reqs = {}
-        for pr, pe, z in m.RPS_RULES:
-            zone_reqs.setdefault((z, pe), set()).add(pr)
-        for (z, pe), progs in zone_reqs.items():
-            rg = progs_to_group(progs)
-            m.REQUIREMENTS_GROUPS.add(rg)
-            m.REQUIREMENTS_GROUP_PERIODS.add((rg, pe))
-            m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe].add(z)
-            for pr in progs:
-                m.RGS_FOR_RPS_PROGRAM_PERIOD[pr, pe].add(rg)
 
     # Set of BREC- or UREC-eligible routes from eligibility groups to matching
     # requirements groups. Per-timepoint BREC flows and per-period UREC flows
@@ -345,64 +577,64 @@ def define_components(m: AbstractModel):
         dimen=4,
         # source zone, source eligibility group, destination requirements group, period
         within=m.LOAD_ZONES * m.ELIGIBILITY_GROUPS * m.REQUIREMENTS_GROUPS * m.PERIODS,
+        initialize=lambda m: m.rps_topology.brec_routes,
     )
     m.UREC_ROUTES = Set(
         dimen=4,
         within=m.LOAD_ZONES * m.ELIGIBILITY_GROUPS * m.REQUIREMENTS_GROUPS * m.PERIODS,
+        initialize=lambda m: m.rps_topology.urec_routes,
     )
 
     # Set of all BREC and UREC routes that start from each
     # zone/eligibility-group/period combo.
     m.BREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD = Set(
-        m.ZONE_ELIGIBILITY_GROUP_PERIODS, dimen=4, within=m.BREC_ROUTES
+        m.ZONE_ELIGIBILITY_GROUP_PERIODS,
+        dimen=4,
+        within=m.BREC_ROUTES,
+        initialize=lambda m, z, eg, pe: (
+            m.rps_topology.brec_routes_for_zone_eligibility_group_period[z, eg, pe]
+        ),
     )
     m.UREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD = Set(
-        m.ZONE_ELIGIBILITY_GROUP_PERIODS, dimen=4, within=m.UREC_ROUTES
+        m.ZONE_ELIGIBILITY_GROUP_PERIODS,
+        dimen=4,
+        within=m.UREC_ROUTES,
+        initialize=lambda m, z, eg, pe: (
+            m.rps_topology.urec_routes_for_zone_eligibility_group_period[z, eg, pe]
+        ),
     )
 
     # Set of BREC or UREC routes that serve each RPS program/period.
     m.BREC_ROUTES_FOR_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS, dimen=4, within=m.BREC_ROUTES
+        m.RPS_PROGRAM_PERIODS,
+        dimen=4,
+        within=m.BREC_ROUTES,
+        initialize=lambda m, pr, pe: (
+            m.rps_topology.brec_routes_for_rps_program_period[pr, pe]
+        ),
     )
     m.UREC_ROUTES_FOR_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS, dimen=4, within=m.UREC_ROUTES
+        m.RPS_PROGRAM_PERIODS,
+        dimen=4,
+        within=m.UREC_ROUTES,
+        initialize=lambda m, pr, pe: (
+            m.rps_topology.urec_routes_for_rps_program_period[pr, pe]
+        ),
     )
 
     # Set of zone/eligibility-group/period combos that are local to each RPS
     # program/period, i.e., have generators in a zone governed by the program in
     # that period that can produce RECs for the program.
     m.LOCAL_ZONE_ELIGIBILITY_GROUP_PERIODS_FOR_RPS_PROGRAM_PERIOD = Set(
-        m.RPS_PROGRAM_PERIODS, dimen=3, within=m.ZONE_ELIGIBILITY_GROUP_PERIODS
+        m.RPS_PROGRAM_PERIODS,
+        dimen=3,
+        within=m.ZONE_ELIGIBILITY_GROUP_PERIODS,
+        initialize=lambda m, pr, pe: (
+            m.rps_topology.local_zone_eligibility_group_periods_for_rps_program_period[
+                pr, pe
+            ]
+        ),
     )
-
-    @m.BuildAction()
-    def populate_routes(m):
-        # scan zone eligibility groups to get a list of all zone-eligibility
-        # groups that can send URECs or BRECs to a requirements group. These
-        # become routes for URECs or BRECs.
-        for z, eg, pe in m.ZONE_ELIGIBILITY_GROUP_PERIODS:
-            for pr in m.RPS_PROGRAMS_FOR_ELIGIBILITY_GROUP[eg]:
-                # any requirement group that includes this program is a potential
-                # destination for RECs from this eligibility group in this period
-                routes = [
-                    (z, eg, rg, pe) for rg in m.RGS_FOR_RPS_PROGRAM_PERIOD[pr, pe]
-                ]
-                if pr in m.BREC_PROGS_FOR_ELIGIBILITY_GROUP[eg]:
-                    m.BREC_ROUTES.update(routes)
-                    m.BREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe].update(
-                        routes
-                    )
-                    m.BREC_ROUTES_FOR_RPS_PROGRAM_PERIOD[pr, pe].update(routes)
-                if pr in m.UREC_PROGS_FOR_ELIGIBILITY_GROUP[eg]:
-                    m.UREC_ROUTES.update(routes)
-                    m.UREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe].update(
-                        routes
-                    )
-                    m.UREC_ROUTES_FOR_RPS_PROGRAM_PERIOD[pr, pe].update(routes)
-                if pr in m.LOCAL_PROGS_FOR_ELIGIBILITY_GROUP[eg]:
-                    m.LOCAL_ZONE_ELIGIBILITY_GROUP_PERIODS_FOR_RPS_PROGRAM_PERIOD[
-                        pr, pe
-                    ].add((z, eg, pe))
 
     ###########
     # BREC production during each timepoint
@@ -456,9 +688,18 @@ def define_components(m: AbstractModel):
     # Find lowest-loss transmission path for each BREC route and require time-
     # matched flows (and losses) along these routes when BRECs are transferred
 
-    m.ZONES_ON_BREC_ROUTE = Set(m.BREC_ROUTES, within=m.LOAD_ZONES, ordered=True)
+    @m.BuildAction()
+    def build_brec_transmission_topology_action(m):
+        m.brec_tx_topology = build_brec_transmission_topology(m)
 
-    m.populate_zones_on_brec_routes = BuildAction(rule=populate_zones_on_brec_routes)
+    m.ZONES_ON_BREC_ROUTE = Set(
+        m.BREC_ROUTES,
+        within=m.LOAD_ZONES,
+        ordered=True,
+        initialize=lambda m, z, eg, rg, pe: m.brec_tx_topology.zones_on_brec_route[
+            z, eg, rg, pe
+        ],
+    )
 
     # set of all zones along any BREC route (just used to index
     # brec_route_efficiency_to_zone)
@@ -466,67 +707,48 @@ def define_components(m: AbstractModel):
         dimen=5,
         ordered=True,
         within=m.BREC_ROUTES * m.LOAD_ZONES,
-        initialize=lambda m: [
-            rte + (z,) for rte in m.BREC_ROUTES for z in m.ZONES_ON_BREC_ROUTE[rte]
-        ],
+        initialize=lambda m: m.brec_tx_topology.brec_route_zones,
     )
 
     # cumulative efficiency up to every zone on every route, including source
     # and destination
-    def rule(m, z_source, eg, rg, pe, z):
-        if z == z_source:
-            return 1
-        # reuse efficiency up to previous zone (already calculated)
-        prev_z = m.ZONES_ON_BREC_ROUTE[z_source, eg, rg, pe].prev(z)
-
-        return (
-            m.brec_route_efficiency_to_zone[z_source, eg, rg, pe, prev_z]
-            * m.trans_efficiency[m.trans_d_line[prev_z, z]]
-        )
-
-    m.brec_route_efficiency_to_zone = Param(m.BREC_ROUTE_ZONES, rule=rule)
-
-    # next two components are defined here, then populated below
-
-    # indexed set of all BREC routes that use each transmission line
-    m.BREC_ROUTES_USING_DIRECTIONAL_TX = Set(
-        m.DIRECTIONAL_TX, dimen=4, within=m.BREC_ROUTES
+    m.brec_route_efficiency_to_zone = Param(
+        m.BREC_ROUTE_ZONES,
+        initialize=lambda m, z_source, eg, rg, pe, z: (
+            m.brec_tx_topology.brec_route_efficiency_to_zone[z_source, eg, rg, pe, z]
+        ),
     )
 
-    @m.BuildAction()
-    def populate_BREC_ROUTES_USING_DIRECTIONAL_TX(m):
-        routes = {(zf, zt): [] for zf, zt in m.DIRECTIONAL_TX}
-        for rte in m.BREC_ROUTES:
-            # assign this BREC route to all the transmission lines along the way
-            zones = iter(m.ZONES_ON_BREC_ROUTE[rte])
-            prev_z = next(zones)  # first zone
-            for next_z in zones:
-                m.BREC_ROUTES_USING_DIRECTIONAL_TX[prev_z, next_z].add(rte)
-                prev_z = next_z
+    # BREC routes that use each transmission line in each period
+    m.BREC_ROUTES_USING_DIRECTIONAL_TX_IN_PERIOD = Set(
+        m.DIRECTIONAL_TX,
+        m.PERIODS,
+        dimen=4,
+        within=m.BREC_ROUTES,
+        initialize=lambda m, z_from, z_to, pe: (
+            m.brec_tx_topology.brec_routes_using_directional_tx_in_period[
+                z_from, z_to, pe
+            ]
+        ),
+    )
 
-    # transmission corridors that are affected by any BREC trade
-    m.DIRECTIONAL_TX_ON_ANY_BREC_ROUTE = Set(
-        within=m.DIRECTIONAL_TX,
-        initialize=lambda m: [
-            dtx for dtx, rte in m.BREC_ROUTES_USING_DIRECTIONAL_TX.items() if rte
-        ],
+    m.BREC_TX_PERIOD_TIMEPOINTS = Set(
+        dimen=4,
+        within=m.DIRECTIONAL_TX * m.PERIODS * m.TIMEPOINTS,
+        initialize=lambda m: m.brec_tx_topology.brec_tx_period_timepoints,
     )
 
     # for every trans line, BREC trade along routes using that line must not
     # exceed actual power transfers along that line
-    # TODO: maybe split BREC_ROUTES_USING_DIRECTIONAL_TX by period to build
-    # this more efficiently
-    @m.Constraint(m.DIRECTIONAL_TX_ON_ANY_BREC_ROUTE, m.TIMEPOINTS)
-    def Require_BRECs_Below_TX_Transfers(m, z_from, z_to, tp):
-        pe = m.tp_period[tp]
+    @m.Constraint(m.BREC_TX_PERIOD_TIMEPOINTS)
+    def Require_BRECs_Below_TX_Transfers(m, z_from, z_to, pe, tp):
         return sum(
             # bundled RECs reaching zone z_from along all z_start ->
             # z_dest routes that use this corridor, net of losses
             # prior to z_from
             m.ExportBRECsTP[rte + (tp,)]
             * m.brec_route_efficiency_to_zone[rte + (z_from,)]
-            for rte in m.BREC_ROUTES_USING_DIRECTIONAL_TX[z_from, z_to]
-            if rte[3] == pe
+            for rte in m.BREC_ROUTES_USING_DIRECTIONAL_TX_IN_PERIOD[z_from, z_to, pe]
         ) <= (
             # power flow along this corridor
             m.DispatchTx[z_from, z_to, tp]
@@ -563,8 +785,8 @@ def define_components(m: AbstractModel):
     # designated as being exported to a particular zone where they are eligible
     # to participate in one or more RPS programs). However, we only tabulate
     # once per period instead of per timepoint, and we don't worry about the
-    # transmission lines the power would flow on. Note that this disallows the
-    # same REC from being used for different programs in different regions
+    # transmission lines the power flows on. Note that this disallows the same
+    # REC from being used for different programs in different regions
     # (corresponding to requirements groups); we assume each REC moves to one
     # specific requirements group.
 
@@ -698,13 +920,6 @@ def define_components(m: AbstractModel):
     )
 
     # enforce overall RPS balance, including URECs, BRECs and local REC production
-    # TODO: maybe multiply both sides by the scale factor below to convert
-    # period-long multi-zone total energy into average energy per zone per hour
-    # (matching the scale of the MW values used on the RHS for zonal energy
-    # balances) (currently unused because it makes shadow value of RPS have
-    # weird units and would introduce a small coefficient (the scale factor
-    # itself) in the constraint matrix, which may not be helpful)
-    # scale = 1.0 / (m.period_length_hours[pe] * len(m.ZONES_IN_RPS_PROGRAM_PERIOD[pr, pe]))
     m.Enforce_RPS_Share = Constraint(
         m.RPS_PROGRAM_PERIODS,
         rule=lambda m, pr, pe: m.ImportBRECs[pr, pe]
@@ -713,145 +928,11 @@ def define_components(m: AbstractModel):
         >= m.RPSProgramTargetMWh[pr, pe],
     )
 
-
-def populate_zones_on_brec_routes(m):
-    """
-    Find the lowest-loss route from zone `z` to any zone in the requirements
-    group `rg` in period `pe` for all (z, eg, rg, pe) in m.BREC_ROUTES. Then
-    use that to populate m.ZONES_ON_BREC_ROUTE[z, eg, rg, pe]. This uses
-    Dijkstra's method to find the routes from all zones in rg to all source
-    zones at the same time, to improve efficiency.
-    """
-    # First, cluster routes with common rg and period, then for each rg/period,
-    # find the paths to all the relevant zones, then use that to fill in
-    # m.ZONES_ON_BREC_ROUTE[z, eg, rg, pe] for all the relevant routes.
-    # We could simplify this by creating EXTERNAL_ZONE_REQUIRMENT_GROUPS and
-    # defining ZONES_ON_BREC_ROUTE over that instead of over all BREC_ROUTES,
-    # but that might make the overall code a little harder to follow. So instead
-    # we (1) find all zones that feed into each rg; (2) find the shortest path
-    # (list of zone hops) from each of those zones to the rg; and (3) apply that
-    # path to all BREC routes that use that zone and rg.
-
-    # create a list of tuples of "costs" to move power from any zone to a
-    # neighbor for the route-finder; this uses the negative log of efficiency so
-    # that minimizing the sum of this "cost" across hops minimizes 1/(eff1 *
-    # eff2 * ...), i.e., minimizes 1/efficiency, i.e., maximizes efficiency.
-    edges = [
-        (z1, z2, -math.log(eff))
-        for z1, z2 in m.DIRECTIONAL_TX
-        for eff in [m.trans_efficiency[m.trans_d_line[z1, z2]]]
-        if eff > 0
-    ]
-
-    # find all zones that export BRECS to each rg in each period
-    source_zones_for_rg_period = {}
-    for source_z, eg, rg, pe in m.BREC_ROUTES:
-        source_zones_for_rg_period.setdefault((rg, pe), set()).add(source_z)
-
-    # For each rg/period, find the shortest path from all zones that export to it
-    routes_to_rg_period = {}
-    for (rg, pe), source_zones in source_zones_for_rg_period.items():
-        routes_to_rg_period[rg, pe] = find_paths(
-            from_zones=source_zones,
-            to_zones=m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe],
-            edges=edges,
-        )
-
-    # Apply assembled paths to all matching BREC routes
-    for source_z, eg, rg, pe in m.BREC_ROUTES:
-        steps = routes_to_rg_period[rg, pe][source_z]
-        if steps is None:
-            rg_zones = ", ".join(m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe])
-            raise ValueError(
-                f"No transmission route could be found from zone '{source_z}' "
-                f"to requirements group '{rg}' in period '{pe}' ({rg_zones}). "
-                "Either the transmission network is incomplete or generators "
-                "in an unconnected zone have been marked eligible for bundled "
-                "REC trade, which is not possible."
-            )
-        else:
-            m.ZONES_ON_BREC_ROUTE[source_z, eg, rg, pe] = steps
-
-
-def find_paths(
-    from_zones: List[str],
-    to_zones: List[str],
-    edges: List[Tuple[str, str, float]],
-) -> Dict[str, List[str] | None]:
-    """
-    For each zone in `from_zones`, find the least-cost path to any zone in
-    `to_zones` using non-negative directed edge costs. Returns a dict:
-        { from_zone: List[str]|None }
-    If a source cannot reach any destination, value will be None.
-    """
-    # TODO: improve documentation, maybe simplify code
-
-    # Build node index map (strings -> ints)
-    nodes = set()
-    for u, v, _ in edges:
-        nodes.add(u)
-        nodes.add(v)
-    nodes.update(from_zones)
-    nodes.update(to_zones)
-    nodes = sorted(nodes)
-    n = len(nodes)
-    index = {z: i for i, z in enumerate(nodes)}
-
-    # Build sparse adjacency (forward) and transpose (reversed)
-    rows = np.fromiter((index[u] for u, _, _ in edges), dtype=int, count=len(edges))
-    cols = np.fromiter((index[v] for _, v, _ in edges), dtype=int, count=len(edges))
-    data = np.fromiter((float(w) for _, _, w in edges), dtype=float, count=len(edges))
-    A = csr_matrix((data, (rows, cols)), shape=(n, n))
-
-    AT = A.T  # reversed graph
-
-    # Multi-source Dijkstra from all to_zones on reversed graph dist[i, j] =
-    # distance from to_zones[i] to node j (in reversed graph), which equals
-    # distance from node j to to_zones[i] in the forward graph.
-    sources = [index[z] for z in to_zones]
-    dist, pred = dijkstra(AT, directed=True, indices=sources, return_predecessors=True)
-
-    # Convert to 2D if there's a single source
-    if dist.ndim == 1:
-        dist = dist[np.newaxis, :]
-        pred = pred[np.newaxis, :]
-
-    # For each from_zone, pick the best destination and reconstruct path
-    def reconstruct_path(u_idx: int, src_row: int) -> List[str]:
-        """
-        Reconstruct forward path: u -> ... -> m (where m == to_zones[src_row]).
-        Uses predecessor row for that specific source.
-        """
-        path = [u_idx]
-        cur = u_idx
-        pr = pred[src_row]
-        # Walk predecessors until we reach the destination source node
-        dest_idx = sources[src_row]
-        # If unreachable, pred[cur] == -9999 (SciPy sentinel)
-        while cur != dest_idx:
-            cur = pr[cur]
-            if cur == -9999:
-                return []  # unreachable
-            path.append(cur)
-        return [nodes[i] for i in path]
-
-    results = {}
-    for fz in from_zones:
-        j = index[fz]
-        # distances from each destination to this source (in reversed search)
-        col = dist[:, j]
-        k = int(np.argmin(col))
-        best = col[k]
-        if not np.isfinite(best):
-            results[fz] = None
-            continue
-        path = reconstruct_path(j, k)
-        if path:
-            results[fz] = path
-        else:
-            results[fz] = None
-
-    return results
+    # drop topology caches to save memory
+    @m.BuildAction()
+    def drop_topology_caches_action(m):
+        del m.rps_topology
+        del m.brec_tx_topology
 
 
 def load_inputs(m, switch_data, inputs_dir):
