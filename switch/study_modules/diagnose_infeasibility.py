@@ -66,6 +66,15 @@ def define_dynamic_components(m):
     for v in m.component_objects(pyo.Var):
         convert_bounds_to_constraint(m, v)
 
+    # make sure all "no-relax" constraints are valid
+    missing = set(m.options.no_relax) - set(
+        c.name for c in m.component_objects(pyo.Constraint)
+    )
+    if missing:
+        raise ValueError(
+            f"Model has no constraint{'s' if len(missing) > 1 else ''} {', '.join(missing)}."
+        )
+
     # loop over an explicit list, otherwise the generator gets altered by the loop
     for c in list(relaxable_constraints(m)):
         # Define relaxation variables for all indices of this constraint
@@ -128,28 +137,17 @@ def post_solve(m, outputs_dir):
             for name, val in unsatisfied_constraints:
                 f.write(f'"{name}",{val}\n')
     else:
-        m.logger.info(
-            "\n"
-            + rewrap(
-                f"""
+        m.logger.info("\n" + rewrap(f"""
                 The model is feasible. To obtain the optimal solution, solve
                 again without using the {__name__} module.
-                """
-            )
-        )
+                """))
 
-    m.logger.info(
-        "\n"
-        + rewrap(
-            f"""
+    m.logger.info("\n" + rewrap(f"""
             NOTE: Module {__name__} was used for this run. This minimizes
             violations of constraints, ignoring financial costs. Results from
             this run (other than constraint violations) should not be used for
             analysis.
-            """
-        )
-        + "\n"
-    )
+            """) + "\n")
 
 
 def relax_var_name(constraint, direction):
