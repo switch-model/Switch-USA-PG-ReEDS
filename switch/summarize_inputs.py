@@ -308,9 +308,9 @@ total_cap["technology"] = total_cap["technology"].str.replace(
 )
 
 # save total cap df for analysis
-cap_file = f"{label}_gen_cap.csv"
-total_cap.to_csv(cap_file, index=False, float_format="%.15g")
-print(f"saved {cap_file}")
+# cap_file = f"{label}_gen_cap.csv"
+# total_cap.to_csv(cap_file, index=False, float_format="%.15g")
+# print(f"saved {cap_file}")
 
 # total generator capacity (existing) or limit (2030) (MW) of each type
 cap_fig = px.bar(

@@ -4,14 +4,17 @@
 */
 !pg/
 !pg/**
-!switch/
-!switch/*
-switch/in/
-switch/out/
-!adjust/
-!adjust/**
 !PowerGenome/
 !PowerGenome/**
+!adjust/
+!switch/
+!switch/study_modules/
+
+# files used for planning, diagnosis and debugging
+switch/*.xlsx
+save_vars.py
+*.pkl
+todo*
 
 # include growth_rates/*.csv
 !growth_rates/
