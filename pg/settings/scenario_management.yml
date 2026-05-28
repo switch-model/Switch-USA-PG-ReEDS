@@ -119,12 +119,20 @@ settings_management:
           gen_max_annual_availability:
             load_growth: 0.001
     allow_retirement:
-      yes: ~ # allowed for thermal plants after 2024 by default
-      no:
-        # disable retirement for all plants in all years
+      yes:
+        # Allow economic retirement of most existing fossil plants (may pick up
+        # some new ones, too, but that shouldn't matter, since they can't retire
+        # the year they are built.)
         model_tag_values:
           Can_Retire:
-            "": 0
+            Coal: 1
+            Natural Gas: 1
+            peaker: 1
+            Petroleum: 0 # assume there's some reason people are keeping these online
+            Biomass: 0
+            Waste Heat: 0
+            Nuclear: 0
+      no: ~ # default settings disable economic retirement for all plants
     resource_limits:
       none: ~ # default
       high_gas:
@@ -3492,9 +3500,6 @@ settings_management:
       # disable new-build and economic retirement for historical case
       atb_new_gen: []
       atb_modifiers: ~
-      model_tag_values:
-        Can_Retire:
-          "": 0
       renewables_clusters:
         # don't define clusters for any new-build techs except imports
         # (prevents warnings when there are no atb_new_gen techs)
@@ -3529,9 +3534,6 @@ settings_management:
       # disable new-build and economic retirement for historical case
       atb_new_gen: []
       atb_modifiers: ~
-      model_tag_values:
-        Can_Retire:
-          "": 0
       renewables_clusters:
         # don't define clusters for any new-build techs except imports
         # (prevents warnings when there are no atb_new_gen techs)

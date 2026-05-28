@@ -460,16 +460,11 @@ model_tag_values:
     # no spinning reserves from the dummy generators created for the exports
     us_exports: 0
   Can_Retire:
-    # Allow economic retirement of existing fossil plants (may pick up some new
-    # ones, too, but that shouldn't matter, since they can't retire the year
-    # they are built.)
-    Biomass: 0
-    Waste Heat: 0
-    Coal: 1
-    Natural Gas: 1
-    Nuclear: 0
-    peaker: 1
-    Petroleum: 0 # assume there's some reason people are keeping these online
+    # disable economic retirement for all plants unless explicitly enabled
+    # (usually by a allow_retirement flag in scenario_inputs.csv). If we enabled
+    # some by default here, then we'd have to disable each type individually
+    # when needed, which is messy.
+    "": 0
   MaxCapTag_WindGrowth:
     # new-build wind technologies are subject to a national limit on additions
     # (this could be moved to scenario_settings to turn it off for some cases)
