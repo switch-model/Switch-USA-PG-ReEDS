@@ -15,7 +15,7 @@ import subprocess
 import types
 from pathlib import Path
 
-from typing import List, Optional
+from typing import List, Dict, Optional
 from typing_extensions import Annotated
 import pandas as pd
 import numpy as np
@@ -556,18 +556,20 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
 
 
 def gen_info_file(
-    settings,
+    settings: Dict,
     gens_by_model_year: pd.DataFrame,
     possible_fuels: List,
     out_folder: Path,
 ):
-    # consolidate to one row per generator cluster (we assume data is the same
-    # for all rows)
-    gens = gens_by_model_year.drop_duplicates(subset="Resource")
-
+    gens = gens_by_model_year.copy()
     set_retirement_age(gens, settings)
 
-    gen_info = gen_info_table(gens, settings)
+    gen_info_by_period = gen_info_table(gens, settings)
+    # consolidate to one row per generator cluster (we assume data for
+    # gen_info.csv is the same for all rows)
+    gen_info = gen_info_by_period.drop_duplicates(subset="GENERATION_PROJECT").drop(
+        columns=["PERIOD"]
+    )
 
     # Drop the heat rate that PowerGenome provides for many non-fuel-using generators
     # TODO: check if this is still true and remove this or move to gen_info_table()
@@ -596,30 +598,34 @@ def gen_info_file(
     # max_cap programs. note: these will be removed in other_tables if the
     # programs aren't in effect
     prog_info = [
-        # PowerGenome prefix, output prefix, output file
-        ("ESR", "RPS", "rps_generators.csv"),
-        ("MinCapTag", "MIN_CAP", "min_cap_generators.csv"),
-        ("MaxCapTag", "MAX_CAP", "max_cap_generators.csv"),
+        # PowerGenome prefix, prog_col, gen_col, output file
+        ("ESR", "RPS_PROGRAM", "GENERATION_PROJECT", "rps_generators.csv"),
+        ("MinCapTag", "MIN_CAP_PROGRAM", "MIN_CAP_GEN", "min_cap_generators.csv"),
+        ("MaxCapTag", "MAX_CAP_PROGRAM", "MAX_CAP_GEN", "max_cap_generators.csv"),
     ]
     all_prog_cols = []
-    for pg_prefix, PROG, out_file in prog_info:
-        prog_cols = [col for col in gen_info.columns if col.startswith(f"{pg_prefix}_")]
+    for pg_prefix, prog_col, gen_col, out_file in prog_info:
+        prog_cols = [
+            col for col in gen_info_by_period.columns if col.startswith(f"{pg_prefix}_")
+        ]
         all_prog_cols.extend(prog_cols)
-        prog_gens = gen_info[["GENERATION_PROJECT"] + prog_cols]
+        prog_gens = gen_info_by_period[["PERIOD", "GENERATION_PROJECT"] + prog_cols]
         prog_gens_long = pd.melt(
-            prog_gens, id_vars=["GENERATION_PROJECT"], value_vars=prog_cols
+            prog_gens,
+            id_vars=["PERIOD", "GENERATION_PROJECT"],
+            value_vars=prog_cols,
         )
         prog_gens_long = prog_gens_long[prog_gens_long["value"] == 1].rename(
             columns={
-                "variable": f"{PROG}_PROGRAM",
-                "GENERATION_PROJECT": f"{PROG}_GEN",
+                "variable": prog_col,
+                "GENERATION_PROJECT": gen_col,
             }
         )
-        prog_gens_long = prog_gens_long[[f"{PROG}_PROGRAM", f"{PROG}_GEN"]]
+        prog_gens_long = prog_gens_long[[prog_col, "PERIOD", gen_col]]
         if out_file == "rps_generators.csv":
             # Consolidate X, X_bundled and X_unbundled rows.
-            # This is done by dropping the tag from RPS_PROGRAM and treating
-            # each row as if it sets a named variable to 1 ('local',
+            # This is done by dropping the tag from RPS_PROGRAM (prog_col) and
+            # treating each row as if it sets a named variable to 1 ('local',
             # 'send_unbundled_recs' or 'send_bundled_recs'). Then a pivot brings
             # those up to become columns for the final table.
             prog_gens_long["var"] = "local"  # default meaning of each row
@@ -628,32 +634,24 @@ def gen_info_file(
             prog_gens_long["value"] = 1
             prog_gens_long["value"] = prog_gens_long["value"].astype("Int64")
             for tag in ["bundled", "unbundled"]:
-                mask = prog_gens_long["RPS_PROGRAM"].str.endswith("_" + tag)
-                prog_gens_long.loc[mask, "RPS_PROGRAM"] = prog_gens_long[
-                    "RPS_PROGRAM"
-                ].str[: -len(tag) - 1]
+                mask = prog_gens_long[prog_col].str.endswith("_" + tag)
+                prog_gens_long.loc[mask, prog_col] = prog_gens_long[prog_col].str[
+                    : -len(tag) - 1
+                ]
                 prog_gens_long.loc[mask, "var"] = f"send_{tag}_recs"
             prog_gens_long = (
                 prog_gens_long.pivot(
-                    columns="var", values="value", index=["RPS_PROGRAM", "RPS_GEN"]
+                    columns="var", values="value", index=[prog_col, "PERIOD", gen_col]
                 )
                 .reset_index()
                 .drop(columns=["local"])
                 .fillna(0)
             )
-
-            # Another way to do the same thing:
-            # prog_gens_long = prog_gens_long.assign(
-            #     base=prog_gens_long["RPS_PROGRAM"].str.replace(r"_(?:bundled|unbundled)$", "", regex=True),
-            #     send_bundled_recs=prog_gens_long["RPS_PROGRAM"].str.endswith("_bundled"),
-            #     send_unbundled_recs=prog_gens_long["RPS_PROGRAM"].str.endswith("_unbundled")
-            # )
-            # prog_gens_long = (
-            #     df.groupby(["base", "RPS_GEN"], as_index=False)
-            #     .agg(send_bundled_recs=("send_bundled_recs", "any"),
-            #         send_unbundled_recs=("send_unbundled_recs", "any"),
-            #         create_local_recs=("create_local_recs", "any"))   # drop if you don't need "local"
-            #     .rename(columns={"base": "RPS_PROGRAM"})
+        else:
+            # min-cap or max-cap program
+            # drop PERIOD column for now; could restore this later, if
+            # enabling code is added to min-cap and max-cap modules
+            prog_gens_long = prog_gens_long.drop(columns=["PERIOD"]).drop_duplicates()
 
         prog_gens_long.to_csv(out_folder / out_file, index=False)
 
@@ -1426,8 +1424,8 @@ def other_tables(
         pd.DataFrame(
             columns=[
                 "RPS_PROGRAM",
-                "LOAD_ZONE",
                 "PERIOD",
+                "LOAD_ZONE",
                 "rps_share",
                 "unbundled_rec_limit_fraction",
             ]

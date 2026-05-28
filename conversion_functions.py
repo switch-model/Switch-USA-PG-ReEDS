@@ -365,7 +365,7 @@ def gen_info_table(gens, settings):
         * cogen_tech, baseload_tech, energy_tech, sched_outage_tech, forced_outage_tech
             - these are user defined dictionaries.  Will map values based on the technology
     Output columns:
-        * GENERATION_PROJECT: basing on index
+        * GENERATION_PROJECT: based on Resource
         * gen_tech: based on technology
         * gen_energy_source: based on energy_tech input
         * gen_load_zone: IPM region
@@ -549,6 +549,7 @@ def gen_info_table(gens, settings):
         # This behavior probably differs from GenX
         "MUST_RUN": "gen_is_baseload",
         "FLEX": "gen_is_vpp",
+        "model_year": "PERIOD",  # used for some period-specific files
     }
     rename_cols.update(
         # pass through extra columns specified in the settings, swapping order to rename
