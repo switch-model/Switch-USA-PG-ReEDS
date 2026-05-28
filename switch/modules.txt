@@ -20,7 +20,8 @@ switch_model.transmission.transport.build
 switch_model.transmission.transport.dispatch
 switch_model.transmission.local_td
 switch_model.balancing.operating_reserves.areas
-switch_model.balancing.operating_reserves.spinning_reserves
+# switch_model.balancing.operating_reserves.spinning_reserves
+study_modules.spinning_reserves
 study_modules.carbon_policies_regional
 study_modules.min_capacity_constraint
 study_modules.max_capacity_constraint
