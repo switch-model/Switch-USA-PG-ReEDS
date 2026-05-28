@@ -1500,7 +1500,7 @@ def other_tables(
     #####
     # interest and discount rates in financials.csv
     financials_table = pd.DataFrame(
-        {"base_financial_year": [first_year_settings["atb_data_year"]]}
+        {"base_financial_year": [first_year_settings["target_usd_year"]]}
     )
     for name, default in [("interest_rate", 0.05), ("discount_rate", 0.03)]:
         if name in first_year_settings:
