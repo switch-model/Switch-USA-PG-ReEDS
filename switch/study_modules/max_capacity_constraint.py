@@ -3,23 +3,14 @@ Implement requirement of maximum installed capacity for certain type of energy
 source in some areas. -- etc, offshore wind
 
 
-max_cap_requirement.csv shows the requirement capacity.
-max_cap_generators.csv has the list of qualified generators.
+max_cap_requirements.csv shows the capacity limit for each program and period.
+max_cap_generators.csv has the list of qualified generators for each program
+and period.
 
 """
 
 import os
-from pyomo.environ import (
-    Set,
-    Param,
-    Expression,
-    Constraint,
-    Suffix,
-    NonNegativeReals,
-    Reals,
-    Any,
-    Var,
-)
+from pyomo.environ import Set, Param, Constraint, Reals, Any
 
 from switch_model.utilities import unique_list
 
@@ -30,25 +21,24 @@ def define_components(m):
     m.MAX_CAP_RULES = Set(dimen=2, within=Any * m.PERIODS)
     # maximum capacity specified for each (program, period) combination
     m.max_cap_mw = Param(m.MAX_CAP_RULES, within=Reals)
-    # set of all maximum-capacity programs
-    m.MAX_CAP_PROGRAMS = Set(
-        initialize=lambda m: unique_list(pr for pr, pe in m.MAX_CAP_RULES)
+    # set of all valid program/period/generator combinations (i.e., gens
+    # participating in each program in each period)
+    m.MAX_CAP_PROGRAM_PERIOD_GENS = Set(
+        dimen=3, within=m.MAX_CAP_RULES * m.GENERATION_PROJECTS
     )
-
-    # set of all valid program/generator combinations (i.e., gens participating
-    # in each program)
-    m.MAX_CAP_PROGRAM_GENS = Set(within=m.MAX_CAP_PROGRAMS * m.GENERATION_PROJECTS)
-    m.GENS_IN_MAX_CAP_PROGRAM = Set(
-        m.MAX_CAP_PROGRAMS,
+    m.GENS_IN_MAX_CAP_PROGRAM_PERIOD = Set(
+        m.MAX_CAP_RULES,
         within=m.GENERATION_PROJECTS,
-        initialize=lambda m, pr: unique_list(
-            _g for (_pr, _g) in m.MAX_CAP_PROGRAM_GENS if _pr == pr
+        initialize=lambda m, pr, pe: unique_list(
+            _g
+            for (_pr, _pe, _g) in m.MAX_CAP_PROGRAM_PERIOD_GENS
+            if (_pr, _pe) == (pr, pe)
         ),
     )
 
     # enforce constraint on total installed capacity in each program in each period
     def rule(m, pr, pe):
-        if not m.GENS_IN_MAX_CAP_PROGRAM[pr]:
+        if not m.GENS_IN_MAX_CAP_PROGRAM_PERIOD[pr, pe]:
             # program may have no participating generators,
             # in which case the constraint is always met
             return Constraint.Skip
@@ -63,11 +53,11 @@ def define_components(m):
         # from MaxCapacityTag
         build_capacity = sum(
             m.BuildGen[g, bld_yr]
-            for g in m.GENS_IN_MAX_CAP_PROGRAM[pr]
+            for g in m.GENS_IN_MAX_CAP_PROGRAM_PERIOD[pr, pe]
             for bld_yr in m.BLD_YRS_FOR_GEN_PERIOD[g, pe]
         )
         # build_capacity = sum(
-        #     m.GenCapacity[g, pe] for g in m.GENS_IN_MAX_CAP_PROGRAM[pr]
+        #     m.GenCapacity[g, pe] for g in m.GENS_IN_MAX_CAP_PROGRAM_PERIOD[pr, pe]
         # )
 
         max_capacity_requirement = m.max_cap_mw[pr, pe]
@@ -97,5 +87,5 @@ def load_inputs(model, switch_data, inputs_dir):
     switch_data.load_aug(
         filename=os.path.join(inputs_dir, "max_cap_generators.csv"),
         optional=True,  # also enables empty files
-        set=model.MAX_CAP_PROGRAM_GENS,
+        set=model.MAX_CAP_PROGRAM_PERIOD_GENS,
     )

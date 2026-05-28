@@ -1,25 +1,14 @@
 """
-Implement reuirement of minimum installed capacity for certain type of energy source in some
-areas. -- etc, offshore wind
+Require minimum installed capacity for certain sets of generators, e.g.,
+offshore wind targets
 
-
-min_cap_requirement.csv shows the requirement capacity.
-min_cap_generators.csv has the list of qualified generators.
-
+min_cap_requirements.csv shows the minimum capacity for each program and
+period. min_cap_generators.csv has the list of qualified generators for each
+program and period.
 """
 
 import os
-from pyomo.environ import (
-    Set,
-    Param,
-    Expression,
-    Constraint,
-    Suffix,
-    NonNegativeReals,
-    Reals,
-    Any,
-    Var,
-)
+from pyomo.environ import Set, Param, Constraint, Reals, Any
 
 from switch_model.utilities import unique_list
 
@@ -30,19 +19,18 @@ def define_components(m):
     m.MIN_CAP_RULES = Set(dimen=2, within=Any * m.PERIODS)
     # minimum capacity specified for each (program, period) combination
     m.min_cap_mw = Param(m.MIN_CAP_RULES, within=Reals)
-    # set of all minimum-capacity programs
-    m.MIN_CAP_PROGRAMS = Set(
-        initialize=lambda m: unique_list(pr for pr, pe in m.MIN_CAP_RULES)
+    # set of all valid program/period/generator combinations (i.e., gens
+    # participating in each program in each period)
+    m.MIN_CAP_PROGRAM_PERIOD_GENS = Set(
+        dimen=3, within=m.MIN_CAP_RULES * m.GENERATION_PROJECTS
     )
-
-    # set of all valid program/generator combinations (i.e., gens participating
-    # in each program)
-    m.MIN_CAP_PROGRAM_GENS = Set(within=m.MIN_CAP_PROGRAMS * m.GENERATION_PROJECTS)
-    m.GENS_IN_MIN_CAP_PROGRAM = Set(
-        m.MIN_CAP_PROGRAMS,
+    m.GENS_IN_MIN_CAP_PROGRAM_PERIOD = Set(
+        m.MIN_CAP_RULES,
         within=m.GENERATION_PROJECTS,
-        initialize=lambda m, pr: unique_list(
-            _g for (_pr, _g) in m.MIN_CAP_PROGRAM_GENS if _pr == pr
+        initialize=lambda m, pr, pe: unique_list(
+            _g
+            for (_pr, _pe, _g) in m.MIN_CAP_PROGRAM_PERIOD_GENS
+            if (_pr, _pe) == (pr, pe)
         ),
     )
 
@@ -54,7 +42,7 @@ def define_components(m):
             return Constraint.Skip
 
         build_capacity = sum(
-            m.GenCapacity[g, pe] for g in m.GENS_IN_MIN_CAP_PROGRAM[pr]
+            m.GenCapacity[g, pe] for g in m.GENS_IN_MIN_CAP_PROGRAM_PERIOD[pr, pe]
         )
 
         # define and return the constraint
@@ -82,5 +70,5 @@ def load_inputs(model, switch_data, inputs_dir):
     switch_data.load_aug(
         filename=os.path.join(inputs_dir, "min_cap_generators.csv"),
         optional=True,  # also enables empty files
-        set=model.MIN_CAP_PROGRAM_GENS,
+        set=model.MIN_CAP_PROGRAM_PERIOD_GENS,
     )

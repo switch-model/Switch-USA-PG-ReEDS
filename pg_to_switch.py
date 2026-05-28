@@ -647,11 +647,6 @@ def gen_info_file(
                 .drop(columns=["local"])
                 .fillna(0)
             )
-        else:
-            # min-cap or max-cap program
-            # drop PERIOD column for now; could restore this later, if
-            # enabling code is added to min-cap and max-cap modules
-            prog_gens_long = prog_gens_long.drop(columns=["PERIOD"]).drop_duplicates()
 
         prog_gens_long.to_csv(out_folder / out_file, index=False)
 
