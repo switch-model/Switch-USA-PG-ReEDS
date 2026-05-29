@@ -8,6 +8,7 @@ switch_model.energy_sources.properties
 # patched versions
 study_modules.generators_core_build
 study_modules.generators_core_dispatch
+study_modules.gen_ramp_limits
 switch_model.generators.core.commit.operate
 switch_model.generators.core.commit.fuel_use
 # switch_model.generators.extensions.storage
