@@ -249,6 +249,11 @@ def define_components(mod):
     )
     mod.gen_load_zone = Param(mod.GENERATION_PROJECTS, within=mod.LOAD_ZONES)
     mod.gen_max_age = Param(mod.GENERATION_PROJECTS, within=PositiveIntegers)
+    mod.gen_amortization_period = Param(
+        mod.GENERATION_PROJECTS,
+        within=PositiveReals,
+        default=lambda m, g: m.gen_max_age[g],
+    )
     mod.gen_is_variable = Param(mod.GENERATION_PROJECTS, within=Boolean)
     mod.gen_is_baseload = Param(mod.GENERATION_PROJECTS, within=Boolean, default=False)
     mod.gen_is_cogen = Param(mod.GENERATION_PROJECTS, within=Boolean, default=False)
@@ -683,7 +688,7 @@ def define_components(mod):
         within=NonNegativeReals,
         initialize=lambda m, g, bld_yr: (
             (m.gen_overnight_cost[g, bld_yr] + m.gen_connect_cost_per_mw[g])
-            * crf(m.interest_rate, m.gen_max_age[g])
+            * crf(m.interest_rate, m.gen_amortization_period[g])
         ),
     )
 
@@ -735,10 +740,10 @@ def load_inputs(mod, switch_data, inputs_dir):
         gen_max_age, gen_is_variable, gen_is_baseload,
         gen_full_load_heat_rate, gen_variable_om, gen_connect_cost_per_mw
     Optional columns are:
-        gen_dbid, gen_scheduled_outage_rate, gen_forced_outage_rate,
-        gen_capacity_limit_mw, gen_unit_size, gen_ccs_energy_load,
-        gen_ccs_capture_efficiency, gen_min_build_capacity, gen_is_cogen,
-        gen_is_distributed
+        gen_dbid, gen_amortization_period, gen_scheduled_outage_rate,
+        gen_forced_outage_rate, gen_capacity_limit_mw, gen_unit_size,
+        gen_ccs_energy_load, gen_ccs_capture_efficiency, gen_min_build_capacity,
+        gen_is_cogen, gen_is_distributed
 
     The following file lists existing builds of projects, and is
     optional for simulations where there is no existing capacity:
@@ -756,18 +761,14 @@ def load_inputs(mod, switch_data, inputs_dir):
 
     switch_data.load_aug(
         filename=os.path.join(inputs_dir, "gen_info.csv"),
+        # some params don't have default values (instead any values provided are
+        # used to define their index set), so we must explicitly mark them as
+        # optional
         optional_params=[
-            "gen_dbid",
-            "gen_is_baseload",
-            "gen_scheduled_outage_rate",
-            "gen_forced_outage_rate",
-            "gen_capacity_limit_mw",
             "gen_unit_size",
-            "gen_ccs_energy_load",
+            "gen_capacity_limit_mw",
             "gen_ccs_capture_efficiency",
-            "gen_min_build_capacity",
-            "gen_is_cogen",
-            "gen_is_distributed",
+            "gen_ccs_energy_load",
         ],
         index=mod.GENERATION_PROJECTS,
         param=(
@@ -776,6 +777,7 @@ def load_inputs(mod, switch_data, inputs_dir):
             mod.gen_energy_source,
             mod.gen_load_zone,
             mod.gen_max_age,
+            mod.gen_amortization_period,
             mod.gen_is_variable,
             mod.gen_is_baseload,
             mod.gen_scheduled_outage_rate,

@@ -7,7 +7,6 @@ switch_model.energy_sources.properties
 # switch_model.generators.core.dispatch
 # patched versions
 study_modules.generators_core_build
-study_modules.gen_amortization_period
 study_modules.generators_core_dispatch
 switch_model.generators.core.commit.operate
 switch_model.generators.core.commit.fuel_use

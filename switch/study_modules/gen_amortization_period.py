@@ -18,26 +18,38 @@ def define_components(m):
         default=lambda m, g: m.gen_max_age[g],
     )
 
-    # Extra CRF needed based on the difference between the default crf (using
-    # gen_max_age) and the custom crf (using gen_amortization_period)
-    m.gen_amortization_adjustment = Param(
+    # Extra capital recovery needed based on the difference between the default
+    # crf (using gen_max_age) and the custom crf (using gen_amortization_period)
+    m.gen_amortization_increment = Param(
         m.GENERATION_PROJECTS,
         within=Reals,
-        initialize=lambda m, g: crf(m.interest_rate, m.gen_amortization_period[g])
-        / crf(m.interest_rate, m.gen_max_age[g])
-        - 1,
+        initialize=lambda m, g: (
+            crf(m.interest_rate, m.gen_amortization_period[g])
+            - crf(m.interest_rate, m.gen_max_age[g])
+        ),
     )
 
     m.GenAmortizationAdjustment = Expression(
         m.GENERATION_PROJECTS,
         m.PERIODS,
         rule=lambda m, g, p: sum(
-            m.BuildGen[g, bld_yr]
-            * m.gen_capital_cost_annual[g, bld_yr]
-            * m.gen_amortization_adjustment[g]
+            (
+                m.BuildGen[g, bld_yr]
+                * (m.gen_overnight_cost[g, bld_yr] + m.gen_connect_cost_per_mw[g])
+                + (
+                    (
+                        m.BuildStorageEnergy[g, bld_yr]
+                        * m.gen_storage_energy_overnight_cost[g, bld_yr]
+                    )
+                    if g in m.STORAGE_GENS
+                    else 0.0
+                )
+            )
+            * m.gen_amortization_increment[g]
             for bld_yr in m.BLD_YRS_FOR_GEN_PERIOD[g, p]
         ),
     )
+
     # Summarize costs for the objective function (total $/year).
     m.TotalGenAmortizationAdjustment = Expression(
         m.PERIODS,

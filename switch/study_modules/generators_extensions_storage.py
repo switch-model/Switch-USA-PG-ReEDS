@@ -194,7 +194,7 @@ def define_components(mod):
         rule=lambda m, g, p: sum(
             m.BuildStorageEnergy[g, bld_yr]
             * m.gen_storage_energy_overnight_cost[g, bld_yr]
-            * crf(m.interest_rate, m.gen_max_age[g])
+            * crf(m.interest_rate, m.gen_amortization_period[g])
             # apply to all vintages (bld_yr) of storage that are active in the
             # current period (p)
             for bld_yr in m.BLD_YRS_FOR_GEN_PERIOD[g, p]
