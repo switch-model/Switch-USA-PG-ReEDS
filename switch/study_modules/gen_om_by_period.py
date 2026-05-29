@@ -36,14 +36,16 @@ def define_components(m):
                 m.GenCapacity[g, p] * m.gen_fixed_om_by_period[g, p]
                 for g in m.GENS_IN_PERIOD[p]
             )
-            + sum(
-                m.StorageEnergyCapacity[g, p]
-                * m.gen_storage_energy_fixed_om_by_period[g, p]
-                for g in m.STORAGE_GENS
-                if p in m.PERIODS_FOR_GEN[g]
+            + (
+                sum(
+                    m.StorageEnergyCapacity[g, p]
+                    * m.gen_storage_energy_fixed_om_by_period[g, p]
+                    for g in m.STORAGE_GENS
+                    if p in m.PERIODS_FOR_GEN[g]
+                )
+                if hasattr(m, "STORAGE_GENS")
+                else 0
             )
-            if hasattr(m, "STORAGE_GENS")
-            else 0
         ),
     )
     m.Cost_Components_Per_Period.append("Gen_Fixed_OM_by_Period")
