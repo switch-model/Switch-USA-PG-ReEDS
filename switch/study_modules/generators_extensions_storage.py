@@ -290,9 +290,7 @@ def define_components(mod):
     mod.Charge_Storage_Upper_Limit = Constraint(
         mod.ALL_STORAGE_GEN_TPS,
         rule=lambda m, g, t: m.ChargeStorage[g, t]
-        <= m.DispatchUpperLimit[g, t]
-        * m.gen_store_to_release_ratio[g]
-        * m.gen_availability[g],
+        <= m.DispatchUpperLimit[g, t] * m.gen_store_to_release_ratio[g],
     )
 
     mod.StateOfCharge = Var(mod.STORAGE_GEN_TPS, within=NonNegativeReals)
