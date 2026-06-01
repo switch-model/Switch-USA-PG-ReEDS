@@ -274,7 +274,7 @@ def define_components(m):
                 # Standard generator
                 credit = m.gen_capacity_value[g, t] * m.GenCapacityInTP[g, t]
 
-            if m.gen_is_distributed:
+            if m.gen_is_distributed[g]:
                 # Give distributed generation credit for avoiding local T&D losses
                 # (we ignore the rare case where distributed generation exceeds
                 # local loads and therefore has double losses to serve loads in
