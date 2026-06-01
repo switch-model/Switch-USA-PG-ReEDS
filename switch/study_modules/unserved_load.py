@@ -43,11 +43,10 @@ def define_components(m):
 
     # amount of unserved load during each timepoint
     m.UnservedLoad = Var(m.LOAD_ZONES, m.TIMEPOINTS, within=NonNegativeReals)
-    # total cost for unserved load
+    # total cost for unserved load ($/hour units for Cost_Components_Per_TP)
     m.UnservedLoadPenalty = Expression(
         m.TIMEPOINTS,
-        rule=lambda m, tp: m.tp_duration_hrs[tp]
-        * sum(
+        rule=lambda m, tp: sum(
             m.UnservedLoad[z, tp] * m.unserved_load_penalty_per_mwh
             for z in m.LOAD_ZONES
         ),
