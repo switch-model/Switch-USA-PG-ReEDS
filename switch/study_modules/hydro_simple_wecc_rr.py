@@ -44,6 +44,7 @@ INPUT FILE INFORMATION
     hydro_timepoints.csv (optional)
         timepoint_id,tp_to_hts
 """
+
 from __future__ import division
 
 # ToDo: Refactor this code to move the core components into a
@@ -163,9 +164,11 @@ def define_components(mod):
     )
     mod.Enforce_Hydro_Min_Flow = Constraint(
         mod.HYDRO_GEN_TPS,
-        rule=lambda m, g, t: Constraint.Skip
-        if m.hydro_min_flow_mw[g, m.tp_to_hts[t]] == 0
-        else m.DispatchGen[g, t] >= m.hydro_min_flow_mw[g, m.tp_to_hts[t]],
+        rule=lambda m, g, t: (
+            Constraint.Skip
+            if m.hydro_min_flow_mw[g, m.tp_to_hts[t]] == 0
+            else m.DispatchGen[g, t] >= m.hydro_min_flow_mw[g, m.tp_to_hts[t]]
+        ),
     )
 
     mod.hydro_avg_flow_mw = Param(
@@ -188,33 +191,34 @@ def define_components(mod):
 
     mod.min_data_check("hydro_min_flow_mw", "hydro_avg_flow_mw")
 
-    def load_inputs(mod, switch_data, inputs_dir):
-        """
-        Import hydro data. The files of hydro_timeseries.csv
-        and hydro_timepoints.csv need to contain
-        entries for each dispatchable hydro project.
 
-        Run-of-River hydro projects should not be included in this file; RoR
-        hydro is treated like any other variable renewable resource, and
-        expects data in variable_capacity_factors.csv.
+def load_inputs(mod, switch_data, inputs_dir):
+    """
+    Import hydro data. The files of hydro_timeseries.csv
+    and hydro_timepoints.csv need to contain
+    entries for each dispatchable hydro project.
 
-        hydro_timeseries.csv
-            hydro_project, outage_rate, hydro_min_flow_mw,
-            hydro_avg_flow_mw
+    Run-of-River hydro projects should not be included in this file; RoR
+    hydro is treated like any other variable renewable resource, and
+    expects data in variable_capacity_factors.csv.
 
-        hydro_timepoints.csv
-            timepoint_id, tp_to_hts
+    hydro_timeseries.csv
+        hydro_project, outage_rate, hydro_min_flow_mw,
+        hydro_avg_flow_mw
 
-        """
-        switch_data.load_aug(
-            optional=True,
-            filename=os.path.join(inputs_dir, "hydro_timeseries.csv"),
-            index=mod.HYDRO_GEN_TS_RAW,
-            param=(mod.hydro_min_flow_mw, mod.hydro_avg_flow_mw),
-        )
-        switch_data.load_aug(
-            optional=True,
-            filename=os.path.join(inputs_dir, "hydro_timepoints.csv"),
-            index=mod.TIMEPOINTS,
-            param=(mod.tp_to_hts),
-        )
+    hydro_timepoints.csv
+        timepoint_id, tp_to_hts
+
+    """
+    switch_data.load_aug(
+        optional=True,
+        filename=os.path.join(inputs_dir, "hydro_timeseries.csv"),
+        index=mod.HYDRO_GEN_TS_RAW,
+        param=(mod.hydro_min_flow_mw, mod.hydro_avg_flow_mw),
+    )
+    switch_data.load_aug(
+        optional=True,
+        filename=os.path.join(inputs_dir, "hydro_timepoints.csv"),
+        index=mod.TIMEPOINTS,
+        param=(mod.tp_to_hts),
+    )
