@@ -98,7 +98,7 @@ def define_components(m):
             return Constraint.Skip
         else:
             prev_cap = m.trans_expansion_baseline_mw_km + sum(
-                m.TxTotalMWkmAdded[p]
+                m.TxTotalMWkmAdded[_p]
                 for _p in m.CURRENT_AND_PRIOR_PERIODS_FOR_PERIOD[p]
                 if _p != p
             )
