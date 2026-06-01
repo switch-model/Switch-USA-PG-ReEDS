@@ -17,6 +17,7 @@ Note: carbon_cost_dollar_per_tco2 defaults to 0 (no cost) for any data that
 is unspecified.
 
 """
+
 from __future__ import division
 import os
 from pyomo.environ import Set, Param, Expression, Constraint, Suffix, NonNegativeReals
@@ -35,9 +36,11 @@ def define_components(model):
     )
     model.Enforce_Carbon_Cap = Constraint(
         model.PERIODS,
-        rule=lambda m, p: Constraint.Skip
-        if m.carbon_cap_tco2_per_yr[p] == float("inf")
-        else m.AnnualEmissions[p] == m.carbon_cap_tco2_per_yr[p],
+        rule=lambda m, p: (
+            Constraint.Skip
+            if m.carbon_cap_tco2_per_yr[p] == float("inf")
+            else m.AnnualEmissions[p] <= m.carbon_cap_tco2_per_yr[p]
+        ),
         doc=("Enforces the carbon cap for generation-related emissions."),
     )
     # Make sure the model has a dual suffix for determining implicit carbon costs
