@@ -8,12 +8,12 @@ switch_model.energy_sources.properties
 # patched versions
 study_modules.generators_core_build
 study_modules.generators_core_dispatch
-study_modules.gen_ramp_limits
 switch_model.generators.core.commit.operate
 switch_model.generators.core.commit.fuel_use
 # switch_model.generators.extensions.storage
 study_modules.generators_extensions_storage
 switch_model.generators.extensions.hydro_system
+study_modules.gen_ramp_limits
 # switch_model.energy_sources.fuel_costs_simple
 study_modules.fuel_costs_simple
 switch_model.transmission.transport.build

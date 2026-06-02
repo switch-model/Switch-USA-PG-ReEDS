@@ -14,6 +14,8 @@
 switch/*.xlsx
 save_vars.py
 *.pkl
+*.nl
+*.sol
 todo*
 
 # include growth_rates/*.csv
