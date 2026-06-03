@@ -133,6 +133,11 @@ settings_management:
             Waste Heat: 0
             Nuclear: 0
       no: ~ # default settings disable economic retirement for all plants
+    increase_timepoint_duration:
+      yes: ~ # use default settings (increase to 2 hours)
+      no:
+        model_adjustment_scripts:
+          Increase timepoint duration to 2 hours: ~ # bypass script
     resource_limits:
       none: ~ # default
       high_gas:
@@ -160,10 +165,6 @@ settings_management:
     make_split_models:
       yes:
         model_adjustment_scripts:
-          # drop some scripts by setting to ~:
-          Increase timepoint duration to 2 hours: ~ # keep 1-hour resolution
-          Add extreme days: ~
-          # add this adjustment script:
           Make resource adequacy models:
             script: ../../adjust/make_split_models.py
             # identify capacity expansion scenarios to use as the basis for the RA model (--reuse-build-scenarios)
