@@ -6,7 +6,7 @@
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "arrayProperties": {
-            "size": 3
+            "size": 2
         },
         "ecsPropertiesOverride": {
             "taskProperties": [
@@ -40,7 +40,7 @@
         "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
         "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
         "arrayProperties": {
-            "size": 9
+            "size": 6
         },
         "ecsPropertiesOverride": {
             "taskProperties": [
