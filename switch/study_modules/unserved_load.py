@@ -51,8 +51,13 @@ def define_components(m):
             for z in m.LOAD_ZONES
         ),
     )
+
     # add the unserved load to the model's energy balance
-    m.Zone_Power_Injections.append("UnservedLoad")
+    try:
+        m.Distributed_Power_Injections.append("UnservedLoad")
+    except AttributeError:
+        m.Zone_Power_Injections.append("UnservedLoad")
+
     # add the unserved load penalty to the model's objective function
     m.Cost_Components_Per_TP.append("UnservedLoadPenalty")
 
