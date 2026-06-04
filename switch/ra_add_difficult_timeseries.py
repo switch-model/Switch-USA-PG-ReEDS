@@ -323,7 +323,7 @@ def main(options):
         if unreadable_cases:
             print(
                 f"WARNING: Unable to read unserved load for {len(unreadable_cases)} "
-                "RA cases for {ce_scen}."
+                f"RA cases for {ce_scen}."
             )
 
         print()
