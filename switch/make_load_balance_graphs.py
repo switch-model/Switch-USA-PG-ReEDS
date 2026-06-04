@@ -35,7 +35,7 @@ ra_in_dir = Path("in/2030/ra/")
 ce_out_dir = Path("out/2030/ce/")
 ra_out_dir = Path("out/2030/ra/")
 
-scen_names = ["high_fossil", "high_renewable", "high_renewable_flex"]
+scen_names = ["high_fossil", "clean"]
 ra_scens_file = ra_in_dir / "scenarios_split.txt"
 
 # directory where the load graphs will be stored
@@ -584,8 +584,8 @@ for scen, scen_data in zg_key_days.items():
     for zg, zg_data in scen_data.items():
         for season, season_data in zg_data.items():
             for day_type, date_data in season_data.items():
-                # if zg == "CAISO" and scen == "high_renewable_flex" and season== "summer" and day_type == "Low net load":
-                #     # break here, from all loops
+                # if zg == "CAISO" and scen == "clean" and season== "summer" and day_type == "Low net load":
+                #     # break here, from all loops, for debugging
                 #     raise RuntimeError()
                 date = date_data["date"]
 
@@ -817,7 +817,7 @@ for scen, scen_data in zg_key_days.items():
         n_cols = max(len(sdata) for sdata in zg_data.values())  # extreme days
 
         ## %% test with one panel
-        # if zg == "CAISO" and scen == "high_renewable_flex":
+        # if zg == "CAISO" and scen == "clean":
         #     break
 
         fig, panel = plt.subplots(
@@ -948,10 +948,10 @@ for scen, scen_data in zg_key_days.items():
                 #     # color="red"
                 # )
 
-                # if zg == "CAISO" and scen == "high_renewable_flex" and season== "summer" and day_type == "Low net load":
+                # if zg == "CAISO" and scen == "clean" and season== "summer" and day_type == "Low net load":
                 #     # break here, from all loops
                 #     # These should be equal, but aren't.
-                #     df = zg_key_days['high_renewable_flex']['CAISO']['summer']['Low net load']["data"]
+                #     df = zg_key_days['clean']['CAISO']['summer']['Low net load']["data"]
                 #     # or df = day_data["data"] or df = sub
                 #     sd = pd.DataFrame({
                 #         "supply": df[s_cols].sum(axis=1),
