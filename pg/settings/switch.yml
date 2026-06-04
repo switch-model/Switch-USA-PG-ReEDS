@@ -29,6 +29,9 @@ model_adjustment_scripts:
   Add spinning reserve info:
     script: ../../adjust/add_spinning_reserve_info.py
     order: 1
+  Relax local TD capacity:
+    script: ../../adjust/relax_local_td.py
+    order: 2
   Add demand response info:
     script: ../../adjust/add_dr_info.py
     # run before add_extreme_days to index off normal peak load, not super-peak
