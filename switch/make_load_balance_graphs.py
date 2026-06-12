@@ -79,7 +79,7 @@ def read_ra_out(scen, file, **kwargs):
     df = pd.concat(
         (
             pd.read_csv(f, na_values=".", **kwargs)
-            for f in (ra_out_dir / (scen + "_build")).glob(f"*/{file}")
+            for f in (ra_out_dir / scen).glob(f"*/{file}")
         )
     )
     return df
@@ -484,7 +484,7 @@ if to_run:
         write_weekly_df(weekly_ts, "timeseries.csv")
 
         # store info for the scenarios file (based on the first daily case in the week)
-        ra_scen = f"{scen}_build_{first_case}"
+        ra_scen = f"{scen}_{first_case}"
         scen_info = all_ra_scens[ra_scen]
         scens_to_run.append(
             [
@@ -579,7 +579,7 @@ assert_all_in(
 )
 
 # zg_key_days: scen: zg: season: high/low: date/load_pct/re_pct
-print("Collecting dispatch data for extreme days in all regions")
+print("Collecting dispatch data for extreme weeks in all regions")
 for scen, scen_data in zg_key_days.items():
     for zg, zg_data in scen_data.items():
         for season, season_data in zg_data.items():

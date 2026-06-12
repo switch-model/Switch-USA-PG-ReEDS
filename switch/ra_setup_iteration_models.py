@@ -29,7 +29,7 @@ def get_script_args():
         type=str,
         help="""
             Scenario list file used to define capacity expansion scenarios,
-            e.g., in/2030/s20x1/scenarios_build.txt (usually created by
+            e.g., in/2030/ce/scenarios_build.txt (usually created by
             adjust/define_scenarios.py). This script will create a new version
             for resource adequacy iteration with extension .ra.txt.
         """,
@@ -39,7 +39,7 @@ def get_script_args():
         type=str,
         help="""
             Scenario list file used to define resource adequacy (split)
-            scenarios, e.g., in/2030/resource_adequacy/scenarios_split.txt
+            scenarios, e.g., in/2030/ra/scenarios_split.txt
             (usually created by adjust/create_split_models.py). This script will
             create a new version for resource adequacy iteration with extension
             .ra.txt.
@@ -52,34 +52,37 @@ def get_script_args():
 # testing:
 """
 options = lambda: None # dummy namespace object
-options.ce_scens_file = "in/2030/s20x1/scenarios_build.txt"
-options.ra_scens_file = "in/2030/resource_adequacy/scenarios_split.txt"
+options.ce_scens_file = "in/2030/ce/scenarios_build.txt"
+options.ra_scens_file = "in/2030/ra/scenarios_split.txt"
 """
 
 
 def main(options):
     # simple version: everything happens in the same outputs directory as the original
     # model, so we just
-    # - copy files from in/s20x1 to in/s20x1/ra/scenario_name
+    # - copy files from in/ce to in/ce/ra/scenario_name
     # - copy scenarios_build.txt to scenarios_build_ra.txt with different input dirs
     # - copy scenarios_split.txt to scenarios_split_ra.txt
     # fancy version: like above, but we change the outputs dir for the CE models and the
     # reuse-dir for the RA models.
 
+    def ce_base_path(ce_scen):
+        return Path(ce_scens[ce_scen]["inputs_dir"])
+
     def ce_ra_path(ce_scen):
-        return Path(ce_scens[ce_scen]["inputs_dir"]) / "ra" / ce_scen
+        return ce_base_path(ce_scen) / "ra" / ce_scen
 
     def make_ce_ra_dir(ce_scen):
         """
         Create ce_dir/ra/ce_scen_name with a copy of all files (but not
         subdirs) from ce_dir.
         """
-        ce_dir = Path(ce_scens[ce_scen]["inputs_dir"])
+        ce_base_dir = ce_base_path(ce_scen)
         ce_ra_dir = ce_ra_path(ce_scen)
         if ce_ra_dir.is_dir():
             shutil.rmtree(ce_ra_dir)
         ce_ra_dir.mkdir(parents=True)
-        for p in ce_dir.iterdir():
+        for p in ce_base_dir.iterdir():
             if p.is_file():
                 shutil.copy2(p, ce_ra_dir / p.name)
         print(f"Created CE RA model directory `{ce_ra_dir}`.")

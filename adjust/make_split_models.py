@@ -44,18 +44,30 @@ def parse_script_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("in_dir", help="Path to the input directory")
     parser.add_argument(
-        "--reuse-build-scenarios",
+        "--scenario-list",
         default="",
         help="""
             Path to scenarios.txt file with scenarios that should be used as the
-            basis for the split-model scenarios. These are typically the
-            scenarios used for the capacity expansion stage. If provided, each
-            scenario in the original scenarios.txt will be repeated for each
-            separate timeseries in scenarios_split.txt, and each of these will
-            have arguments added to reuse the output from the original scenario
-            as the construction plan for the split scenario, via
-            --reuse-build-plan. Will be omitted from scenario definition if not
-            specified.
+            basis for the split-model scenarios. These are usually evaluation
+            scenarios that reuse a construction plan previously created in the
+            capacity expansion stage. If provided, each scenario in the
+            --scenario(s) argument that is defined in the --scenario-list file
+            will be repeated for each separate timeseries in
+            scenarios_split.txt. If not specified, a generic definition will be
+            used for all the split scenarios.
+        """,
+    )
+    parser.add_argument(
+        "--scenario",
+        "--scenarios",
+        nargs="+",
+        dest="scenarios",
+        default=[],
+        action="extend",
+        help="""
+            Names of one or more scenarios from the --scenario-list file to use
+            as the basis for split scenarios. If not specified, all scenarios in
+            the --scenario-list file will be used.
         """,
     )
     return parser.parse_known_args()
@@ -221,10 +233,12 @@ def main():
     scen_file = in_dir / split_scenario_file
 
     # define sets of scenarios for all construction plans
-    build_scens = make_build_scens(script_options.reuse_build_scenarios, shared_args)
+    eval_scens = make_eval_scens(
+        script_options.scenario_list, script_options.scenarios, shared_args
+    )
 
     with open(scen_file, "w") as f:
-        for scen, args in build_scens.items():
+        for scen, args in eval_scens.items():
             for tag in scens:
                 f.write(
                     # scenario name and data for this split
@@ -236,7 +250,7 @@ def main():
     print(f"created {scen_file}")
 
 
-def make_build_scens(reuse_build_scenarios, shared_args):
+def make_eval_scens(scenario_file, scenario_names, shared_args):
     """
     Creates a dict with template arguments for each build scenario (capacity
     expansion model), reusing arguments used for the build scenario (e.g.,
@@ -245,16 +259,18 @@ def make_build_scens(reuse_build_scenarios, shared_args):
     specified on the command line for this script.
 
     Parameters:
-    - reuse_build_scenarios: path to scenarios.txt file that holds definitions
+    - scenario_file: path to scenarios.txt file that holds definitions
       for build scenarios (capacity expansion models whose construction plan
       will be used for the split models). If "", no construction plan will be
-      reused and user should add arguments to the call to this script or at
-      runtime to controle the construction plan.
-    - shared_args: a list of other command-line arguments that were passed to
-      this script, which will be applied to all the split scenarios
+      reused and user should add arguments to define the model in the call to
+      this script or when running the split scenarios.
+    - scenario_names: names or scenarios to create split models for (or empty to
+      evaluate all of them)
+    - shared_args: a list of command-line arguments that were passed to this
+      script, which will be applied to all the split scenarios
 
     Returns:
-    - build_scens: a dict of "base scenario name": "scenario string" representing
+    - eval_scens: a dict of "base scenario name": "scenario string" representing
       arguments to use as the starting point for each split scenario (everything
       except --scenario-name and --inputs-dir)
     """
@@ -265,37 +281,39 @@ def make_build_scens(reuse_build_scenarios, shared_args):
     parser.add_argument("--inputs-dir", default=None)
     parser.add_argument("--outputs-dir", default="outputs")
 
-    if reuse_build_scenarios:
-        with open(reuse_build_scenarios) as f:
+    if scenario_file:
+        with open(scenario_file) as f:
             scenario_strings = f.read().splitlines()
     else:
         # User didn't specify build scenarios to use; act as if there is a
         # minimal scenario file that just defines one "base" scenario, and skip
         # the reuse-build-plan parts.
         scenario_strings = ["--scenario-name base"]
+        if scenario_names:
+            raise ValueError(
+                "You specified --scenarios to evaluate but no --scenario-file to read them from."
+            )
+        else:
+            scenario_names = ["base"]
 
-    build_scens = {}
+    eval_scens = {}
     for scen_str in scenario_strings:
         # parse the arguments we want to use and retain the rest for the scenario definition
         local_options, base_scen_args = parser.parse_known_args(shlex.split(scen_str))
-        if reuse_build_scenarios:
-            reuse_build_plan_args = [
-                "--include-module",
-                "study_modules.reuse_build_plan",
-                "--reuse-dir",
-                local_options.outputs_dir,
-            ]
-        else:
-            reuse_build_plan_args = []
+        if (not scenario_names) or local_options.scenario_name in scenario_names:
+            # define a scenario that uses most args from the base scenario
+            # definition and any shared arguments, for all scenarios that were
+            # specified on the command line
+            eval_scens[local_options.scenario_name] = shlex.join(
+                base_scen_args + shared_args
+            )
 
-        # define a scenario that uses the --reuse-dir args, most args from the
-        # base scenario definition, and any shared arguments for all scenarios
-        # that were specified on the command line
-        build_scens[local_options.scenario_name] = shlex.join(
-            reuse_build_plan_args + base_scen_args + shared_args
-        )
+    if scenario_file:
+        missing = [n for n in scenario_names if n not in eval_scens]
+        if missing:
+            raise ValueError(f"Scenario(s) {missing} are not in {scenario_file}.")
 
-    return build_scens
+    return eval_scens
 
 
 if __name__ == "__main__" and "ipykernel" not in sys.argv[0]:

@@ -107,8 +107,8 @@ def get_script_args():
         help="""
             Scenario list file used to define capacity expansion scenarios for
             resource adequacy iteration, e.g.,
-            in/2030/s20x1/scenarios_build.ra..txt (created by
-            ra_setup_iteration_models.py and rewritten by this script)
+            in/2030/s20x1/scenarios_build.ra.txt (created by
+            ra_setup_iteration_models.py and rewritten by this script).
         """,
     )
     parser.add_argument(
@@ -249,7 +249,16 @@ def main(options):
 
     # cross-reference ce scenarios and ra scenarios
     for ra_scen, info in ra_scens.items():
-        ce_scen = ra_scen.rsplit("_", 1)[0]
+        # TODO: cross-reference RA scenario's --reuse-build-dir against CE
+        # scenarios' --outputs-dir instead
+        ce_scen = ra_scen.rsplit("_", 1)[0]  # drop day/week number
+        if ce_scen not in ce_scens:
+            # check for a "_build" version of the scenario (common)
+            ce_scen += "_build"
+        if ce_scen not in ce_scens:
+            raise ValueError(
+                f"Could not find matching CE scenario for RA scenario {ra_scen}"
+            )
         info["ce_scen"] = ce_scen
         ce_scens[ce_scen].setdefault("ra_scens", []).append(ra_scen)
 

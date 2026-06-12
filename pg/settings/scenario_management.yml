@@ -173,13 +173,13 @@ settings_management:
             #   - relax environmental policies
             #   - use unserved load instead of PRM, to avoid infeasibility and find most difficult time
             arguments: >-
-              --reuse-build-scenarios switch/in/2030/ce/scenarios_build.txt
-              --include-module study_modules.reduce_reporting
-              --skip-generic-output --skip-output-files dispatch.csv
-              dispatch_wide.csv dispatch_gen_annual_summary.csv
-              dispatch_zonal_annual_summary.csv dispatch_annual_summary_fuel.pdf
-              dispatch_annual_summary_tech.pdf --exclude-modules
-              study_modules.min_capacity_constraint
+              --scenario-list switch/in/2030/ce/scenarios_eval.txt
+              --scenarios high_fossil clean
+              --include-module study_modules.reduce_reporting --skip-generic-output
+              --skip-output-files dispatch.csv dispatch_wide.csv
+              dispatch_gen_annual_summary.csv dispatch_zonal_annual_summary.csv
+              dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf
+              --exclude-modules study_modules.min_capacity_constraint
               study_modules.max_capacity_constraint study_modules.rps_regional
               --include-module study_modules.report_zonal_total_dispatch
               --exclude-module study_modules.scheduled_outages --exclude-module
