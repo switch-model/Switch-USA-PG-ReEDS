@@ -1,3 +1,4 @@
+import csv
 import os, math
 from collections import defaultdict
 from types import SimpleNamespace
@@ -827,17 +828,14 @@ def define_components(m: AbstractModel):
     # local REC production for each eligibility group in each zone/period is the
     # difference between total production and UREC + BREC exports.
     def rule(m, z, eg, pe):
+        # rte is a (z, eg, rg, pe) tuple
         brec_export = sum(
-            m.ExportBRECs[z, eg, rg, _pe]
-            for z, eg, rg, _pe in m.BREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[
-                z, eg, pe
-            ]
+            m.ExportBRECs[rte]
+            for rte in m.BREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe]
         )
         urec_export = sum(
-            m.ExportURECs[z, eg, rg, _pe]
-            for z, eg, rg, _pe in m.UREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[
-                z, eg, pe
-            ]
+            m.ExportURECs[rte]
+            for rte in m.UREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe]
         )
         total_dispatch = sum(
             m.DispatchGen[g, tp] * m.tp_weight[tp]
@@ -892,6 +890,11 @@ def define_components(m: AbstractModel):
         )
 
         # rps share of net load in this zone for this program/period
+        # TODO: change to a percentage of all power injections (to include T&D
+        # and storage losses) or all power withdrawals (to include loads other
+        # than zone_demand_mw); this version will not correctly reduce the RPS
+        # target when energy efficiency programs are added or increase it if
+        # other types of load are added.
         return m.rps_share[pr, pe, z] * (
             m.zone_total_demand_in_period_mwh[z, pe] - non_rps_dg_vpp_output
         )
@@ -974,3 +977,265 @@ def load_inputs(m, switch_data, inputs_dir):
             filename=os.path.join(inputs_dir, "gen_info.csv"),
             param=(m.gen_is_vpp,),
         )
+
+
+def _reporting_value(val):
+    val = value(val)
+    if isinstance(val, float) and abs(val) < 1e-10:
+        return 0
+    return val
+
+
+def _reporting_value_gwh(val, period_length_years):
+    # report value, but also convert from MWh per period to GWh per year
+    return _reporting_value(val) * 0.001 / period_length_years
+
+
+def _write_rows(path, headings, rows, sorted_output=False):
+    if sorted_output:
+        rows = sorted(rows, key=lambda row: tuple(str(item) for item in row))
+    with open(path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(headings)
+        writer.writerows(rows)
+
+
+def _requirements_group_for_zone_period(m, z, pe):
+    groups = [
+        rg
+        for rg, _pe in m.REQUIREMENTS_GROUP_PERIODS
+        if _pe == pe and z in m.ZONES_IN_REQUIREMENTS_GROUP_PERIOD[rg, pe]
+    ]
+    if len(groups) > 1:
+        raise ValueError(
+            f"Load zone {z} is in multiple RPS requirements groups in period {pe}: "
+            + ", ".join(str(g) for g in groups)
+        )
+    return groups[0] if groups else ""
+
+
+def _non_rps_dg_vpp_output(m, pr, pe):
+    return sum(
+        m.DispatchGen[g, tp] * m.tp_weight[tp]
+        for z in m.ZONES_IN_RPS_PROGRAM_PERIOD[pr, pe]
+        for g in m.GENS_IN_ZONE[z]
+        if (
+            (m.gen_is_distributed[g] or m.gen_is_vpp[g])
+            and (pr, pe, g) not in m.RPS_PROGRAM_PERIOD_GENS
+        )
+        for tp in m.TPS_FOR_GEN_IN_PERIOD[g, pe]
+    )
+
+
+def _program_rps_share(m, pr, pe):
+    zones = list(m.ZONES_IN_RPS_PROGRAM_PERIOD[pr, pe])
+    shares = [_reporting_value(m.rps_share[pr, pe, z]) for z in zones]
+    if not zones:
+        return 0
+    if all(s == shares[0] for s in shares):
+        return shares[0]
+
+    total_load = sum(m.zone_total_demand_in_period_mwh[z, pe] for z in zones)
+    if value(total_load) > 0:
+        return (
+            sum(
+                m.rps_share[pr, pe, z] * m.zone_total_demand_in_period_mwh[z, pe]
+                for z in zones
+            )
+            / total_load
+        )
+    else:
+        return sum(m.rps_share[pr, pe, z] for z in zones) / len(zones)
+
+
+def post_solve(m, outdir):
+    """
+    Write REC production/trade and RPS/CES compliance summary tables.
+    """
+
+    rec_trade_rows = []
+
+    def add_trade_row(pr, pe, exchange_type, z, eg, rg, recs_sent, recs_received, pl):
+        source_gens = " / ".join(m.GENS_IN_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe])
+        if abs(value(recs_received)) > 1e-7:
+            rec_trade_rows.append(
+                (
+                    pe,
+                    pr,
+                    exchange_type,
+                    z,
+                    source_gens,
+                    eg,
+                    rg,
+                    _reporting_value_gwh(recs_sent, pl),
+                    _reporting_value_gwh(recs_received, pl),
+                )
+            )
+
+    # Local RECs are production remaining in a source zone/eligibility group
+    # after BREC and UREC exports. They can be counted for each local program
+    # the eligibility group supports.
+    local_rg_cache = {}
+    for pr, pe in m.RPS_PROGRAM_PERIODS:
+        pl = m.period_length_years[pe]
+        for z, eg, _pe in m.LOCAL_ZONE_ELIGIBILITY_GROUP_PERIODS_FOR_RPS_PROGRAM_PERIOD[
+            pr, pe
+        ]:
+            local_rg = local_rg_cache.setdefault(
+                (z, pe), _requirements_group_for_zone_period(m, z, pe)
+            )
+            add_trade_row(
+                pr,
+                pe,
+                "local production",
+                z,
+                eg,
+                local_rg,
+                m.CreateLocalRECs[z, eg, pe],
+                m.CreateLocalRECs[z, eg, pe],
+                pl,
+            )
+
+    # BREC rows report delivered RECs, net of losses to the destination
+    # requirements group, for each destination program the route can support.
+    for pr, pe in m.RPS_PROGRAM_PERIODS:
+        pl = m.period_length_years[pe]
+        for rte in m.BREC_ROUTES_FOR_RPS_PROGRAM_PERIOD[pr, pe]:
+            z, eg, rg, _pe = rte
+            destination_zone = m.ZONES_ON_BREC_ROUTE[rte].last()
+            add_trade_row(
+                pr,
+                pe,
+                "BREC",
+                z,
+                eg,
+                rg,
+                m.ExportBRECs[rte],
+                m.ExportBRECs[rte]
+                * m.brec_route_efficiency_to_zone[rte + (destination_zone,)],
+                pl,
+            )
+
+    # UREC rows report route-level UREC exports. Actual program-level UREC
+    # application is reported in rec_requirements.csv via ImportURECs; it can be
+    # lower than route exports when program UREC limits bind.
+    for pr, pe in m.RPS_PROGRAM_PERIODS:
+        pl = m.period_length_years[pe]
+        for z, eg, rg, _pe in m.UREC_ROUTES_FOR_RPS_PROGRAM_PERIOD[pr, pe]:
+            add_trade_row(
+                pr,
+                pe,
+                "UREC",
+                z,
+                eg,
+                rg,
+                m.ExportURECs[z, eg, rg, _pe],
+                m.ExportURECs[z, eg, rg, _pe],
+                pl,
+            )
+
+    _write_rows(
+        os.path.join(outdir, "rec_trades.csv"),
+        (
+            "period",
+            "destination_program",
+            "exchange_type",
+            "source_zone",
+            "source_gens",
+            "eligibility_group",
+            "requirements_group",
+            "total_recs_sent_gwh",
+            "total_recs_received_gwh",
+        ),
+        rec_trade_rows,
+        sorted_output=m.options.sorted_output,
+    )
+
+    rec_requirement_rows = []
+    for pr, pe in m.RPS_PROGRAM_PERIODS:
+        pl = m.period_length_years[pe]
+        total_load = sum(
+            m.zone_total_demand_in_period_mwh[z, pe]
+            for z in m.ZONES_IN_RPS_PROGRAM_PERIOD[pr, pe]
+        )
+        rec_requirement_rows.append(
+            (
+                pe,
+                pr,
+                _reporting_value_gwh(total_load, pl),
+                _reporting_value_gwh(_non_rps_dg_vpp_output(m, pr, pe), pl),
+                _reporting_value(_program_rps_share(m, pr, pe)),
+                _reporting_value_gwh(m.RPSProgramTargetMWh[pr, pe], pl),
+                _reporting_value_gwh(m.ImportBRECs[pr, pe], pl),
+                _reporting_value_gwh(m.ImportURECs[pr, pe], pl),
+                _reporting_value_gwh(m.ConsumeLocalRECs[pr, pe], pl),
+            )
+        )
+
+    _write_rows(
+        os.path.join(outdir, "rec_requirements.csv"),
+        (
+            "period",
+            "program",
+            "total_load_mwh",
+            "non_rps_dg_vpp_output_gwh",
+            "program_rps_share",
+            "rps_program_target_gwh",
+            "total_brecs_applied_gwh",
+            "total_urecs_applied_gwh",
+            "total_local_recs_applied_gwh",
+        ),
+        rec_requirement_rows,
+        sorted_output=m.options.sorted_output,
+    )
+
+    rec_production_rows = []
+    for z, eg, pe in m.ZONE_ELIGIBILITY_GROUP_PERIODS:
+        pl = m.period_length_years[pe]
+        gens = " / ".join(m.GENS_IN_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe])
+
+        # see definition of m.CreateLocalRECs
+        brec_export = sum(
+            m.ExportBRECs[rte]
+            for rte in m.BREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe]
+        )
+        urec_export = sum(
+            m.ExportURECs[rte]
+            for rte in m.UREC_ROUTES_FOR_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe]
+        )
+        total_dispatch = sum(
+            m.DispatchGen[g, tp] * m.tp_weight[tp]
+            for g in m.GENS_IN_ZONE_ELIGIBILITY_GROUP_PERIOD[z, eg, pe]
+            if (g, pe) in m.GEN_PERIODS
+            for tp in m.TPS_IN_PERIOD[pe]
+        )
+        local_recs = m.CreateLocalRECs[z, eg, pe]
+
+        rec_production_rows.append(
+            (
+                pe,
+                z,
+                eg,
+                gens,
+                _reporting_value_gwh(total_dispatch, pl),
+                _reporting_value_gwh(brec_export, pl),
+                _reporting_value_gwh(urec_export, pl),
+                _reporting_value_gwh(local_recs, pl),
+            )
+        )
+
+    _write_rows(
+        os.path.join(outdir, "rec_production.csv"),
+        (
+            "period",
+            "zone",
+            "eligibility_group",
+            "gens",
+            "total_production_gwh",
+            "total_brecs_produced_gwh",
+            "total_urecs_produced_gwh",
+            "total_local_recs_produced_gwh",
+        ),
+        rec_production_rows,
+        sorted_output=m.options.sorted_output,
+    )
