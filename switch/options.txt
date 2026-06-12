@@ -23,18 +23,22 @@
 # gurobi solver from ampl
 # --solver gurobi --solver-io nl --solver-options-string "tech:outlev=1 alg:method=2 bar:crossover=0 alg:numericfocus=2 pre:scale=2 bar:homog=1"
 
-# COPT (8.0 seems to be faster than Gurobi or Mosek by a factor of 2-3)
-# we don't really need crossover for the solutions, but it's pretty fast and
-# prevents small infeasibilities in chained solutions
-# --solver "/Applications/copt71/bin/coptampl" --solver-options-string "lp:method=2 lp:crossover=0 tech:outlev=1" 
-# --solver "/Applications/copt80/bin/coptampl" --solver-options-string "lpmethod=2 crossover=1"
---solver coptampl --solver-options-string "LpMethod=2 Crossover=1 Scaling=1 BarHomogeneous=1 Presolve=2"
+# COPT (faster than Gurobi or Mosek by a factor of 2-3 for simple models, but may slow
+# down when ramp rates, min loads, etc., are added and the model becomes more numerically
+# difficult)
+# various settings to go fast but with good numerical performance;wc -l
+# we don't really need crossover for the solutions, but sometimes COPT needs to use it to
+# finish solving a numerically difficult problem; -1 allows this
+# COPT has a default BarIterLimit of 500, which can sometimes be too low (it
+# has been hit while running with study_modules.smooth_dispatch)
+--solver coptampl --solver-options-string "LpMethod=2 Crossover=-1 Scaling=1 BarHomogeneous=1 Presolve=2  BarIterLimit=10000"
 
 # --solver appsi_highs --solver-options-string "solver=ipm parallel=on run_crossover=off threads=10"
 
 # Mosek args are from objects defined in mosek module, e.g., mosek.optimizertype.intpnt
 # also see https://docs.mosek.com/10.2/faq.pdf
 # --solver mosek --solver-options-string "iparam.optimizer=optimizertype.intpnt iparam.intpnt_basis=basindtype.never"
+# --solver mosek_ampl --solver-io nl --solver-options-string "iparam.optimizer=optimizertype.intpnt iparam.intpnt_basis=basindtype.if_feasible"
 
 # MindOpt is from Alibaba -- has unlimited free use but only 1 (or maybe 8) at a time
 # https://help.aliyun.com/zh/optimization-solver/developer-reference/download-and-install-the-latest-optimization-solver-sdk

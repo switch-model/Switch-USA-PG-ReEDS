@@ -661,9 +661,9 @@ def process_sol_file(model: pyo.ConcreteModel, sol_file: str, model_info: dict) 
             lb = v.lb
             ub = v.ub
             # fix small out-of-bounds errors
-            if lb is not None and lb - 1e-9 <= val < lb:
+            if lb is not None and lb - 1e-4 <= val < lb:
                 val = lb
-            elif ub is not None and ub < val <= ub + 1e-9:
+            elif ub is not None and ub < val <= ub + 1e-4:
                 val = ub
             v.set_value(val)
 

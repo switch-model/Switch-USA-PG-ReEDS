@@ -184,8 +184,7 @@ settings_management:
               --include-module study_modules.report_zonal_total_dispatch
               --exclude-module study_modules.scheduled_outages --exclude-module
               study_modules.planning_reserves_extreme_days --include-module
-              study_modules.unserved_load --solver coptampl
-              --solver-options-string "lpmethod=2 crossover=0"
+              study_modules.unserved_load
             # run last because it copies everything created by other scripts into
             # split subdirectories
             order: 20

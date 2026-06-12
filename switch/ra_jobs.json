@@ -1,10 +1,11 @@
 {
     "region": "us-east-2",
     "ce_scenario_list": "in/2030/ce/scenarios_build.ra.txt",
+    "ra_scenario_list": "in/2030/ra/scenarios_split.ra.txt",
     "solve_ce": {
         "jobName": "solve-scenarios-ce",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/solve-ce-ec2-job-queue",
         "arrayProperties": {
             "size": 2
         },
@@ -13,11 +14,18 @@
                 {
                     "containers": [
                         {
-                            "name": "switch-solve-scenarios-container",
+                            "name": "switch-solve-scenarios-weekly-container",
                             "command": [
                                 "--scenario-list",
                                 "in/2030/ce/scenarios_build.ra.txt",
-                                "--log-run"
+                                "--log-run",
+                                "--solver",
+                                "gurobi",
+                                "--solver-options-string",
+                                "method=2 crossover=0",
+                                "--exclude-modules",
+                                "study_modules.delayed_expressions",
+                                "study_modules.nl_solver"
                             ],
                             "resourceRequirements": [
                                 {
@@ -26,7 +34,7 @@
                                 },
                                 {
                                     "type": "MEMORY",
-                                    "value": "32768"
+                                    "value": "61440"
                                 }
                             ]
                         }
@@ -37,21 +45,28 @@
     },
     "solve_ce_eval": {
         "jobName": "solve-scenarios-ce-eval",
-        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/solve-scenarios-fargate:2",
-        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/fargate-us-east-2b-on-demand-job-queue",
+        "jobDefinition": "arn:aws:batch:us-east-2:728904422395:job-definition/switch-solve-scenarios:5",
+        "jobQueue": "arn:aws:batch:us-east-2:728904422395:job-queue/solve-ce-ec2-job-queue",
         "arrayProperties": {
-            "size": 6
+            "size": 2
         },
         "ecsPropertiesOverride": {
             "taskProperties": [
                 {
                     "containers": [
                         {
-                            "name": "switch-solve-scenarios-container",
+                            "name": "switch-solve-scenarios-weekly-container",
                             "command": [
                                 "--scenario-list",
                                 "in/2030/ce/scenarios_eval.txt",
-                                "--log-run"
+                                "--log-run",
+                                "--solver",
+                                "gurobi",
+                                "--solver-options-string",
+                                "method=2 crossover=0",
+                                "--exclude-modules",
+                                "study_modules.delayed_expressions",
+                                "study_modules.nl_solver"
                             ],
                             "resourceRequirements": [
                                 {
@@ -60,7 +75,7 @@
                                 },
                                 {
                                     "type": "MEMORY",
-                                    "value": "32768"
+                                    "value": "61440"
                                 }
                             ]
                         }
