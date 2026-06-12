@@ -9,7 +9,7 @@ if anything in build-scens list:
 first run: either launch this script's job def or run it directly
 """
 
-import json, shutil, sys, os
+import json, shutil, sys, os, argparse, shlex, pathlib
 import boto3
 
 # TODO: cap the number of tasks in the array at the number of
@@ -36,6 +36,21 @@ import boto3
 #                 prune_empty(spec[i])
 #                 if not spec[i]:
 #                     del spec[i]
+
+
+def del_output_dirs(scens_file):
+    """
+    Delete all existing directories referenced by --outputs-dir arguments in scens_file.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--outputs-dir")
+    with open(scens_file) as f:
+        scen_strs = f.read().splitlines()
+    for scen_str in scen_strs:
+        options, other_args = parser.parse_known_args(shlex.split(scen_str))
+        out_dir = options.outputs_dir
+        if os.path.exists(out_dir):
+            shutil.rmtree(out_dir)
 
 
 def submit_job(batch, jobs, job_name, dep_id=None):
@@ -73,6 +88,12 @@ def main():
         return
 
     # still have some RA scenarios to run; setup another iteration
+
+    # delete output dirs listed in ce_scens_file or ra_scens_file, to avoid reusing
+    # them if any scenarios fail to solve
+    del_output_dirs(jobs["ce_scenario_list"])
+    del_output_dirs(jobs["ra_scenario_list"])
+
     # run these jobs as a chain (the last one calls this script again)
     job_queue = [
         "solve_ce",

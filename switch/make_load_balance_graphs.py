@@ -1,7 +1,7 @@
 # %% setup
 
 print("loading libraries")
-import os, datetime, argparse, shlex, shutil, pickle, io, textwrap
+import os, datetime, argparse, shlex, shutil, pickle, io, textwrap, re
 from pathlib import Path
 
 import pandas as pd
@@ -16,7 +16,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as mticker
-from matplotlib import rcParams
+import matplotlib.transforms as mtransforms
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import matplotlib.image as mpimg
 
 from ra_add_difficult_timeseries import get_scenario_args, timepoint_files
 
@@ -26,8 +28,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--reuse-extreme-days",
     action="store_true",
-    help="Reuse cached extreme-day selections if load_balance_graph_key_dates.pkl exists.",
+    help="Reuse cached extreme-day selections from load_balance_graph_key_dates.pkl.",
 )
+# for testing, drop the jupyter arg
+# import sys; sys.argv = sys.argv[:1]
 args = parser.parse_args()
 
 ce_in_dir = Path("in/2030/ce/")
@@ -40,21 +44,74 @@ ra_scens_file = ra_in_dir / "scenarios_split.txt"
 
 # directory where the load graphs will be stored
 load_graphs_path = Path("load_graphs")
+fonts_path = Path("fonts")
 
-# use EI standard font
-rcParams["font.family"] = "Montserrat"  # Century Gothic for presentations
-# Turn off minus signs being replaced with boxes
-rcParams["axes.unicode_minus"] = False
+logo_file = Path("logo.png")
+logo_zoom = 0.06
+
+# graph (name, filter, stat) definitions
+graph_defs = [
+    [
+        ("Summer high net load day", "season == 'Summer'", "pct_gap"),
+        ("Winter high net load day", "season == 'Winter'", "pct_gap"),
+    ],
+    [
+        ("Median day", None, "-(abs(load_pct - 0.5) + abs(re_pct - 0.5))"),
+        ("Low net load day", None, "-pct_gap"),
+    ],
+]
+
+
+# register all user-supplied fonts (user-supplied)
+if fonts_path.is_dir():
+    for ext in ["ttf", "otf"]:
+        for f in fonts_path.glob(f"*.{ext}"):
+            matplotlib.font_manager.fontManager.addfont(f)
+
+# use EI standard font:
+# Montserrat for reports or Century Gothic for presentations
+fig_font = "Montserrat"
+
+matplotlib.rcParams.update(
+    {
+        "font.family": fig_font,
+        # don't convert text to outlines in SVG; computer importing svg and creating
+        # final PDF will need the font installed
+        "svg.fonttype": "none",
+    }
+)
+
+# Turn off minus signs being replaced with boxes (with some fonts)
+# matplotlib.rcParams["axes.unicode_minus"] = False
 
 
 rto_groups = {
-    "All U.S.": [f"rto{n}" for n in range(1, 18 + 1)],
+    "All U.S.": [  # [f"rto{n}" for n in range(1, 18 + 1)],
+        "rto1",
+        "rto2",
+        "rto3",
+        "rto4",
+        "rto5",
+        "rto6",
+        "rto7",
+        "rto8",
+        "rto9",
+        "rto10",
+        "rto11",
+        "rto12",
+        "rto13",
+        "rto14",
+        "rto15",
+        "rto16",
+        "rto17",
+        "rto18",
+    ],
     "PJM": ["rto7", "rto12"],
     "CAISO": ["rto4"],
     "MISO": ["rto6", "rto11", "rto13"],
     "SPP": ["rto8"],
     "ERCOT": ["rto10"],
-    "Non-RTO West": ["rto2", "rto3", "rto5"],
+    "Non-RTO West": ["rto1", "rto2", "rto3", "rto5"],
     "Non-RTO South": ["rto9", "rto14", "rto15", "rto16"],
     "NYISO": ["rto17"],
     "ISONE": ["rto18"],
@@ -351,11 +408,25 @@ ts_case = pd.concat(
 ).set_index("timeseries")["case"]
 
 zg_cache_file = Path("load_balance_graph_key_dates.pkl")
+zg_key_days = None
 if args.reuse_extreme_days and zg_cache_file.exists():
     print(f"Using extreme days cached in {zg_cache_file}")
     with zg_cache_file.open("rb") as f:
-        zg_key_days = pickle.load(f)
-else:
+        zg_key_days_read = pickle.load(f)
+    # keep only those needed for current selection (and reset
+    # if not available)
+    zg_key_days = {}
+    try:
+        for scen in scen_names:
+            zg_key_days[scen] = {}
+            for g in rto_groups:
+                zg_key_days[scen][g] = zg_key_days_read[scen][g]
+    except KeyError:
+        print(f"No record for {scen}:{g} in {zg_cache_file}; re-scanning.")
+        zg_key_days = None
+
+if zg_key_days is None:
+    # regenerate zg_key_days
     zg_key_days = {}
 
     for scen in scen_names:
@@ -394,46 +465,39 @@ else:
                 .sum()
                 .reset_index()
             )
-            # find load and renewable energy percentiles (in all years, all seasons)
+            # find load and renewable energy percentiles and gap (across all
+            # years, all seasons)
             group_data[["load_pct", "re_pct"]] = group_data[
                 ["zone_demand_mw", "variable_gen_dispatch"]
             ].rank(pct=True)
-
-            # find biggest gap between RE percentile and load percentile,
-            # each way, each season (high value = difficult day)
             group_data["pct_gap"] = group_data["load_pct"] - group_data["re_pct"]
-            for high_low, f in [
-                ("High net load", "idxmax"),
-                ("Low net load", "idxmin"),
-            ]:
-                extremes = group_data.groupby("season").apply(
-                    lambda g: pd.Series(
-                        {
-                            f"date": g.loc[getattr(g["pct_gap"], f)(), "hist_date"],
-                            f"load_pct": g.loc[getattr(g["pct_gap"], f)(), "load_pct"],
-                            f"re_pct": g.loc[getattr(g["pct_gap"], f)(), "re_pct"],
-                        }
+
+            # collect extreme dates based on graph definitions
+            for row in graph_defs:
+                for name, filter, stat in row:
+                    if not filter:
+                        filter = "index == index"
+                    extreme_idx = group_data.query(filter).eval(stat).idxmax()
+                    zg_key_days.setdefault(scen, {}).setdefault(zg, {})[name] = (
+                        group_data.loc[extreme_idx, ["hist_date", "load_pct", "re_pct"]]
+                        .rename({"hist_date": "date"})
+                        .to_dict()
                     )
-                )
-                for season, data in extremes.iterrows():
-                    (
-                        zg_key_days.setdefault(scen, {})
-                        .setdefault(zg, {})
-                        .setdefault(season, {})
-                    )[high_low] = data.to_dict()
+
     with zg_cache_file.open("wb") as f:
         pickle.dump(zg_key_days, f)
 
 
 # identify the full week for each group
-needed_weeks = {
-    (scen, date_to_week(dt))
-    for scen, scen_data in zg_key_days.items()
-    for zg_data in scen_data.values()
-    for season_data in zg_data.values()
-    for day_data in season_data.values()
-    for dt in [day_data["date"]]  # assign a dummy var
-}
+needed_weeks = sorted(
+    {
+        (scen, date_to_week(day_data["date"]))
+        for scen, scen_data in zg_key_days.items()
+        for zg_data in scen_data.values()
+        for day_data in zg_data.values()
+    }
+)
+
 
 ####
 # construct weekly models by merging daily models and create a
@@ -520,7 +584,7 @@ supply_colors = {
     "Nuclear": "#93358F",
     "Coal": "#000000",
     "Other": "#AB7942",
-    "Gas CC": "#AEAEAE",
+    "Gas CCGT": "#AEAEAE",
     "Gas CT": "#707070",
     "Hydro": "#0B76A0",
     "Storage": "#96DCF8",
@@ -531,8 +595,8 @@ supply_colors = {
     "Dist. Solar": "#E97132",
 }
 demand_patterns = {
-    "Base Demand": dict(color="black", linewidth=1.5, linestyle="dotted"),
-    "Modified Demand": dict(color="black", linewidth=1.5, linestyle="solid"),
+    "Base Demand": dict(color="black", linewidth=0.75, linestyle="dotted"),
+    "Modified Demand": dict(color="black", linewidth=0.75, linestyle="solid"),
     # "Exports": dict(color="black", linewidth=2, linestyle="solid"),
     # "PRM": dict(color="red", linewidth=2, linestyle="dotted"),
 }
@@ -544,7 +608,7 @@ gen_tech_names = {
     "Batteries": "Storage",
     "Biomass": "Other",
     "Conventional Hydroelectric": "Hydro",
-    "Natural Gas Fired Combined Cycle": "Gas CC",
+    "Natural Gas Fired Combined Cycle": "Gas CCGT",
     "Natural Gas Fired Combustion Turbine": "Gas CT",
     "Onshore Wind Turbine": "Onshore Wind",
     "Other_peaker": "Other",
@@ -559,7 +623,7 @@ gen_tech_names = {
     "Nuclear_Nuclear - Large_Moderate": "Nuclear",
     "Offshore Wind Turbine": "Offshore Wind",
     "distributed_generation": "Dist. Solar",
-    "NaturalGas_1-on-1 Combined Cycle (H-Frame)_Moderate": "Gas CC",
+    "NaturalGas_1-on-1 Combined Cycle (H-Frame)_Moderate": "Gas CCGT",
     "NaturalGas_Combustion Turbine (F-Frame)_Moderate": "Gas CT",
     "Utility-Scale Battery Storage_Lithium Ion_Advanced": "Storage",
     "UtilityPV_Class1_Moderate": "Large Solar",
@@ -578,190 +642,178 @@ assert_all_in(
     gen_tech_names.values(), supply_cols, "unexpected graph labels in gen_tech_names"
 )
 
-# zg_key_days: scen: zg: season: high/low: date/load_pct/re_pct
-print("Collecting dispatch data for extreme weeks in all regions")
+# zg_key_days: scen: zg: name: date/load_pct/re_pct
+print("Collecting dispatch data for weeks with extreme days in all regions.")
 for scen, scen_data in zg_key_days.items():
     for zg, zg_data in scen_data.items():
-        for season, season_data in zg_data.items():
-            for day_type, date_data in season_data.items():
-                # if zg == "CAISO" and scen == "clean" and season== "summer" and day_type == "Low net load":
-                #     # break here, from all loops, for debugging
-                #     raise RuntimeError()
-                date = date_data["date"]
+        for day_type, date_data in zg_data.items():
+            date = date_data["date"]
 
-                supply_dfs = []
-                demand_dfs = []
+            supply_dfs = []
+            demand_dfs = []
 
-                tp_timestamp = read_graphing_in(scen, date, "timepoints.csv").set_index(
-                    "timepoint_id"
-                )["timestamp"]
+            tp_timestamp = read_graphing_in(scen, date, "timepoints.csv").set_index(
+                "timepoint_id"
+            )["timestamp"]
 
-                cols = {
-                    "gen_load_zone": "load_zone",
-                    "timestamp": "timestamp",
-                    "cat": "cat",
-                    "DispatchGen_MW": "mw",
+            cols = {
+                "gen_load_zone": "load_zone",
+                "timestamp": "timestamp",
+                "cat": "cat",
+                "DispatchGen_MW": "mw",
+            }
+
+            dispatch_by_gen = read_graphing_out(scen, date, "dispatch.csv")
+            assert_all_in(
+                dispatch_by_gen["gen_tech"].unique(),
+                gen_tech_names.keys(),
+                "unexpected gen_tech values in dispatch.csv",
+            )
+            dispatch = (
+                dispatch_by_gen.assign(cat=lambda g: g["gen_tech"].map(gen_tech_names))
+                .rename(columns=cols)[cols.values()]
+                .groupby(["load_zone", "timestamp", "cat"])
+                .agg({"mw": "sum"})
+                .reset_index("cat")
+            )
+            del dispatch_by_gen
+            supply_dfs.append(dispatch)
+
+            zone_balance = read_graphing_out(scen, date, "load_balance.csv").set_index(
+                ["load_zone", "timestamp"]
+            )
+            dist_balance = read_graphing_out(
+                scen, date, "local_td_energy_balance_wide.csv"
+            ).set_index(["load_zone", "timestamp"])
+
+            # customer demand, including flex loads
+            for c in ["ShiftDemand", "EEDemandReduction"]:
+                # make sure these columns exist, as zero if necessary
+                if c not in dist_balance:
+                    dist_balance[c] = 0
+
+            # note: loads are negative in dist_balance but positive in zone_balance
+            append(demand_dfs, cat="Base Demand", mw=-dist_balance["zone_demand_mw"])
+            append(demand_dfs, cat="Modified Demand", mw=-dist_balance["ShiftDemand"])
+            append(
+                demand_dfs,
+                cat="Modified Demand",
+                mw=-dist_balance["EEDemandReduction"],
+            )
+
+            # note: the categories below are lumped into more general groups for simpler graphing
+            # local T&D losses
+            append(
+                demand_dfs,
+                cat="Base Demand",
+                mw=zone_balance["WithdrawFromCentralGrid"]
+                - dist_balance["InjectIntoDistributedGrid"],
+            )
+            # storage charging
+            append(
+                demand_dfs,
+                cat="Modified Demand",
+                mw=zone_balance["ZoneTotalStorageCharging"],
+            )
+
+            # Adjust for simultaneous charging and discharging, which can
+            # happen during curtailment, since it has no cost and may be
+            # simpler for the solver (subtract any simultaneous charging
+            # from both supply and demand)
+            charge_discharge = pd.DataFrame(
+                {
+                    "charging": zone_balance["ZoneTotalStorageCharging"],
+                    "discharging": dispatch.query("cat=='Storage'")["mw"],
                 }
+            )
+            charge_discharge["simultaneous"] = charge_discharge.min(axis=1)
+            append(supply_dfs, cat="Storage", mw=-charge_discharge["simultaneous"])
+            append(
+                demand_dfs,
+                cat="Modified Demand",
+                mw=-charge_discharge["simultaneous"],
+            )
 
-                dispatch_by_gen = read_graphing_out(scen, date, "dispatch.csv")
-                assert_all_in(
-                    dispatch_by_gen["gen_tech"].unique(),
-                    gen_tech_names.keys(),
-                    "unexpected gen_tech values in dispatch.csv",
-                )
-                dispatch = (
-                    dispatch_by_gen.assign(
-                        cat=lambda g: g["gen_tech"].map(gen_tech_names)
-                    )
-                    .rename(columns=cols)[cols.values()]
+            # transmission nominal flows and losses
+            # we report these separately so that when we aggregate, the
+            # nominal flows will cancel out as needed but the losses will stay
+            # (the other way would be to just report net imports, but then
+            # when summed for the whole country, transmission losses will look
+            # like exports and it will be confusing)
+            DispatchTx = read_graphing_out(scen, date, "DispatchTx.csv").rename(
+                columns={
+                    "TRANS_TIMEPOINTS_1": "lz1",
+                    "TRANS_TIMEPOINTS_2": "lz2",
+                    "TRANS_TIMEPOINTS_3": "timepoint",
+                }
+            )
+            DispatchTx["timestamp"] = DispatchTx["timepoint"].map(tp_timestamp)
+
+            # get net trans flows to this zone (zone = lz2) minus flows from this zone (zone
+            # = lz1) ignoring losses
+            ideal_net_imports = (
+                DispatchTx.groupby(["lz2", "timestamp"])["DispatchTx"].sum()
+                - DispatchTx.groupby(["lz1", "timestamp"])["DispatchTx"].sum()
+            )
+            ideal_net_imports.index.names = ["load_zone", "timestamp"]
+            # ideal imports minus actual net imports = losses (we assign to importing
+            # zone because that's easiest)
+            # These have some small negative (actually zero) values so we round a bit
+            tx_losses = (ideal_net_imports - zone_balance["TXPowerNet"]).round(1)
+
+            append(supply_dfs, cat="Imports", mw=ideal_net_imports)
+            append(demand_dfs, cat="Base Demand", mw=tx_losses)
+
+            # # diagnostics
+            # sd_dfs = []
+            # for sd, dfs in {"supply": supply_dfs, "demand": demand_dfs}.items():
+            #     df = (
+            #         pd.concat(dfs).loc[("p10", 20302060200), :]
+            #         # .query("load_zone == 'p10' and timestamp == 20302060200")
+            #     )
+            #     sd_dfs.append(df)
+            # supply, demand = sd_dfs
+            # print(f'{supply["mw"].sum()=}, {demand["mw"].sum()=}')
+
+            # combine into single dfs, removing duplicate categories
+            sd_dfs = []
+            for sd, dfs in {"supply": supply_dfs, "demand": demand_dfs}.items():
+                df = (
+                    pd.concat(dfs)
                     .groupby(["load_zone", "timestamp", "cat"])
-                    .agg({"mw": "sum"})
-                    .reset_index("cat")
+                    .sum()
+                    .reset_index()
                 )
-                del dispatch_by_gen
-                supply_dfs.append(dispatch)
-
-                zone_balance = read_graphing_out(
-                    scen, date, "load_balance.csv"
-                ).set_index(["load_zone", "timestamp"])
-                dist_balance = read_graphing_out(
-                    scen, date, "local_td_energy_balance_wide.csv"
-                ).set_index(["load_zone", "timestamp"])
-
-                # customer demand, including flex loads
-                for c in ["ShiftDemand", "EEDemandReduction"]:
-                    # make sure these columns exist, as zero if necessary
-                    if c not in dist_balance:
-                        dist_balance[c] = 0
-
-                # note: loads are negative in dist_balance but positive in zone_balance
-                append(
-                    demand_dfs, cat="Base Demand", mw=-dist_balance["zone_demand_mw"]
+                # aggregate for this region (zg)
+                df = (
+                    df[df["load_zone"].isin(zone_groups[zg])]
+                    .groupby(["timestamp", "cat"])["mw"]
+                    .sum()
+                    .unstack("cat")
+                    .reset_index()
                 )
-                append(
-                    demand_dfs, cat="Modified Demand", mw=-dist_balance["ShiftDemand"]
-                )
-                append(
-                    demand_dfs,
-                    cat="Modified Demand",
-                    mw=-dist_balance["EEDemandReduction"],
-                )
+                sd_dfs.append(df)
 
-                # note: the categories below are lumped into more general groups for simpler graphing
-                # local T&D losses
-                append(
-                    demand_dfs,
-                    cat="Base Demand",
-                    mw=zone_balance["WithdrawFromCentralGrid"]
-                    - dist_balance["InjectIntoDistributedGrid"],
-                )
-                # storage charging
-                append(
-                    demand_dfs,
-                    cat="Modified Demand",
-                    mw=zone_balance["ZoneTotalStorageCharging"],
-                )
+            supply, demand = sd_dfs
+            demand = demand.drop(columns="timestamp")
 
-                # Adjust for simultaneous charging and discharging, which can
-                # happen during curtailment, since it has no cost and may be
-                # simpler for the solver (subtract any simultaneous charging
-                # from both supply and demand)
-                charge_discharge = pd.DataFrame(
-                    {
-                        "charging": zone_balance["ZoneTotalStorageCharging"],
-                        "discharging": dispatch.query("cat=='Storage'")["mw"],
-                    }
-                )
-                charge_discharge["simultaneous"] = charge_discharge.min(axis=1)
-                append(supply_dfs, cat="Storage", mw=-charge_discharge["simultaneous"])
-                append(
-                    demand_dfs,
-                    cat="Modified Demand",
-                    mw=-charge_discharge["simultaneous"],
-                )
+            # shift negative imports to exports (or base demand)
+            demand["Base Demand"] += (-supply["Imports"]).clip(lower=0)
+            supply["Imports"] = supply["Imports"].clip(lower=0)
 
-                # transmission nominal flows and losses
-                # we report these separately so that when we aggregate, the
-                # nominal flows will cancel out as needed but the losses will stay
-                # (the other way would be to just report net imports, but then
-                # when summed for the whole country, transmission losses will look
-                # like exports and it will be confusing)
-                DispatchTx = read_graphing_out(scen, date, "DispatchTx.csv").rename(
-                    columns={
-                        "TRANS_TIMEPOINTS_1": "lz1",
-                        "TRANS_TIMEPOINTS_2": "lz2",
-                        "TRANS_TIMEPOINTS_3": "timepoint",
-                    }
-                )
-                DispatchTx["timestamp"] = DispatchTx["timepoint"].map(tp_timestamp)
-
-                # get net trans flows to this zone (zone = lz2) minus flows from this zone (zone
-                # = lz1) ignoring losses
-                ideal_net_imports = (
-                    DispatchTx.groupby(["lz2", "timestamp"])["DispatchTx"].sum()
-                    - DispatchTx.groupby(["lz1", "timestamp"])["DispatchTx"].sum()
-                )
-                ideal_net_imports.index.names = ["load_zone", "timestamp"]
-                # ideal imports minus actual net imports = losses (we assign to importing
-                # zone because that's easiest)
-                # These have some small negative (actually zero) values so we round a bit
-                tx_losses = (ideal_net_imports - zone_balance["TXPowerNet"]).round(1)
-
-                append(supply_dfs, cat="Imports", mw=ideal_net_imports)
-                append(demand_dfs, cat="Base Demand", mw=tx_losses)
-
-                # # diagnostics
-                # sd_dfs = []
-                # for sd, dfs in {"supply": supply_dfs, "demand": demand_dfs}.items():
-                #     df = (
-                #         pd.concat(dfs).loc[("p10", 20302060200), :]
-                #         # .query("load_zone == 'p10' and timestamp == 20302060200")
-                #     )
-                #     sd_dfs.append(df)
-                # supply, demand = sd_dfs
-                # print(f'{supply["mw"].sum()=}, {demand["mw"].sum()=}')
-
-                # combine into single dfs, removing duplicate categories
-                sd_dfs = []
-                for sd, dfs in {"supply": supply_dfs, "demand": demand_dfs}.items():
-                    df = (
-                        pd.concat(dfs)
-                        .groupby(["load_zone", "timestamp", "cat"])
-                        .sum()
-                        .reset_index()
-                    )
-                    # aggregate for this region (zg)
-                    df = (
-                        df[df["load_zone"].isin(zone_groups[zg])]
-                        .groupby(["timestamp", "cat"])["mw"]
-                        .sum()
-                        .unstack("cat")
-                        .reset_index()
-                    )
-                    sd_dfs.append(df)
-
-                supply, demand = sd_dfs
-                demand = demand.drop(columns="timestamp")
-
-                # shift negative imports to exports (or base demand)
-                demand["Base Demand"] += (-supply["Imports"]).clip(lower=0)
-                supply["Imports"] = supply["Imports"].clip(lower=0)
-
-                # pre-sum demand data for display in front of stacked area supply chart,
-                # then combine with supply data
-                assert_all_in(
-                    demand_cols, demand.columns, "missing columns in demand df"
-                )
-                assert_all_in(
-                    demand.columns, demand_cols, "unexpected columns in demand df"
-                )
-                for i in range(1, len(demand_cols)):
-                    demand[demand_cols[i]] += demand[demand_cols[i - 1]]
-                data_tp = pd.concat([supply, demand], axis=1)
-                # add timestamps for the matching historical hours
-                # (some of these will match date_data["hist_date"])
-                data_tp["hist_hour"] = data_tp["timestamp"].map(tp_hour)
-                date_data["data"] = data_tp
+            # pre-sum demand data for display in front of stacked area supply chart,
+            # then combine with supply data
+            assert_all_in(demand_cols, demand.columns, "missing columns in demand df")
+            assert_all_in(
+                demand.columns, demand_cols, "unexpected columns in demand df"
+            )
+            for i in range(1, len(demand_cols)):
+                demand[demand_cols[i]] += demand[demand_cols[i - 1]]
+            data_tp = pd.concat([supply, demand], axis=1)
+            # add timestamps for the matching historical hours
+            # (some of these will match date_data["hist_date"])
+            data_tp["hist_hour"] = data_tp["timestamp"].map(tp_hour)
+            date_data["data"] = data_tp
 
 
 # %% Prepare panel plot
@@ -807,18 +859,55 @@ def selected_date_formatter(dates):
     return formatter
 
 
+def patch_matplotlib_svg_font_name(svg_path):
+    s = Path(svg_path).read_text(encoding="utf-8")
+    # Convert Matplotlib-style CSS font shorthand like:
+    #   font: 12px 'Montserrat';
+    #   font: 700 12px 'Montserrat';
+    # to:
+    #   font-family: 'Montserrat'; font-size: 12px;
+    #   font-family: 'Montserrat'; font-size: 12px; font-weight: 700;
+
+    # This helps SVG importers such as Affinity Designer and MS Word that may
+    # ignore the CSS font shorthand.
+
+    def repl(m):
+        weight = m.group("weight")
+        size = m.group("size")
+        family = m.group("family")
+        weight_name = (
+            "bold"
+            if isinstance(weight, str) and weight.isdigit() and int(weight) >= 700
+            else weight
+        )
+        if weight_name == "bold":
+            # Change the font-family to work with Affinity Designer and MS Word
+            family += " Bold"
+        parts = [
+            f"font-family: '{family}';",
+            f"font-size: {size}px;",
+        ]
+        if weight:
+            parts.append(f"font-weight: {weight};")
+        return " ".join(parts)
+
+    s = re.sub(
+        r"font:\s*(?:(?P<weight>[1-9]00)\s+)?(?P<size>[0-9.]+)px\s+'(?P<family>[^']+)'\s*;",
+        repl,
+        s,
+    )
+
+    Path(svg_path).write_text(s, encoding="utf-8")
+
+
 # create output dir if needed
 load_graphs_path.mkdir(parents=True, exist_ok=True)
 
 print("Generating panel plots")
 for scen, scen_data in zg_key_days.items():
     for zg, zg_data in scen_data.items():
-        n_rows = len(zg_data)  # seasons
-        n_cols = max(len(sdata) for sdata in zg_data.values())  # extreme days
-
-        ## %% test with one panel
-        # if zg == "CAISO" and scen == "clean":
-        #     break
+        n_rows = len(graph_defs)
+        n_cols = max(len(row) for row in graph_defs)
 
         fig, panel = plt.subplots(
             nrows=n_rows, ncols=n_cols, figsize=(3 * n_cols, 3), sharey=True
@@ -831,14 +920,15 @@ for scen, scen_data in zg_key_days.items():
         else:
             all_axes = panel.reshape((n_rows, n_cols))
 
-        for (season, season_data), ax_row in zip(zg_data.items(), all_axes):
-            for (day_type, day_data), ax in zip(season_data.items(), ax_row):
+        for row, ax_row in zip(graph_defs, all_axes):
+            for (day_type, filter, stat), ax in zip(row, ax_row):
+                day_data = zg_data[day_type]
                 date = day_data["date"]
                 sub = day_data["data"].copy()
 
                 # d_label = f"like {date.strftime('%Y')}"
                 # label = f"{day_type} day ({d_label})"
-                label = f"{day_type} day"
+                label = day_type
 
                 # create a dummy hour at 0:00 the next day for graphing
                 # (by wrapping back to the start, which is how Switch represents it)
@@ -897,26 +987,13 @@ for scen, scen_data in zg_key_days.items():
                 for pos, label in x_labels:
                     ax.text(
                         pos,  # x & y relative to graph size
-                        -0.1,
+                        -0.15,
                         label,
                         transform=ax.transAxes,
                         ha="center",
                         va="top",
                         fontsize=10,
                     )
-
-                    # ax.annotate(
-                    #     "label",
-                    #     xy=(date.replace(hour=12), 0),
-                    #     xycoords="axes fraction", # ("data", "axes fraction"),
-                    #     xytext=(pos, -5),
-                    #     textcoords="offset points",
-                    #     ha="center",
-                    #     va="top",
-                    #     fontsize=10,
-                    #     fontweight="bold",
-                    #     # color="red"
-                    # )
 
                 ax.axvspan(
                     date,
@@ -935,46 +1012,10 @@ for scen, scen_data in zg_key_days.items():
                     edgecolor="none",
                     zorder=0,
                 )
-                # ax.annotate(
-                #     "*",
-                #     xy=(date.replace(hour=12), 0),
-                #     xycoords=("data", "axes fraction"),
-                #     xytext=(0, 92),
-                #     textcoords="offset points",
-                #     ha="center",
-                #     va="top",
-                #     fontsize=10,
-                #     fontweight="bold",
-                #     # color="red"
-                # )
-
-                # if zg == "CAISO" and scen == "clean" and season== "summer" and day_type == "Low net load":
-                #     # break here, from all loops
-                #     # These should be equal, but aren't.
-                #     df = zg_key_days['clean']['CAISO']['summer']['Low net load']["data"]
-                #     # or df = day_data["data"] or df = sub
-                #     sd = pd.DataFrame({
-                #         "supply": df[s_cols].sum(axis=1),
-                #         "demand": df['Modified Demand']
-                #     })
-                #     raise RuntimeError()
-
-                # for label in ax.get_xticklabels(minor=True):
-                #     if label.get_text().startswith("["):
-                #         label.set_fontweight("bold")
 
             # label leftmost axes on this row
             ax = ax_row[0]
             ax.set_ylabel(f"GW")
-            ax.text(
-                -0.43,  # x & y relative to graph size
-                0.5,
-                season,
-                transform=ax.transAxes,
-                ha="center",
-                va="center",
-                fontsize=12,
-            )
 
         # # label bottom axes
         # for ax in all_axes[-1]:
@@ -989,7 +1030,7 @@ for scen, scen_data in zg_key_days.items():
         handles, labels = ax.get_legend_handles_labels()
         ord = list(range(len(labels) - 1, -1, -1))
 
-        all_axes[0][-1].legend(
+        legend = all_axes[0][-1].legend(
             [handles[o] for o in ord],
             [labels[o] for o in ord],
             bbox_to_anchor=(1.1, 1.4),
@@ -997,14 +1038,25 @@ for scen, scen_data in zg_key_days.items():
             facecolor="none",
             edgecolor="none",
         )
-        # all_axes[0][-1].legend(
-        #     bbox_to_anchor=(1.02, 1.03),
-        #     loc="upper left",
-        #     facecolor="none",
-        #     edgecolor="none",
-        # )
-        # plt.show()
-        for fmt in ["pdf"]:  # "png", "pdf", "svg"]:
+
+        # add logo if file is present
+        if logo_file.exists():
+            # find right edge of legend in figure coords
+            fig.canvas.draw()  # pin down legend position
+            legend_bbox = legend.get_window_extent(
+                renderer=fig.canvas.get_renderer()
+            ).transformed(fig.transFigure.inverted())
+            ab = AnnotationBbox(
+                OffsetImage(mpimg.imread(logo_file), zoom=logo_zoom),
+                xy=(legend_bbox.x1 - 0.02, 0.03),
+                xycoords=fig.transFigure,  # use figure coords
+                box_alignment=(1, 0),  # right, bottom
+                frameon=False,
+                pad=0,
+            )
+            fig.add_artist(ab)
+
+        for fmt in ["pdf", "svg"]:  # "png", "pdf", "svg"]:
             file = str(load_graphs_path / f"{zg.replace('.', '')} {scen}.{fmt}")
             fig.savefig(
                 file,
@@ -1013,6 +1065,11 @@ for scen, scen_data in zg_key_days.items():
                 transparent=True,
                 dpi=300,
             )
+            if fmt == "svg":
+                patch_matplotlib_svg_font_name(file)
             print(f"saved {file}.")
+
+        # close figure to save memory
+        plt.close(fig)
 
 # %%
