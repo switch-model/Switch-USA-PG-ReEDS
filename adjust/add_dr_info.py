@@ -1,9 +1,13 @@
 """
 Define a 3% shiftable load for the cases that use the
-study_modules.demand_response_investment module. This is more conservative than the [DOE liftoff
-report](https://www.smartenergydecisions.com/wp-content/uploads/2025/04/liftoff_doe_virtualpowerplants2025update.pdf),
-which estimated 80-160 GW of VPP potential (we have an 800 GW system
-coincident peak in 2030). DOE estimated VPP costs at $43/kW-yr based on some Brattle work.
+study_modules.demand_response_investment module.
+
+This is more conservative than the DOE liftoff report
+(https://www.smartenergydecisions.com/wp-content/uploads/2025/04/liftoff_doe_virtualpowerplants2025update.pdf),
+which estimated 80-160 GW of VPP potential (we have an 800 GW system coincident
+peak in 2030). DOE estimated VPP costs at $43/kW-yr (p. 13) based on some
+Brattle work. We assume the base year was 2025, because that was the publication
+date for the report.
 """
 
 import sys
@@ -11,6 +15,7 @@ from pathlib import Path
 
 import pandas as pd
 
+# TODO: adjust for inflation
 annual_cost_per_mw = 43000
 shift_down_limit = 0.03
 shift_up_limit = 0.24

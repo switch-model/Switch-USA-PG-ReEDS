@@ -1,11 +1,10 @@
 """
 incorporate EE savings
- - even if it's an incremental 0.5-1% energy
-savings each year, that's a 2.5-5% reduction in overall load at fairly low
-cost (we use 3.75%, based on 0.75%/year for 5 years)
-([ACEEE](https://www.aceee.org/sites/default/files/pdfs/cost_of_saving_electricity_final_6-22-21.pdf)
-estimated $24/MWh in 2018 -- around $31 now)?
-
+incremental 0.5-1% energy savings each year, reaches 2.5-5% reduction in overall
+load at fairly low cost
+We use 3.75%, based on 0.75%/year for 5 years from ACEEE
+(https://www.aceee.org/sites/default/files/pdfs/cost_of_saving_electricity_final_6-22-21.pdf)
+estimated $24/MWh in 2018 -- equals $31/MWh in 2025.
 """
 
 import sys
@@ -13,6 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
+# TODO: adjust for inflation
 ee_annual_cost_per_mwh = 31
 ee_load_reduction_frac = 0.0375
 
