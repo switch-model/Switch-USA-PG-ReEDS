@@ -13,6 +13,8 @@ import math
 import shlex
 import subprocess
 import types
+import copy
+import pickle
 from pathlib import Path
 
 from typing import List, Dict, Optional
@@ -534,6 +536,15 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
         * build_gen_energy_predetermined: based on capacity_mwh from gens_by_build_year
     """
 
+    existing = gens_by_build_year.loc[gens_by_build_year["existing"], :].copy()
+    try:
+        # make sure build_year is an int (if float or NaN, something has gone wrong)
+        existing["build_year"] = existing["build_year"].astype(int)
+    except:
+        logger.warning(
+            "There are non-integer or missing build years in gen_build_predetermined.csv"
+        )
+
     # write the relevant columns out for Switch
     gbp_cols = {
         "Resource": "GENERATION_PROJECT",
@@ -541,18 +552,36 @@ def gen_build_predetermined_file(gens_by_build_year, out_folder):
         "capacity_mw": "build_gen_predetermined",
         "capacity_mwh": "build_gen_energy_predetermined",
     }
-
-    gbp = gens_by_build_year.loc[gens_by_build_year["existing"], gbp_cols.keys()]
-    gbp = gbp.rename(columns=gbp_cols)
-    # make sure gbp is an int (if float or NaN, something has gone wrong)
-    try:
-        gbp["build_year"] = gbp["build_year"].astype(int)
-    except:
-        logger.warning(
-            "There are non-integer or missing build years in gen_build_predetermined.csv"
-        )
-
+    gbp = existing.rename(columns=gbp_cols).loc[:, gbp_cols.values()]
     gbp.to_csv(out_folder / "gen_build_predetermined.csv", index=False, na_rep=".")
+
+    # make a crosswalk file for reference (not used by Switch, but helpful for
+    # tracing which EIA generators are included or excluded)
+    unit_cols = [
+        "plant_id_eia",
+        "gen_id_eia",
+        "capacity_mw_eia",
+        "capacity_mw",
+        "capacity_mwh",
+    ]
+    gen_eia_cols = ["generation_project", "build_year"] + unit_cols
+    gen_eia = (
+        existing[["Resource", "build_year", "eia_units"]]
+        .rename(columns={"Resource": "generation_project"})
+        .explode("eia_units")
+        .reset_index(drop=True)
+    )
+    gen_eia[unit_cols] = pd.DataFrame(
+        gen_eia["eia_units"].tolist(), index=gen_eia.index
+    )
+    gen_eia = gen_eia.dropna(subset="plant_id_eia")
+    try:
+        # convert plant ids to ints if possible (usually will be)
+        gen_eia["plant_id_eia"] = gen_eia["plant_id_eia"].astype("Int64")
+    except:
+        pass
+    gen_eia = gen_eia[gen_eia_cols].sort_values(gen_eia_cols)
+    gen_eia.to_csv(out_folder / "gen_eia_map.csv", index=False, na_rep=".")
 
 
 def gen_info_file(
@@ -763,6 +792,21 @@ def graph_color_tables(out_folder, gen_info):
     ###############################################################
 
 
+def pickle_gc(gc):
+    logger.warning("Saving gc.pkl for possible diagnosis.")
+    gc = copy.copy(gc)
+    del gc.pudl_engine, gc.pg_engine, gc.pudl_out
+    with open("gc.pkl", "wb") as f:
+        pickle.dump(gc, f)
+
+
+# convenience function for debugging
+def unpickle_gc():
+    with open("gc.pkl", "rb") as f:
+        gc = pickle.load(f)
+    return gc
+
+
 """
 testing: use scen_settings_dict from main()
 """
@@ -823,11 +867,62 @@ def gen_tables(
             pg_engine,
             year_settings,
             multi_period=True,
+            supplement_with_860m=True,
         )
         # Indicate if the PG unit retirement data bug should be replicated
         gc.pg_unit_bug = pg_unit_bug
 
-        gen_df = gc.create_all_generators().copy()
+        gc.create_all_generators()
+
+        # There have been very rare cases where new or proposed gens in 860m
+        # didn't get added to the dataset, causing incorrect models. So we watch
+        # for those until we can eventually fix them. These cases also had some
+        # divergence in the derating of a few hydro and biomass plants and/or a
+        # few generators that dropped out for no apparent reason (not marked as
+        # retired in 860 or 860m), but those aspects are harder to identify.
+        # Most of the error can be reproduced by concatenating empty dataframes
+        # to gc.unit_model instead of self.proposed_gens and self.new_860m_gens
+        # in powergenome.generators.create_region_technology_clusters(). Note
+        # that the concat is not skipped entirely, because (as of early
+        # 2026) new_860m_gens _does_ provide a capacity_mw column even in this
+        # aberrant case, which then gets filled in by add_860m_storage_mwh();
+        # without that column, the storage durations would all end up as 4
+        # hours, instead of taking on the 860m values.
+        for tbl in ["new_860m_gens", "proposed_gens"]:
+            if not hasattr(gc, tbl):
+                pickle_gc(gc)
+                raise RuntimeError(
+                    f"PowerGenome didn't create table {tbl} with EIA 860m data. "
+                    "This may resolve if you run this script again. "
+                )
+            df = getattr(gc, tbl).reset_index()
+            if df.empty:
+                logger.warning(
+                    f"No 860m generators were added to in {tbl} for use in the model. "
+                    "This is likely an error, unless your 860 and 860m databases are "
+                    "very closely synchronized."
+                )
+                pickle_gc(gc)
+            else:
+                # TODO: maybe loosen this up, i.e., ignore new gens of a technology
+                # type that is not listed in year_settings['tech_groups'] (but it is
+                # more complicated than that' also need to consider techs that
+                # aren't grouped and techs in the regional_no_grouping list)
+                match_cols = ["plant_id_eia", "generator_id"]
+                matched = df[match_cols].merge(
+                    gc.units_model[match_cols],
+                    how="left",
+                    on=match_cols,
+                    indicator=True,
+                )
+                if (matched["_merge"] == "left_only").any():
+                    pickle_gc(gc)
+                    raise RuntimeError(
+                        f"Some EIA 860m records in {tbl} were not added to units_model. "
+                        "This may resolve if you run this script again."
+                    )
+
+        gen_df = gc.all_resources.copy()
 
         # store fuel prices for later reference
         fuel_price_dfs.append(gc.fuel_prices.copy())
@@ -941,20 +1036,23 @@ def gen_tables(
 
         gen_dfs.append(gen_df)
 
-        # find build_year, capacity_mw and capacity_mwh for existing generating
-        # units online in this model_year for each gen cluster
+        # find unit-level info build_year, capacity_mw and capacity_mwh for existing generating
+        # units online in this model_year for each gen cluster (also unit)
         eia_unit_info = eia_build_info(gc)
-        unit_df = gen_df.merge(eia_unit_info, on="Resource", how="left")
+        unit_df = gen_df.drop(columns=["plant_id_eia", "unit_id_pg"]).merge(
+            eia_unit_info, on="Resource", how="left"
+        )
         unit_dfs.append(unit_df)
 
     gens_by_model_year = pd.concat(gen_dfs, ignore_index=True)
     units_by_model_year = pd.concat(unit_dfs, ignore_index=True)
 
     # import save_vars, copy
+
     # # make pickleable `self` for testing powergenome GeneratorClusters methods
     # self = copy.copy(gc)
     # del self.pudl_engine, self.pg_engine, self.pudl_out
-    # print("\aSaving gen_tables data and self=gc for debugging.")
+    # logger.info("\aSaving gen_tables data and self=gc for debugging.")
     # save_vars.save_frame()
     # breakpoint()
 
@@ -1028,15 +1126,27 @@ def gen_tables(
     # average model_year is not meaningful
     unit_info = unit_info.drop(columns=["model_year"])
 
-    # aggregate by build_year
-    # this could in theory be done with groupby()[columns].sum(), but then
-    # pandas 1.4.4 sometimes drops capacity_mw for this dataframe (seems to happen
-    # with columns where one's name is a shorter version of the other, and can't
-    # be reproduced if you save the table as .csv and read it back in.)
-    build_year_info = unit_info.groupby(["Resource", "build_year"], as_index=False).agg(
-        {"capacity_mw": "sum", "capacity_mwh": "sum"}
+    # aggregate by build_year, including gathering a list of units for each gen
+    build_year_info = unit_info.groupby(
+        ["Resource", "build_year"], as_index=False
+    ).apply(
+        lambda g: pd.Series(
+            {
+                "capacity_mw": g["capacity_mw"].sum(),
+                "capacity_mwh": g["capacity_mwh"].sum(),
+                "eia_units": [
+                    (
+                        r["plant_id_eia"],
+                        r["generator_id"],
+                        r["unmodified_capacity_mw"],
+                        r["capacity_mw"],
+                        r["capacity_mwh"] if r["STOR"] else None,
+                    )
+                    for i, r in g.iterrows()
+                ],
+            }
+        )
     )
-
     # Existing gen clusters are duplicated across model years, so we first
     # consolidate to one row per resource, then replicate data for each
     # resource/build_year combo
@@ -1199,6 +1309,9 @@ def eia_build_info(gc: GeneratorClusters):
             "build_year",
             "capacity_mw",
             "capacity_mwh",
+            "unmodified_capacity_mw",
+            "plant_id_eia",
+            "generator_id",
         ]
     ]
 
@@ -2046,6 +2159,7 @@ def main(
     myopic: bool = False,
     pg_unit_bug: bool = False,
     case_index: int = -1,
+    debug: bool = False,
 ):
     # %%
     """Create inputs for the Switch model using PowerGenome data
@@ -2079,7 +2193,11 @@ def main(
         useful mainly for parallel jobs, where the first task prepares the first
         case, second prepares the second, etc. Index starts from 1 for the first
         case.
+    debug : bool, optional
+        Show extra information in the log.
     """
+    if debug:
+        root_logger.setLevel("DEBUG")
     cwd = Path.cwd()
     results_folder = cwd / results_folder
     results_folder.mkdir(parents=True, exist_ok=True)

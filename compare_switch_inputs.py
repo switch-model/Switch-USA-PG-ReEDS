@@ -30,12 +30,13 @@ def round(x, n_figs):
     return rounded
 
 
-in1 = sys.argv[1]
-in2 = sys.argv[2]
+in1 = Path(sys.argv[1])
+in2 = Path(sys.argv[2])
 try:
-    # trim identical parts from the start and end of the paths
-    pp1 = Path(in1).parts
-    pp2 = Path(in2).parts
+    # trim identical parts (and initial anchors) from the start and end of the
+    # paths
+    pp1 = (("",) + in1.parts[1:]) if in1.anchor else in1.parts
+    pp2 = (("",) + in2.parts[1:]) if in2.anchor else in2.parts
     for start, (p1, p2) in enumerate(zip(pp1, pp2)):
         if p1 != p2:
             break
@@ -45,12 +46,13 @@ try:
     out1 = "_".join(pp1[start : len(pp1) - end])
     out2 = "_".join(pp2[start : len(pp2) - end])
 except:
+    raise
     # flag to use dummy names
     out1 = out2 = "bad"
 
 if out1 == out2 or out1 == "" or out2 == "":
-    out1 = in1.replace("\\", "-").replace("/", "-")
-    out2 = in2.replace("\\", "-").replace("/", "-")
+    out1 = str(in1).replace("\\", "-").replace("/", "-").replace(":", "-")
+    out2 = str(in2).replace("\\", "-").replace("/", "-").replace(":", "-")
 
 with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
 

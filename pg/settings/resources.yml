@@ -72,6 +72,7 @@ tech_groups:
   Batteries:
     - Batteries
     - Flywheels
+    - Other Energy Storage
   Biomass:
     - Wood/Wood Waste Biomass
     - Landfill Gas
@@ -288,6 +289,8 @@ energy_storage_duration:
   Hydroelectric Pumped Storage: 15.5
   # 4 for batteries based on typical duration of recent projects
   Batteries: 4
+  # Other Energy Storage is one proposed 400 MW / 1600 MWh battery project as of mid-2026
+  Other Energy Storage: 4
   # 1 for flywheels, generally suitable for regulating reserve service
   Flywheels: 1
   # in principle, CAES could have quite long storage, but the only one in service

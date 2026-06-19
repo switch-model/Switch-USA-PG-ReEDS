@@ -32,11 +32,17 @@ from pathlib import Path
 # sys.argv[1] = "in/2030/s40x1"
 
 idir = Path(sys.argv[1])
+if idir.anchor:
+    # drop /, \ or c:\ prefix
+    idir_parts = idir.parts[1:]
+else:
+    idir_parts = idir.parts
+
 try:
-    tag_start = idir.parts.index("in") + 1
+    tag_start = idir_parts.index("in") + 1
 except ValueError:
     tag_start = 0
-label = "_".join(idir.parts[tag_start:])
+label = "_".join(idir_parts[tag_start:])
 
 out_html = label + ".html"
 
