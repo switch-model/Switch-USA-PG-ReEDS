@@ -3,15 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
-
 # clean up pandas floating point output
-def clean_to_csv(self, *args, float_format="%.15g", **kwargs):
-    pd_to_csv(self, *args, float_format=float_format, **kwargs)
-
-
-pd_to_csv = pd.DataFrame.to_csv
-pd.DataFrame.to_csv = clean_to_csv
-
+import pandas_clean_csv
 
 in_dir = Path(sys.argv[1])
 # in_dir = Path("switch/in/2030/ce")

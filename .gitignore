@@ -12,10 +12,16 @@
 
 # files used for planning, diagnosis and debugging
 switch/*.xlsx
+switch/*.csv
+switch/*.docx
+switch/*.html
 save_vars.py
 *.pkl
 *.nl
 *.sol
+*.lp
+*.ilp
+*.mps
 todo*
 
 # include growth_rates/*.csv

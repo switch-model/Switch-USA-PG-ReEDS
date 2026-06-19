@@ -68,6 +68,12 @@ eia = (
     .copy()
 )
 
+# If a plant on EIA's "Operating" page has a GEM retirement date in the past,
+# shift it to the future, since it must still be running. We assume the earliest
+# retirement date on the "Operating" sheet is the earliest possible year for
+# future retirements.
+earliest_eia_retirement = eia["Planned Retirement Year"].min()
+
 # tag each generator with the corresponding row in the Excel sheet
 # (4-based to match the view in Excel)
 eia["eia_row"] = eia.index + 4  # 0->4
@@ -87,6 +93,17 @@ gem = gem[gem["Country/Area"] == "United States"].copy()
 gem["Unit name"] = gem["Unit name"].str.replace(", timepoint 1", "")
 # treat actual retirements as planned retirements (some of these are not in EIA)
 gem["Planned retirement"] = gem["Planned retirement"].fillna(gem["Retired year"])
+
+# If the plant is still operating as a coal plant according to EIA, make sure
+# the planned retirement is in the future. (This helps when reporting capacity
+# transition from base year to model year later.)
+# TODO: is this really the best treatment for plants marked in GEM as retired
+# several years ago, but marked in EIA as still online? Maybe the retirement or
+# fuel switch was canceled? Or they are now gas plants in reality but marked as
+# multi-fuel coal plants in EIA?
+gem["Planned retirement"] = gem["Planned retirement"].clip(
+    lower=earliest_eia_retirement
+)
 
 # Calculate the "distance" from each generator in 860m to each generator in
 # GEM, based on

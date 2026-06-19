@@ -18,6 +18,9 @@ import sys, os, re
 from pathlib import Path
 
 import pandas as pd
+import pandas_clean_csv
+
+# last_historical_year = 2025
 
 
 def to_csv(df, file):
@@ -55,7 +58,13 @@ for tag in ("", "_prm"):
     # the study period)
     gen_info_no_retire = gen_info.copy()
     gen_info_no_retire.loc[fossil_mask, "gen_can_retire_early"] = 0
+    # old_max_age = gen_info_no_retire.loc[
+    #     fossil_mask, ["GENERATION_PROJECT", "gen_max_age"]
+    # ].set_index("GENERATION_PROJECT")["gen_max_age"]
     gen_info_no_retire.loc[fossil_mask, "gen_max_age"] = 1000
+    # new_max_age = gen_info_no_retire.loc[
+    #     fossil_mask, ["GENERATION_PROJECT", "gen_max_age"]
+    # ].set_index("GENERATION_PROJECT")["gen_max_age"]
 
     # apply a $200/MWh "production tax" to new clean generation to indicate
     # a strong preference for fossil power (a lower value around $80/MWh can
@@ -68,24 +77,55 @@ for tag in ("", "_prm"):
     )
     gen_info_high_fossil.loc[new_clean_mask, "gen_variable_om"] += 200
 
-    for tag in ["", "high_fossil", "no_retire"]:  # , "low_fossil"]:
-        name = ("gen_info." + tag).strip(".")
-        df = locals()[name.replace(".", "_")]
-        if name != "gen_info":
-            to_csv(df, name + ".csv")
-        # 0.1% interruptible load (no longer used because difficult to decide
-        # how it affects PRM or integrate into resource adequacy evaluation)
-        # df_flex = df.copy()
-        # df_flex.loc[
-        #     df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
-        # ] = 0.001
-        # to_csv(df_flex, name.replace("gen_info", "gen_info.flex") + ".csv")
-        # # allow full flexibility to be concentrated in each weekly case
-        # # if needed (for rare emergencies)
-        # df_flex.loc[
-        #     df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
-        # ] *= 52
-        # to_csv(df_flex, name.replace("gen_info", "gen_info.flex_weekly") + ".csv")
+    to_csv(gen_info_high_fossil, "gen_info.high_fossil.csv")
+    to_csv(gen_info_no_retire, "gen_info.no_retire.csv")
+
+    ########
+    # # push back the start date for plants that are scheduled to retire before
+    # # the study starts
+    # # (at one point this could apply to plants that GEM reported as retired
+    # # before the study, but EIA has online. However, for now, we instead
+    # # push the retirement year into the future in update_coal_closures.py,
+    # # because they seem to be still online, so this code is not needed.)
+    # planned_retire = gen_info.loc[fossil_mask, "GENERATION_PROJECT"]
+
+    # gen_build_predet = pd.read_csv(
+    #     in_dir / "gen_build_predetermined.csv", na_values="."
+    # )
+    # # find gens that are scheduled to retire before the model can start
+    # old_age = gen_build_predet["GENERATION_PROJECT"].map(old_max_age)
+    # new_age = gen_build_predet["GENERATION_PROJECT"].map(new_max_age)
+    # retired_mask = gen_build_predet["build_year"] + old_age <= last_historical_year
+    # # push build year earlier so they will still retire even after age extension
+    # gen_build_predet.loc[retired_mask, "build_year"] = (
+    #     gen_build_predet.loc[retired_mask, "build_year"]
+    #     + old_age.loc[retired_mask]
+    #     - new_age.loc[retired_mask]
+    # )
+    # to_csv(gen_build_predet, "gen_build_predetermined.no_retire.csv")
+    # TODO: also create gen_build_costs.no_retire.csv and add both of
+    # these to the input-aliases for high_fossil.
+
+    #########
+    # # old approach that also defined interruptible load (no longer used)
+    # for tag in ["", "high_fossil", "no_retire"]:  # , "low_fossil"]:
+    #     name = ("gen_info." + tag).strip(".")
+    #     df = locals()[name.replace(".", "_")]
+    #     if name != "gen_info":
+    #         to_csv(df, name + ".csv")
+    #     # 0.1% interruptible load (no longer used because difficult to decide
+    #     # how it affects PRM or integrate into resource adequacy evaluation)
+    #     # df_flex = df.copy()
+    #     # df_flex.loc[
+    #     #     df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
+    #     # ] = 0.001
+    #     # to_csv(df_flex, name.replace("gen_info", "gen_info.flex") + ".csv")
+    #     # # allow full flexibility to be concentrated in each weekly case
+    #     # # if needed (for rare emergencies)
+    #     # df_flex.loc[
+    #     #     df_flex["gen_tech"] == "load_growth", "gen_max_annual_availability"
+    #     # ] *= 52
+    #     # to_csv(df_flex, name.replace("gen_info", "gen_info.flex_weekly") + ".csv")
 
     # if this is a low_growth case and there already exists a regular case with
     # the same name, create loads.low_growth.csv in the regular case, using the

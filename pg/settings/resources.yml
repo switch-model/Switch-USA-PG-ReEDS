@@ -118,7 +118,8 @@ derate_techs:
 
 # Years used to calculate capacity factors for plant derate_techs.
 # (These are overridden for the 2024 historical model.)
-capacity_factor_default_year_filter: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+capacity_factor_default_year_filter:
+  [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
 
 # LABEL SMALL HYDRO
 small_hydro: true
@@ -451,7 +452,7 @@ atb_modifiers:
 
   # Change CC and CT baseline costs from ATB to GridLab regression for 2030 read
   # from Figures 2-3 of
-  # https://gridlab.org/portfolio-item/gas-tubine-cost-report/ 
+  # https://gridlab.org/portfolio-item/gas-tubine-cost-report/
   # We use absolute dollars/MW (presumed to be approx 2024$ and later subject to
   # inflation). Note that for manually specified costs like this, PowerGenome
   # assumes they are in the correct year for the model (2024 in our case), not
@@ -535,21 +536,7 @@ cost_multiplier_region_map:
   PJMC: [p80]
   PJMD: [p99]
   PJME: [p119, p120, p122, p123, p124, p125, p126]
-  PJMW:
-    [
-      p100,
-      p104,
-      p110,
-      p111,
-      p112,
-      p113,
-      p114,
-      p115,
-      p116,
-      p117,
-      p118,
-      p121,
-    ]
+  PJMW: [p100, p104, p110, p111, p112, p113, p114, p115, p116, p117, p118, p121]
   RMRG: [p22, p23, p24, p32, p33, p34]
   SPPC: [p52, p53, p54, p55]
   SPPN: [p35, p36, p37, p38, p39, p40, p41, p45, p46]
@@ -635,7 +622,8 @@ cost_multiplier_technology_map:
   Wind offshore: [OffShoreWind_Class3, OffShoreWind_Class12]
   Solar thermal: [CSP]
   Solar PV - tracking: [UtilityPV_Class1, CommPV, ResPV, Imports_base] # Imports included just to avoid warnings
-  Battery storage: [Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration]
+  Battery storage:
+    [Utility-Scale Battery Storage_Lithium Ion, Storage_LongDuration]
   Geothermal:
     [
       Geothermal_HydroBinary,
@@ -711,7 +699,7 @@ proposed_min_load:
 
 additional_retirements:
   # managed by update_coal_closures.py
-  - [3, 4, 2022]
+  - [3, 4, 2026]
   - [3, 5, 2028]
   - [26, 5, 2028]
   - [160, ST3, 2027]
@@ -722,9 +710,9 @@ additional_retirements:
   - [703, 4, 2038]
   - [879, 5, 2028]
   - [879, 6, 2028]
-  - [976, 1, 2003]
-  - [976, 2, 2003]
-  - [976, 3, 2003]
+  - [976, 1, 2026]
+  - [976, 2, 2026]
+  - [976, 3, 2026]
   - [994, 4, 2026]
   - [994, ST3, 2026]
   - [1001, 1, 2029]
@@ -759,7 +747,7 @@ additional_retirements:
   - [2103, 4, 2042]
   - [2107, 1, 2035]
   - [2107, 2, 2035]
-  - [2364, 1, 2025]
+  - [2364, 1, 2026]
   - [2442, 4, 2038]
   - [2442, 5, 2038]
   - [2712, 1, 2028]
@@ -778,7 +766,7 @@ additional_retirements:
   - [3118, 2, 2028]
   - [3136, 1, 2028]
   - [3136, 2, 2028]
-  - [3149, 1, 2024]
+  - [3149, 1, 2026]
   - [3297, 1, 2031]
   - [3297, 2, 2031]
   - [3298, ST1, 2031]
@@ -791,7 +779,7 @@ additional_retirements:
   - [3407, 7, 2027]
   - [3407, 8, 2027]
   - [3407, 9, 2027]
-  - [3845, 2, 2025]
+  - [3845, 2, 2026]
   - [3943, 1, 2035]
   - [3943, 2, 2035]
   - [3944, 1, 2040]
@@ -812,10 +800,10 @@ additional_retirements:
   - [6009, 1, 2028]
   - [6009, 2, 2028]
   - [6021, 3, 2028]
-  - [6034, ST1, 2025]
+  - [6034, ST1, 2026]
   - [6034, ST2, 2026]
   - [6068, 2, 2030]
-  - [6073, 1, 2024]
+  - [6073, 1, 2026]
   - [6113, 1, 2038]
   - [6113, 2, 2038]
   - [6113, 3, 2031]
@@ -848,11 +836,10 @@ additional_retirements:
   - [8223, 2, 2030]
   - [8223, 3, 2031]
   - [8223, 4, 2029]
-  - [8224, 2, 2025]
+  - [8224, 2, 2026]
   - [56068, 1, 2028]
   - [56068, 2, 2028]
   - [56671, MKA01, 2034]
-
 MaxCapReq:
   # Any technologies given MaxCapTag_Ban=1 in resource_tags or
   # regional_resource_tags (possibly via settings_management for particular
