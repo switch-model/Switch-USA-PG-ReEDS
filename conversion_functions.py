@@ -523,9 +523,10 @@ def gen_info_table(gens, settings):
     cols.append("gen_is_variable")
 
     # Min_Power can be negative in flexible demand cases with load that
-    # sometimes goes negative; we ignore that
+    # sometimes goes negative; or it can be infinite for zero-capacity gens;
+    # we ignore both
     if "Min_Power" in gen_info.columns:
-        gen_info["gen_min_load_fraction"] = gen_info["Min_Power"].clip(0, None)
+        gen_info["gen_min_load_fraction"] = gen_info["Min_Power"].clip(0, 1)
         cols.append("gen_min_load_fraction")
 
     # Keep some columns as-is, just renaming

@@ -22,11 +22,13 @@ def round(x, n_figs):
     this uses vectorized calculations so it is fairly fast.
     Note: numbers smaller than 1e-200 will be rounded to zero.
     """
-    power = 10 ** (np.floor(np.log10(np.abs(x).clip(1e-200))))
-    rounded = np.round(x / power, n_figs - 1) * power
+    rounded = x.copy()
+    finite = np.isfinite(x)
+    power = 10 ** (np.floor(np.log10(np.abs(x[finite]).clip(1e-200))))
+    rounded[finite] = np.round(x[finite] / power, n_figs - 1) * power
     # also round numbers that are very close to zero to zero; useful when
     # comparing effectively zero results in outputs files
-    rounded[rounded.abs() < 10**-n_figs] = 0
+    rounded[finite & (rounded.abs() < 10**-n_figs)] = 0
     return rounded
 
 
