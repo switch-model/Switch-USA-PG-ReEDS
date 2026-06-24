@@ -8,6 +8,7 @@ serves as an alternative to the more complex fuel_markets with tiered
 supply curves. This is mutually exclusive with the fuel_markets module.
 
 """
+
 import os
 from pyomo.environ import *
 
@@ -68,6 +69,7 @@ def define_components(mod):
             * m.fuel_cost[m.gen_load_zone[g], f, m.tp_period[tp]]
             for g in m.FUEL_BASED_GENS_IN_PERIOD[m.tp_period[tp]]
             for f in m.FUELS_FOR_GEN[g]
+            # could instead be `if (g, tp, f) in m.ZONE_FUEL_PERIODS`
             if (g, tp, f) not in m.GEN_TP_FUELS_UNAVAILABLE
         ),
     )
