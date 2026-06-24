@@ -473,6 +473,13 @@ def main(options):
         add_ts = ce_info["add_timeseries"]
         tag = ts_tag[add_ts]
         ra_scen = f"{ce_scen}_{tag}"  # same logic as ra_split_tag()
+        if ra_scen not in ra_scens:
+            ra_scen = f"{ce_scen.removesuffix('_build')}_{tag}"
+            if ra_scen not in ra_scens:
+                raise RuntimeError(
+                    f"Scenario {ra_scen} not found in {options.ra_scens_file}"
+                )
+
         print(f"Adding timeseries {add_ts} to scenario {ce_scen}.")
         print()
 

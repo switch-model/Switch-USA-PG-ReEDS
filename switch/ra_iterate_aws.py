@@ -42,6 +42,7 @@ def del_output_dirs(scens_file):
     """
     Delete all existing directories referenced by --outputs-dir arguments in scens_file.
     """
+    print("Clearing outputs from previous runs.")
     parser = argparse.ArgumentParser()
     parser.add_argument("--outputs-dir")
     with open(scens_file) as f:
