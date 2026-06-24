@@ -9,7 +9,8 @@ if anything in build-scens list:
 first run: either launch this script's job def or run it directly
 """
 
-import json, shutil, sys, os, argparse, shlex, pathlib
+import json, shutil, sys, os, argparse, shlex
+from pathlib import Path
 import boto3
 
 # TODO: cap the number of tasks in the array at the number of
@@ -68,11 +69,11 @@ def submit_job(batch, jobs, job_name, dep_id=None):
 
 
 def main():
-    with open("ra_jobs.json") as f:
+    with open(Path(__file__).parent / "ra_jobs.json") as f:
         jobs = json.load(f)
 
     # clear out the default scenario queue so new ones without override will run
-    if os.path.exists("scenario_queue"):
+    if Path("scenario_queue").exists():
         shutil.rmtree("scenario_queue")
 
     batch = boto3.client("batch", region_name=jobs["region"])

@@ -75,8 +75,8 @@ def parse_script_args():
 
 # %% main code
 # for testing:
-# sys.argv = ['script', 'switch/in/test/2030/p1']
-# sys.argv = ['script'] + shlex.split("switch/in/2030/resource_adequacy --reuse-build-scenarios switch/in/2030/s40x1/scenarios_build.txt --include-module study_modules.reduce_reporting --skip-generic-output --skip-output-files dispatch.csv dispatch_wide.csv dispatch_gen_annual_summary.csv dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf --exclude-modules study_modules.min_capacity_constraint study_modules.max_capacity_constraint study_modules.rps_regional --exclude-module study_modules.scheduled_outages --exclude-module study_modules.planning_reserves_extreme_days --include-module study_modules.unserved_load")
+# sys.argv = ['script', 'in/test/2030/p1']
+# sys.argv = ['script'] + shlex.split("in/2030/resource_adequacy --reuse-build-scenarios in/2030/s40x1/scenarios_build.txt --include-module study_modules.reduce_reporting --skip-generic-output --skip-output-files dispatch.csv dispatch_wide.csv dispatch_gen_annual_summary.csv dispatch_annual_summary_fuel.pdf dispatch_annual_summary_tech.pdf --exclude-modules study_modules.min_capacity_constraint study_modules.max_capacity_constraint study_modules.rps_regional --exclude-module study_modules.scheduled_outages --exclude-module study_modules.planning_reserves_extreme_days --include-module study_modules.unserved_load")
 
 
 # helper function for cloning files
@@ -215,11 +215,7 @@ def main():
 
     ##########
     # create scenario file to simplify running these cases
-    if in_dir.parts[0] == "switch":
-        # shift reference so it can be run from inside switch dir
-        idir = Path(*in_dir.parts[1:])
-    else:
-        idir = in_dir
+    idir = in_dir
 
     if idir.parts[0] != "in":
         print(

@@ -132,7 +132,7 @@
                         {
                             "command": [
                                 "python",
-                                "ra_add_difficult_timeseries.py",
+                                "iterate/ra_add_difficult_timeseries.py",
                                 "in/2030/ce/scenarios_build.ra.txt",
                                 "in/2030/ra/scenarios_split.ra.txt"
                             ],
@@ -164,7 +164,7 @@
                         {
                             "command": [
                                 "python",
-                                "ra_iterate_aws.py"
+                                "iterate/ra_iterate_aws.py"
                             ],
                             "name": "aws-environment",
                             "resourceRequirements": [

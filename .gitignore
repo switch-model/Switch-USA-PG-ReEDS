@@ -6,15 +6,13 @@
 !pg/**
 !PowerGenome/
 !PowerGenome/**
+!prepare/
 !adjust/
-!switch/
-!switch/study_modules/
+!report/
+!iterate/
+!study_modules/
 
 # files used for planning, diagnosis and debugging
-switch/*.xlsx
-switch/*.csv
-switch/*.docx
-switch/*.html
 save_vars.py
 *.pkl
 *.nl

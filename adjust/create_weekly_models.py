@@ -39,11 +39,11 @@ def parse_arguments():
 
 # %% main code
 # for testing:
-# sys.argv = ['script', 'switch/in/test/2030/p1']
+# sys.argv = ['script', 'in/test/2030/p1']
 
 
 # to profile:
-# kernprof -l adjust/create_weekly_models.py switch/in/test/2030/p1
+# kernprof -l adjust/create_weekly_models.py in/test/2030/p1
 # python -m line_profiler create_weekly_models.py.lprof
 # from line_profiler import profile
 # @profile
@@ -117,11 +117,7 @@ def main():
 
     ##########
     # create scenarios_weekly.txt to simplify running these cases
-    if in_dir.parts[0] == "switch":
-        # shift reference so it can be run from inside switch dir
-        idir = Path(*in_dir.parts[1:])
-    else:
-        idir = in_dir
+    idir = in_dir
 
     if idir.parts[0] != "in":
         print(

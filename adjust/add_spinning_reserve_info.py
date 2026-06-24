@@ -39,7 +39,7 @@ from powergenome.util import load_settings
 settings = load_settings(path="pg/settings")
 
 
-# sys.argv[1] = "switch/in/test/2030/s20_1"
+# sys.argv[1] = "in/test/2030/s20_1"
 in_dir = Path(sys.argv[1])
 
 # zero-load fuel as a fraction of full-load fuel

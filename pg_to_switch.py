@@ -2039,7 +2039,7 @@ def year_name(years):
 
 def model_folder_names(results_folder, scen_name, case, year, myopic):
     # figure out folder names
-    switch_path = Path(__file__).parent / "switch"
+    switch_path = Path(__file__).parent
     subst = {"in": "out", "input": "output", "inputs": "outputs"}
     out_base = Path(*[subst.get(p, p) for p in results_folder.parts])
     if out_base == results_folder:

@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 # files to process and columns to extend
-# from grep -rl 480 switch/in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
+# from grep -rl 480 in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
 timepoint_files = {
     # "hydro_timepoints.csv": "timepoint_id",  # not used for this project
     "loads.csv": "TIMEPOINT",
@@ -15,11 +15,11 @@ timepoint_files = {
     "dr_data.csv": "TIMEPOINT",
     "ee_data.csv": "TIMEPOINT",
 }
-# from grep -rl 2024_p141_0 switch/in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
+# from grep -rl 2024_p141_0 in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
 timestamp_files = {
     "graph_timestamp_map.csv": "timestamp",
 }
-# from grep -rl 2024_p141 switch/in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
+# from grep -rl 2024_p141 in/test_imports_no_retire/2024/s4 | xargs -I{} sh -c 'echo; echo $(basename "{}"); head -n 1 {}'
 timeseries_files = {
     # "hydro_timepoints.csv": "tp_to_hts",  # sometimes reuses timeseries ID, but not used for this project
     "graph_timestamp_map.csv": "timeseries",
@@ -47,7 +47,7 @@ def parse_arguments():
 
 
 # for testing:
-# sys.argv = ['script', 'switch/in/test_imports_no_retire/2024/s4']
+# sys.argv = ['script', 'in/test_imports_no_retire/2024/s4']
 def main():
     options = parse_arguments()
     in_dir = Path(options.in_dir)

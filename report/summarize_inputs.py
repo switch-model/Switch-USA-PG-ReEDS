@@ -27,8 +27,8 @@ from pathlib import Path
 # in_dir = "test_gem"
 # in_dir = "test_flex"
 
-# for testing: sys.argv[1] = "switch/in/yaml_gem_rets/2030/ce"
-# for testing: sys.argv[1] = "switch/in/test/2030/p1"
+# for testing: sys.argv[1] = "in/yaml_gem_rets/2030/ce"
+# for testing: sys.argv[1] = "in/test/2030/p1"
 # sys.argv[1] = "in/2030/s40x1"
 
 idir = Path(sys.argv[1])

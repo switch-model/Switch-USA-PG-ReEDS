@@ -7,7 +7,7 @@ import pandas as pd
 import pandas_clean_csv
 
 in_dir = Path(sys.argv[1])
-# in_dir = Path("switch/in/2030/ce")
+# in_dir = Path("in/2030/ce")
 first_future_year = 2026
 
 gen_costs_file = in_dir / "gen_build_costs.csv"

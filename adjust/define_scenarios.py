@@ -31,7 +31,7 @@ def to_csv(df, file):
 
 # try to update both the base directory and the _prm version (if present)
 for tag in ("", "_prm"):
-    # in_dir = Path("switch/in/gas_limit/2030/s4x1_test")
+    # in_dir = Path("in/gas_limit/2030/s4x1_test")
     in_dir = Path(sys.argv[1] + tag)
     if not in_dir.exists():
         continue
@@ -182,11 +182,7 @@ for tag in ("", "_prm"):
 
     ##########
     # create a scenarios.txt file to simplify running these cases
-    if in_dir.parts[0] == "switch":
-        # shift reference so it can be run from inside switch dir
-        idir = Path(*in_dir.parts[1:])
-    else:
-        idir = in_dir
+    idir = in_dir
 
     if idir.parts[0] != "in":
         print(

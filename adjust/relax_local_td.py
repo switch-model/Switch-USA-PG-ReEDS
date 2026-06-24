@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-# in_dir = Path("switch/in/2030/s1x1")
+# in_dir = Path("in/2030/s1x1")
 in_dir = Path(sys.argv[1])
 
 

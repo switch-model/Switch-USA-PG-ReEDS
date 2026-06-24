@@ -16,7 +16,7 @@ import pandas as pd
 ee_annual_cost_per_mwh = 31
 ee_load_reduction_frac = 0.0375
 
-# in_dir = Path("switch/in/2030/s40x1")
+# in_dir = Path("in/2030/s40x1")
 in_dir = Path(sys.argv[1])
 
 
