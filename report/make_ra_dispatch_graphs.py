@@ -23,7 +23,7 @@ import matplotlib.image as mpimg
 from reporting_info import (
     assert_all_in,
     rto_groups,
-    region_info,
+    zone_groups,
     scen_names,
     gen_tech_names,
     ce_in_dir,
@@ -42,6 +42,15 @@ from reporting_info import (
 )
 
 out_dir = summary_out_dir / "weekly_dispatch_graphs"
+
+# files used by this script; any others in the weekly output dirs will be
+# deleted to save space
+keep_files = [
+    "dispatch.csv",
+    "load_balance.csv",
+    "local_td_energy_balance_wide.csv",
+    "DispatchTx.csv",
+]
 
 print("loaded libraries")
 
@@ -192,6 +201,15 @@ def read_graphing_out(scen, date, file, **kwargs):
 
 def read_graphing_in(scen, date, file, **kwargs):
     return pd.read_csv(graphing_in_dir(scen, date) / file, na_values=".", **kwargs)
+
+
+def shrink_graphing_dir(scen, date):
+    g_dir = graphing_out_dir(scen, date)
+    extra_files = [f for f in g_dir.glob("*.csv") if f.name not in keep_files]
+    if extra_files:
+        print(f"Deleting unneeded files in {g_dir} to save space.")
+        for f in extra_files:
+            f.unlink()
 
 
 # %% Scan the daily models for key stats
@@ -401,6 +419,10 @@ if to_run:
     exit(0)
 else:
     print("All necessary scenarios have been solved. Preparing graphs.")
+
+# %% Delete unneeded output files to save space
+for scen, week_stamp in needed_weeks:
+    shrink_graphing_dir(scen, week_stamp)
 
 # %% Read and aggregate weekly data
 
