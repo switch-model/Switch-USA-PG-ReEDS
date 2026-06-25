@@ -20,6 +20,7 @@ save_vars.py
 *.lp
 *.ilp
 *.mps
+*.html
 todo*
 
 # include growth_rates/*.csv
