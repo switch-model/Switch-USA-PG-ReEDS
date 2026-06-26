@@ -79,6 +79,7 @@ firm_supplies = {
 assert_all_in(supply_cols, firm_supplies, "missing graph labels in firm_supplies")
 assert_all_in(firm_supplies, supply_cols, "unexpected graph labels firm_supplies")
 
+print("Gathering scenario data.")
 scen_data = {scen: {} for scen in scen_names}
 for scen in scen_data:
     supply_dfs = []
@@ -188,6 +189,7 @@ for scen in scen_data:
 
 # %% aggregate across regions, select key days and graph results
 # zone_data: scen_data: day: data
+print("Identifying extreme days.")
 region_data = {zg: {scen: {} for scen in scen_data} for zg in zone_groups}
 for region, rdata in region_data.items():
     for scen, sdata in rdata.items():
@@ -256,6 +258,7 @@ for region, rdata in region_data.items():
 # create output dir if needed
 out_dir.mkdir(parents=True, exist_ok=True)
 
+print("Generating graphs.")
 for region, rdata in region_data.items():
     n_rows = len(rdata)
     n_cols = max(len(ddata) for ddata in rdata.values())
@@ -372,7 +375,7 @@ for region, rdata in region_data.items():
     # )
     # plt.show()
     for fmt in ["png", "pdf"]:
-        out_file = f"{out_dir}/{region.replace('.', '_')}_daily.{fmt}"
+        out_file = f"{out_dir}/{region.replace('.', '')} daily.{fmt}"
         fig.savefig(
             out_file,
             bbox_inches="tight",
@@ -380,6 +383,6 @@ for region, rdata in region_data.items():
             transparent=True,
             dpi=300,
         )
-    print(f"saved {out_file}")
+        print(f"saved {out_file}")
 
 # %%
