@@ -28,12 +28,14 @@ from reporting_info import (
     supply_cols,
     demand_cols,
     summary_out_dir,
+    register_fonts,
 )
 
 out_dir = summary_out_dir / "ce_dispatch_graphs"
 
 # use EI standard font
-rcParams["font.family"] = "Montserrat"
+register_fonts()
+matplotlib.rcParams["font.family"] = "Montserrat"
 # Turn off minus signs being replaced with boxes
 # rcParams["axes.unicode_minus"] = False
 

@@ -31,7 +31,7 @@ from reporting_info import (
     ce_out_dir,
     ra_out_dir,
     summary_out_dir,
-    fonts_dir,
+    register_fonts,
     logo_file,
     logo_zoom,
     timepoint_files,
@@ -78,17 +78,11 @@ graph_defs = [
 
 ra_scens_file = ra_in_dir / "scenarios_split.txt"
 
-
-# register all user-supplied fonts (user-supplied)
-if fonts_dir.is_dir():
-    for ext in ["ttf", "otf"]:
-        for f in fonts_dir.glob(f"*.{ext}"):
-            matplotlib.font_manager.fontManager.addfont(f)
-
 # use EI standard font:
 # Montserrat for reports or Century Gothic for presentations
 fig_font = "Montserrat"
 
+register_fonts()
 matplotlib.rcParams.update(
     {
         "font.family": fig_font,

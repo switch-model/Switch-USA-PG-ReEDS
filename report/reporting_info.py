@@ -265,3 +265,13 @@ def assert_all_in(grp1, grp2, msg="missing values"):
 assert_all_in(
     gen_tech_names.values(), supply_cols, "unexpected graph labels in gen_tech_names"
 )
+
+
+def register_fonts():
+    import matplotlib
+
+    # register all user-supplied fonts (user-supplied)
+    if fonts_dir.is_dir():
+        for ext in ["ttf", "otf"]:
+            for f in fonts_dir.glob(f"*.{ext}"):
+                matplotlib.font_manager.fontManager.addfont(f)
