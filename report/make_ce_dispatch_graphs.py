@@ -30,7 +30,7 @@ from reporting_info import (
     summary_out_dir,
 )
 
-out_dir = summary_out_dir / "daily_dispatch_graphs"
+out_dir = summary_out_dir / "ce_dispatch_graphs"
 
 # use EI standard font
 rcParams["font.family"] = "Montserrat"

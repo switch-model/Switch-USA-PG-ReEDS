@@ -41,7 +41,7 @@ from reporting_info import (
     demand_cols,
 )
 
-out_dir = summary_out_dir / "weekly_dispatch_graphs"
+out_dir = summary_out_dir / "ra_dispatch_graphs"
 
 # files used by this script; any others in the weekly output dirs will be
 # deleted to save space
