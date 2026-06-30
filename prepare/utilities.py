@@ -1,6 +1,7 @@
 import fnmatch
 import inspect
 import os
+from pathlib import Path
 
 import ruamel.yaml
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
@@ -149,3 +150,20 @@ def get_caller_filename():
         return os.path.basename(filename)  # strip path → just the file name
     except:
         return "unknown script"
+
+
+def short_fn(filename, target=None):
+    """
+    Return filename relative to current directory if that is shorter than the
+    current filename. Useful for reporting filenames in logs.
+    """
+    if target is None:
+        target = Path.cwd()
+    fn = Path(filename)
+    if fn.is_relative_to(target):
+        short_fn = fn.relative_to(target)
+        if len(str(short_fn)) > len(str(fn)):
+            short_fn = fn
+    else:
+        short_fn = fn
+    return short_fn

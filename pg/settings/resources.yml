@@ -12,8 +12,15 @@
 # average (weighted by generation per year).
 # 2023 = latest with data_maturity = 'final' in pudl v2025.8.0
 # 2024 = latest full year in pudl v2025.8.0
+# also see `pudl_data_version` below.
 eia_data_years:
   - 2024
+
+# which date should PUDL data be retrieved for? (used by
+# prepare/make_study_loads.py; should match data version used by
+# prepare/make_retro_pudl_data.py and PG inputs specified in
+# env.yml)
+pudl_data_version: v2026.4.0
 
 # Get more recent status info for existing generators. The file below will be
 # automatically downloaded from https://www.eia.gov/electricity/data/eia860m/

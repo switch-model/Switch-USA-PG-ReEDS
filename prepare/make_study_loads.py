@@ -29,13 +29,13 @@ the lower growth case
 from pathlib import Path
 import json
 import pandas as pd
+import numpy as np
 from powergenome.util import load_settings
 from powergenome.generators import GeneratorClusters
 from powergenome.util import (
     init_pudl_connection,
     load_settings,
 )
-from pg_to_switch import short_fn
 
 # TODO: get from argv
 settings_dir = "pg/settings"
@@ -86,6 +86,7 @@ pudl_engine, pudl_out, pg_engine = init_pudl_connection(
 
 load_file_path = Path(settings["input_folder"]) / user_load_file
 dr_file_path = Path(settings["input_folder"]) / demand_response_file
+pudl_version = settings["pudl_data_version"]
 
 
 # TODO: read table(s) from pudl_engine instead of directly from latest PUDL
@@ -93,7 +94,7 @@ dr_file_path = Path(settings["input_folder"]) / demand_response_file
 # need to include core_eia930__hourly_interchange table in make_retro_pudl_data.py
 # and decide whether to use the pre-2023-12 or post-2023-12 schema for it (and here).
 def read_pudl(tbl):
-    url = f"https://s3.us-west-2.amazonaws.com/pudl.catalyst.coop/nightly/{tbl}.parquet"
+    url = f"https://s3.us-west-2.amazonaws.com/pudl.catalyst.coop/{pudl_version}/{tbl}.parquet"
     print(f"Reading {url}")
     return pd.read_parquet(url)
 
@@ -116,7 +117,7 @@ n_steps = settings.get("utc_offset", 0)
 print(f"Applying {n_steps} hour offset to shift loads from UTC to model time zone.")
 base = base.sort_values(["region", "weather_year", "time_index"])
 base["load_mw"] = base.groupby(["region", "weather_year"])["load_mw"].transform(
-    lambda s: pd.np.roll(s.values, n_steps)
+    lambda s: np.roll(s.values, n_steps)
 )
 
 print(f"Saving {base_year} loads for {start_year}-{end_year} in {load_file_path}")

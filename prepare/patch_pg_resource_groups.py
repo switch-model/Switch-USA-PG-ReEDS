@@ -27,7 +27,7 @@ from powergenome.util import (
     snake_case_col,
 )
 from download_pg_data import make_parent, gdown, unzip_if_needed
-from pg_to_switch import short_fn
+from utilities import short_fn
 
 
 def read_file(file, **kwargs):

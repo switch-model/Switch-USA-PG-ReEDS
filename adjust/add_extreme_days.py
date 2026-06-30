@@ -1,3 +1,34 @@
+"""
+Add synthetic extreme-day timepoints for planning-reserve constraints.
+
+This script rewrites a Switch input directory so planning reserve margins can be
+enforced on "extreme-day" timepoints using the
+`study_modules.planning_reserves_extreme_days` module (a more adaptive
+alternative to the standard `switch_model.balancing.planning_reserves` module).
+
+This script reads the standard planning_reserve_requirements.csv table (created
+by `pg_to_switch.py` based on the `regional_capacity_reserves` and
+`prr_enforcement_timescale` entries in `pg/settings`) to determine whether
+reserves apply to the peak-load timepoint in each period or to all timepoints.
+Then it creates copies of the timeseries where a planning reserve margin (PRM)
+should be applied, appending '_prm' to the end of each timeseries or timepoint
+ID. The new timeseries and timepoints are given zero probability weight, but
+will have loads increased by the PRM percentage shown in
+planning_reserve_requirements.csv, e.g., 2%. This forces Switch to build a power
+system that _could_ serve those "extreme days", but to give it no weight in the
+economic calculation, since they are rare (typically worse than the peak day in
+the historical record).
+
+Calling conventions:
+
+    python adjust/add_extreme_days.py IN_DIR
+    python adjust/add_extreme_days.py --create-prm-dir IN_DIR
+
+By default the input files in `IN_DIR` are updated in place. With
+`--create-prm-dir`, the script first copies `IN_DIR` to a sibling directory
+whose name ends in `_prm` and writes the modified inputs there instead.
+"""
+
 # %% setup
 import sys
 import argparse

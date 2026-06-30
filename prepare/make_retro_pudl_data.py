@@ -16,6 +16,7 @@ import sqlite3, pprint, os, re
 
 # PUDL data from 2025-08, using the post-2023-12 schema.
 # from https://zenodo.org/records/16878930
+# This should match `pudl_data_version` in pg/settings/resources.yml
 pudl_db = "/tmp/pudl.sqlite"
 
 # database that will hold new pudl data in the pre-2023-12 schema;
@@ -142,12 +143,10 @@ new_pg_conn.commit()
 # rename columns to their old name if needed
 cur = new_pg_conn.cursor()
 for table, cur_name, new_name in rename_cols:
-    cur.execute(
-        f"""
+    cur.execute(f"""
         ALTER TABLE {table}
         RENAME COLUMN {cur_name} TO {new_name};
-        """
-    )
+        """)
 cur.close()
 new_pg_conn.commit()
 

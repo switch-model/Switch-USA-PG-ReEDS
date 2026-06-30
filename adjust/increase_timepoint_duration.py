@@ -1,3 +1,20 @@
+"""
+Downsample Switch inputs from 1-hour to 2-hour timepoints.
+
+This script rewrites a Switch input directory in place by increasing
+`ts_duration_of_tp` from 1 to 2, halving `ts_num_tps`, keeping every second
+row in `timepoints.csv`, and filtering related timepoint-indexed files so they
+only reference the retained timepoints. It assumes all existing timeseries have
+1-hour timepoints, that each `ts_num_tps` value is divisible by 2, and that
+timepoints in each timeseries are contiguous in timepoints.csv.
+
+Calling convention:
+
+    python adjust/increase_timepoint_duration.py IN_DIR
+
+`IN_DIR` is the Switch input directory to update.
+"""
+
 # %% setup
 import sys
 import argparse

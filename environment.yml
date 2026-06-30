@@ -16,6 +16,7 @@ dependencies:
   # and retrieve_icf_growth_rates.py
   - plotly
   - ipympl
+  - python-docx
   # mostly covered by other packages, but just to be sure
   - pandas
   - shapely
